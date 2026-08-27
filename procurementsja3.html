@@ -3,63 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Procurement - SJA</title>
-    
+    <title>Portal Procurement - Standalone App</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Babel for transpiling JSX in Browser -->
+    <!-- Babel for transpiling JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Error Catcher Anti-Blank Screen -->
-    <script>
-        window.addEventListener('error', function(event) {
-            const root = document.getElementById('root');
-            if(root) {
-                root.innerHTML = '<div style="padding: 20px; background: #fee2e2; color: #991b1b; font-family: monospace; border: 1px solid #f87171; margin: 20px; border-radius: 8px;"><h3>Aplikasi Gagal Dimuat (App Crash)</h3><p><b>Error:</b> ' + event.message + '</p><p>Lokasi: ' + event.filename + ' (Baris: ' + event.lineno + ')</p><p><i>Periksa console browser (F12) untuk detail lebih lanjut. Kemungkinan browser tidak mendukung Import Maps atau ada salah ketik kode.</i></p></div>';
-            }
-        });
-        window.addEventListener('unhandledrejection', function(event) {
-            console.warn("Peringatan Promise (Biasanya karena Firebase Dummy Error):", event.reason);
-        });
-    </script>
-
     <style>
         body { margin: 0; padding: 0; background-color: #0f172a; }
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        /* Custom scrollbar for tailwind scrollbar-thin class */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
     </style>
-
-    <!-- Import Maps: Standar Modern ESM untuk Browser -->
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "recharts": "https://esm.sh/recharts@2.12.2?deps=react@18.2.0,react-dom@18.2.0",
-        "lucide-react": "https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0",
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"
-      }
-    }
-    </script>
 </head>
 <body>
-    <div id="root">
-        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif; background-color: #0f172a;">
-            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-            <p style="font-weight: bold; tracking: 1px;">Sedang memuat sistem dan aset...</p>
-            <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
-        </div>
-    </div>
+    <div id="root"></div>
 
-    <!-- MAIN APP SCRIPT -->
     <script type="text/babel" data-type="module">
-        import React, { useState, useMemo, useEffect, useRef } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line } from 'recharts';
+        // Import Dependencies via ESM
+        import React, { useState, useMemo, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line } from 'https://esm.sh/recharts@2.12.2?deps=react@18.2.0,react-dom@18.2.0';
         import { 
           Trophy, TrendingDown, DollarSign, Calendar, Package, FileText, 
           LayoutDashboard, Database, Menu, X, Briefcase, PlusCircle, CheckCircle2,
@@ -68,13 +40,12 @@
           ChevronRight, PieChart as PieChartIcon, FileClock, ShoppingCart, 
           LogOut, ChevronDown, ChevronUp, Droplet, Layers, Truck, Activity, Files, BookOpen,
           Eye, ClipboardList, Mountain, Printer, ArrowUpDown, ArrowDown, ArrowUp, Archive, RefreshCw, ExternalLink, Image as ImageIcon, Wrench
-        } from 'lucide-react';
-        
-        import { initializeApp, getApps, getApp } from 'firebase/app';
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from 'firebase/firestore';
+        } from 'https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0';
+        import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
-        // --- KONFIGURASI FIREBASE ---
+        // --- ORIGINAL APP CODE ---
         const fallbackConfig = { apiKey: "dummy", authDomain: "dummy", projectId: "dummy" };
         const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : fallbackConfig;
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -82,8 +53,10 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const safeAppId = appId.replace(/\//g, '_');
+        
+        // PENTING: Deteksi apakah menggunakan koneksi asli atau dummy (Offline Mode)
+        const isDummyFirebase = firebaseConfig.projectId === "dummy";
 
-        // --- KONSTANTA GLOBAL ---
         const UNIT_OPTIONS = ["Pcs", "Unit", "Set", "LOT", "Lembar", "Lonjor", "Meter", "Kilogram", "Lainnya"];
         const TIME_UNITS = ["Hari", "Minggu", "Bulan", "Tahun"];
         const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6', '#f43f5e', '#a855f7'];
@@ -140,611 +113,620 @@
             );
         };
 
-        // --- DASHBOARD SUMMARY VIEW ---
-        const DashboardView = ({ data, isLoading, onEdit, onDelete, sheetData, persistentFilters, setPersistentFilters }) => {
-          const [projectToDelete, setProjectToDelete] = useState(null);
-          const [isDeleting, setIsDeleting] = useState(false);
-          const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
-          const [savingSortOrder, setSavingSortOrder] = useState('none');
-          const [pdfData, setPdfData] = useState(null);
-          const [isRefreshing, setIsRefreshing] = useState(false);
+        /* =========================================================================
+           DASHBOARD VIEW (SUMMARY)
+           ========================================================================= */
+const DashboardView = ({ data, isLoading, onEdit, onDelete, sheetData, persistentFilters, setPersistentFilters }) => {
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
+  const [savingSortOrder, setSavingSortOrder] = useState('none');
+  const [pdfData, setPdfData] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-          const selectedYear = persistentFilters.year;
-          const selectedMonth = persistentFilters.month;
-          const poCodeFilter = persistentFilters.poCode;
-          const dashboardFilters = persistentFilters.tableSearch;
+  // Load state filters from parent component memory
+  const selectedYear = persistentFilters.year;
+  const selectedMonth = persistentFilters.month;
+  const poCodeFilter = persistentFilters.poCode;
+  const dashboardFilters = persistentFilters.tableSearch;
 
-          const setSelectedYear = (val) => setPersistentFilters(prev => ({ ...prev, year: val }));
-          const setSelectedMonth = (val) => setPersistentFilters(prev => ({ ...prev, month: val }));
-          const setPoCodeFilter = (val) => setPersistentFilters(prev => ({ ...prev, poCode: val }));
-          const setDashboardFilters = (val) => setPersistentFilters(prev => ({ ...prev, tableSearch: typeof val === 'function' ? val(prev.tableSearch) : val }));
+  const setSelectedYear = (val) => setPersistentFilters(prev => ({ ...prev, year: val }));
+  const setSelectedMonth = (val) => setPersistentFilters(prev => ({ ...prev, month: val }));
+  const setPoCodeFilter = (val) => setPersistentFilters(prev => ({ ...prev, poCode: val }));
+  const setDashboardFilters = (val) => setPersistentFilters(prev => ({ ...prev, tableSearch: typeof val === 'function' ? val(prev.tableSearch) : val }));
 
-          const hasActiveDashboardFilters = Object.values(dashboardFilters).some(val => val !== '');
+  const hasActiveDashboardFilters = Object.values(dashboardFilters).some(val => val !== '');
 
-          useEffect(() => {
-            if (!document.getElementById('html2pdf-script')) {
-              const script = document.createElement('script');
-              script.id = 'html2pdf-script';
-              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-              document.body.appendChild(script);
-            }
-            if (!document.getElementById('html2canvas-script')) {
-              const script = document.createElement('script');
-              script.id = 'html2canvas-script';
-              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-              document.body.appendChild(script);
-            }
-            
-            return () => {
-               const pdfScript = document.getElementById('html2pdf-script');
-               const canvasScript = document.getElementById('html2canvas-script');
-               if (pdfScript) document.body.removeChild(pdfScript);
-               if (canvasScript) document.body.removeChild(canvasScript);
-            };
-          }, []);
+  useEffect(() => {
+    if (!document.getElementById('html2pdf-script')) {
+      const script = document.createElement('script');
+      script.id = 'html2pdf-script';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      document.body.appendChild(script);
+    }
+    if (!document.getElementById('html2canvas-script')) {
+      const script = document.createElement('script');
+      script.id = 'html2canvas-script';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      document.body.appendChild(script);
+    }
+    
+    return () => {
+       const pdfScript = document.getElementById('html2pdf-script');
+       const canvasScript = document.getElementById('html2canvas-script');
+       if (pdfScript) document.body.removeChild(pdfScript);
+       if (canvasScript) document.body.removeChild(canvasScript);
+    };
+  }, []);
 
-          const handleShowPdf = (projectName, reqNumber) => {
-            const projectItems = data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
-            const summary = projectSummaryData.find(p => p.projectName === projectName && p.reqNumber === reqNumber);
-            if (projectItems.length > 0 && summary) {
-               setPdfData({ items: projectItems, summary: summary });
-            }
-          };
+  const handleShowPdf = (projectName, reqNumber) => {
+    const projectItems = data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
+    const summary = projectSummaryData.find(p => p.projectName === projectName && p.reqNumber === reqNumber);
+    if (projectItems.length > 0 && summary) {
+       setPdfData({ items: projectItems, summary: summary });
+    }
+  };
 
-          const handleDownloadPdf = () => {
-            const element = document.getElementById('pdf-content-area');
-            if (element && window.html2pdf) {
-                const opt = {
-                  margin:       [0.4, 0.4, 0.4, 0.4], 
-                  filename:     `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.pdf`,
-                  image:        { type: 'jpeg', quality: 1 },
-                  html2canvas:  { scale: 2, useCORS: true },
-                  jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
-                };
-                window.html2pdf().set(opt).from(element).save();
-            }
-          };
+  const handleDownloadPdf = () => {
+    const element = document.getElementById('pdf-content-area');
+    if (element && window.html2pdf) {
+        const opt = {
+          margin:       [0.4, 0.4, 0.4, 0.4], 
+          filename:     `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.pdf`,
+          image:        { type: 'jpeg', quality: 1 },
+          html2canvas:  { scale: 2, useCORS: true },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        window.html2pdf().set(opt).from(element).save();
+    }
+  };
 
-          const handleDownloadJpg = () => {
-            const element = document.getElementById('pdf-content-area');
-            if (element && window.html2canvas) {
-                window.html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.jpg`;
-                    link.href = canvas.toDataURL('image/jpeg', 1.0);
-                    link.click();
-                });
-            }
-          };
+  const handleDownloadJpg = () => {
+    const element = document.getElementById('pdf-content-area');
+    if (element && window.html2canvas) {
+        window.html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+        });
+    }
+  };
 
-          const confirmDelete = async () => {
-            if (projectToDelete) {
-              setIsDeleting(true);
-              await onDelete(projectToDelete.projectName, projectToDelete.reqNumber);
-              setIsDeleting(false);
-              setProjectToDelete(null);
-            }
-          };
+  const confirmDelete = async () => {
+    if (projectToDelete) {
+      setIsDeleting(true);
+      await onDelete(projectToDelete.projectName, projectToDelete.reqNumber);
+      setIsDeleting(false);
+      setProjectToDelete(null);
+    }
+  };
 
-          const availableYears = useMemo(() => {
-            const years = new Set();
-            data.forEach(item => { if (item.date) years.add(item.date.substring(0, 4)); });
-            
-            if (sheetData && sheetData.length > 0) {
-                sheetData.forEach(item => { if (item.year) { years.add(String(item.year).trim()); } });
-            }
-            
-            if (years.size === 0) { years.add(String(new Date().getFullYear())); }
-            return Array.from(years).sort((a, b) => b.localeCompare(a));
-          }, [data, sheetData]);
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    data.forEach(item => { if (item.date) years.add(item.date.substring(0, 4)); });
+    
+    if (sheetData && sheetData.length > 0) {
+        sheetData.forEach(item => { if (item.year) { years.add(String(item.year).trim()); } });
+    }
+    
+    if (years.size === 0) { years.add(String(new Date().getFullYear())); }
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [data, sheetData]);
 
-          const availableMonths = useMemo(() => {
-            if (selectedYear === 'all') return [];
-            const months = new Set();
-            data.forEach(item => { if (item.date && item.date.startsWith(selectedYear)) months.add(item.date.substring(0, 7)); });
-            return Array.from(months).sort((a, b) => b.localeCompare(a));
-          }, [data, selectedYear]);
+  const availableMonths = useMemo(() => {
+    if (selectedYear === 'all') return [];
+    const months = new Set();
+    data.forEach(item => { if (item.date && item.date.startsWith(selectedYear)) months.add(item.date.substring(0, 7)); });
+    return Array.from(months).sort((a, b) => b.localeCompare(a));
+  }, [data, selectedYear]);
 
-          const filteredData = useMemo(() => {
-            let filtered = data;
-            if (selectedYear !== 'all') filtered = filtered.filter(item => item.date && item.date.startsWith(selectedYear));
-            if (selectedMonth !== 'all') filtered = filtered.filter(item => item.date && item.date.startsWith(selectedMonth));
-            if (poCodeFilter === '4M') filtered = filtered.filter(item => item.poNumber && item.poNumber.toUpperCase().includes('4M'));
-            else if (poCodeFilter === '4T') filtered = filtered.filter(item => item.poNumber && item.poNumber.toUpperCase().includes('4T'));
-            return filtered;
-          }, [data, selectedYear, selectedMonth, poCodeFilter]);
+  const filteredData = useMemo(() => {
+    let filtered = data;
+    if (selectedYear !== 'all') filtered = filtered.filter(item => item.date && item.date.startsWith(selectedYear));
+    if (selectedMonth !== 'all') filtered = filtered.filter(item => item.date && item.date.startsWith(selectedMonth));
+    if (poCodeFilter === '4M') filtered = filtered.filter(item => item.poNumber && item.poNumber.toUpperCase().includes('4M'));
+    else if (poCodeFilter === '4T') filtered = filtered.filter(item => item.poNumber && item.poNumber.toUpperCase().includes('4T'));
+    return filtered;
+  }, [data, selectedYear, selectedMonth, poCodeFilter]);
 
-          const processedData = useMemo(() => {
-            return filteredData.map(item => {
-              const calculatedBids = item.bids.map(bid => ({ ...bid, totalPrice: bid.price * item.qty }));
-              return { ...item, calculatedBids };
-            });
-          }, [filteredData]);
+  const processedData = useMemo(() => {
+    return filteredData.map(item => {
+      const calculatedBids = item.bids.map(bid => ({ ...bid, totalPrice: bid.price * item.qty }));
+      return { ...item, calculatedBids };
+    });
+  }, [filteredData]);
 
-          const projectSummaryData = useMemo(() => {
-            const grouped = {};
-            processedData.forEach(item => {
-              const pName = item.projectName || 'Tanpa Nama Project';
-              const reqNum = item.reqNumber || 'NO-REQ';
-              const key = reqNum + '-' + pName;
+  const projectSummaryData = useMemo(() => {
+    const grouped = {};
+    processedData.forEach(item => {
+      const pName = item.projectName || 'Tanpa Nama Project';
+      const reqNum = item.reqNumber || 'NO-REQ';
+      const key = reqNum + '-' + pName;
 
-              if (!grouped[key]) {
-                grouped[key] = { id: key, reqNumber: item.reqNumber || '-', projectName: pName, poNumber: item.poNumber || '-', date: item.date, timestamp: item.timestamp || parseInt(item.id) || 0, itemCount: 0, suppliers: new Map() };
-              } else {
-                const itemTime = item.timestamp || parseInt(item.id) || 0;
-                if (itemTime > grouped[key].timestamp) grouped[key].timestamp = itemTime;
-              }
-              
-              grouped[key].itemCount += 1;
-              if (item.poNumber && item.poNumber !== '-') grouped[key].poNumber = item.poNumber;
-              
-              item.calculatedBids.forEach(bid => {
-                  if (bid.totalPrice > 0) {
-                      const currentTotal = grouped[key].suppliers.get(bid.supplier) || 0;
-                      grouped[key].suppliers.set(bid.supplier, currentTotal + bid.totalPrice);
-                  }
-              });
-            });
+      if (!grouped[key]) {
+        grouped[key] = { id: key, reqNumber: item.reqNumber || '-', projectName: pName, poNumber: item.poNumber || '-', date: item.date, timestamp: item.timestamp || parseInt(item.id) || 0, itemCount: 0, suppliers: new Map() };
+      } else {
+        const itemTime = item.timestamp || parseInt(item.id) || 0;
+        if (itemTime > grouped[key].timestamp) grouped[key].timestamp = itemTime;
+      }
+      
+      grouped[key].itemCount += 1;
+      if (item.poNumber && item.poNumber !== '-') grouped[key].poNumber = item.poNumber;
+      
+      item.calculatedBids.forEach(bid => {
+          if (bid.totalPrice > 0) {
+              const currentTotal = grouped[key].suppliers.get(bid.supplier) || 0;
+              grouped[key].suppliers.set(bid.supplier, currentTotal + bid.totalPrice);
+          }
+      });
+    });
 
-            return Object.values(grouped).map(proj => {
-              let supplierList = Array.from(proj.suppliers.entries()).map(([name, totalValue]) => ({ name, totalValue })).sort((a, b) => a.totalValue - b.totalValue);
-              const grandWinner = supplierList.length > 0 ? supplierList[0].name : '-';
-              const grandWinnerPrice = supplierList.length > 0 ? supplierList[0].totalValue : 0;
-              let baselinePrice = 0, totalSavingCost = 0, savingPercentage = 0;
-              
-              if (supplierList.length > 1) {
-                  const losingBids = supplierList.slice(1);
-                  const sumLosingBids = losingBids.reduce((sum, bid) => sum + bid.totalValue, 0);
-                  baselinePrice = sumLosingBids / losingBids.length;
-                  totalSavingCost = baselinePrice - grandWinnerPrice;
-                  savingPercentage = ((totalSavingCost / baselinePrice) * 100).toFixed(2);
-              } else { baselinePrice = grandWinnerPrice; }
+    return Object.values(grouped).map(proj => {
+      let supplierList = Array.from(proj.suppliers.entries()).map(([name, totalValue]) => ({ name, totalValue })).sort((a, b) => a.totalValue - b.totalValue);
+      const grandWinner = supplierList.length > 0 ? supplierList[0].name : '-';
+      const grandWinnerPrice = supplierList.length > 0 ? supplierList[0].totalValue : 0;
+      let baselinePrice = 0, totalSavingCost = 0, savingPercentage = 0;
+      
+      if (supplierList.length > 1) {
+          const losingBids = supplierList.slice(1);
+          const sumLosingBids = losingBids.reduce((sum, bid) => sum + bid.totalValue, 0);
+          baselinePrice = sumLosingBids / losingBids.length;
+          totalSavingCost = baselinePrice - grandWinnerPrice;
+          savingPercentage = ((totalSavingCost / baselinePrice) * 100).toFixed(2);
+      } else { baselinePrice = grandWinnerPrice; }
 
-              return { ...proj, supplierRanks: supplierList, grandWinner, totalSavingCost, savingPercentage, baselinePrice };
-            }).sort((a, b) => {
-                 const dateA = new Date(a.date).getTime();
-                 const dateB = new Date(b.date).getTime();
-                 if (dateB === dateA) return (b.timestamp || 0) - (a.timestamp || 0);
-                 return dateB - dateA;
-            });
-          }, [processedData]);
+      return { ...proj, supplierRanks: supplierList, grandWinner, totalSavingCost, savingPercentage, baselinePrice };
+    }).sort((a, b) => {
+         const dateA = new Date(a.date).getTime();
+         const dateB = new Date(b.date).getTime();
+         if (dateB === dateA) return (b.timestamp || 0) - (a.timestamp || 0);
+         return dateB - dateA;
+    });
+  }, [processedData]);
 
-          const filteredSheetData = useMemo(() => {
-             let filtered = sheetData || [];
-             if (selectedYear !== 'all') filtered = filtered.filter(item => String(item.year).trim() === String(selectedYear).trim());
-             if (selectedMonth !== 'all') {
-                 const monthParts = selectedMonth.split('-');
-                 if (monthParts.length > 1) {
-                     const monthNum = parseInt(monthParts[1], 10);
-                     const monthNames = { 
-                         1: ['jan'], 2: ['feb'], 3: ['mar'], 4: ['apr'], 5: ['mei', 'may'], 6: ['jun'], 
-                         7: ['jul'], 8: ['agu', 'aug', '8', '08'], 9: ['sep'], 10: ['okt', 'oct', '10'], 11: ['nov', 'nop', '11'], 12: ['des', 'dec', '12'] 
-                     };
-                     filtered = filtered.filter(item => {
-                         if (!item.month) return false;
-                         const itemMonthStr = String(item.month).toLowerCase().trim();
-                         const targetNames = monthNames[monthNum] || [];
-                         return targetNames.some(name => itemMonthStr.includes(name));
-                     });
-                 }
-             }
-             if (poCodeFilter !== 'all') {
-                 filtered = filtered.filter(item => String(item.source).toUpperCase().trim() === String(poCodeFilter).toUpperCase().trim());
-             }
-             return filtered;
-          }, [sheetData, selectedYear, selectedMonth, poCodeFilter]);
-
-          const mirroredTotalSpend = useMemo(() => {
-             return filteredSheetData.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
-          }, [filteredSheetData]);
-
-          const totalSavingCost = projectSummaryData.reduce((acc, curr) => acc + curr.totalSavingCost, 0);
-          const baselinePriceCalc = mirroredTotalSpend + totalSavingCost;
-          const overallSavingPercentage = baselinePriceCalc > 0 ? ((totalSavingCost / baselinePriceCalc) * 100).toFixed(2) : 0;
-
-          // Hiding total saving cost and baselines when data is empty
-          const spendVsSavingData = useMemo(() => {
-              if (data.length === 0) {
-                  return [{ name: 'Total Pengeluaran', value: mirroredTotalSpend }];
-              }
-              return [
-                  { name: 'Total Pengeluaran', value: mirroredTotalSpend },
-                  { name: 'Total Saving Cost', value: totalSavingCost }
-              ];
-          }, [mirroredTotalSpend, totalSavingCost, data.length]);
-          
-          const totalPieValue = mirroredTotalSpend + totalSavingCost;
-
-          const paretoData = useMemo(() => {
-             const supplierSpend = {};
-             filteredSheetData.forEach(item => { if(item.vendor && item.vendor !== 'Tanpa Item') supplierSpend[item.vendor] = (supplierSpend[item.vendor] || 0) + (Number(item.total) || 0); });
-             const sorted = Object.keys(supplierSpend).map(key => ({ name: key, spend: supplierSpend[key] })).sort((a, b) => b.spend - a.spend);
-             const totalAllSpend = sorted.reduce((sum, item) => sum + item.spend, 0);
-             let currentSum = 0;
-             return sorted.slice(0, 10).map(item => {
-                 currentSum += item.spend;
-                 return { ...item, cumulativePercentage: totalAllSpend > 0 ? Number(((currentSum / totalAllSpend) * 100).toFixed(2)) : 0 };
+  const filteredSheetData = useMemo(() => {
+     let filtered = sheetData || [];
+     
+     if (selectedYear !== 'all') {
+         filtered = filtered.filter(item => String(item.year).trim() === String(selectedYear).trim());
+     }
+     
+     if (selectedMonth !== 'all') {
+         const monthParts = selectedMonth.split('-');
+         if (monthParts.length > 1) {
+             const monthNum = parseInt(monthParts[1], 10);
+             const monthNames = { 
+                 1: ['jan'], 2: ['feb'], 3: ['mar'], 4: ['apr'], 5: ['mei', 'may'], 6: ['jun'], 
+                 7: ['jul'], 8: ['agu', 'aug', '8', '08'], 9: ['sep'], 10: ['okt', 'oct', '10'], 11: ['nov', 'nop', '11'], 12: ['des', 'dec', '12'] 
+             };
+             
+             filtered = filtered.filter(item => {
+                 if (!item.month) return false;
+                 const itemMonthStr = String(item.month).toLowerCase().trim();
+                 const targetNames = monthNames[monthNum] || [];
+                 return targetNames.some(name => itemMonthStr.includes(name));
              });
-          }, [filteredSheetData]);
+         }
+     }
+     
+     if (poCodeFilter !== 'all') {
+         filtered = filtered.filter(item => String(item.source).toUpperCase().trim() === String(poCodeFilter).toUpperCase().trim());
+     }
+     
+     return filtered;
+  }, [sheetData, selectedYear, selectedMonth, poCodeFilter]);
 
-          const savingParetoData = useMemo(() => {
-             const supplierSavings = {};
-             projectSummaryData.forEach(proj => {
-                 if (proj.grandWinner !== '-' && proj.totalSavingCost > 0) supplierSavings[proj.grandWinner] = (supplierSavings[proj.grandWinner] || 0) + proj.totalSavingCost;
-             });
-             const sorted = Object.keys(supplierSavings).map(key => ({ name: key, saving: supplierSavings[key] })).sort((a, b) => b.saving - a.saving);
-             const totalAllSaving = sorted.reduce((sum, item) => sum + item.saving, 0);
-             let currentSum = 0;
-             return sorted.slice(0, 10).map(item => {
-                 currentSum += item.saving;
-                 return { ...item, cumulativePercentage: totalAllSaving > 0 ? Number(((currentSum / totalAllSaving) * 100).toFixed(2)) : 0 };
-             });
-          }, [projectSummaryData]);
+  const mirroredTotalSpend = useMemo(() => {
+     return filteredSheetData.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
+  }, [filteredSheetData]);
 
-          const filteredProjectSummaryData = useMemo(() => {
-            let result = [...projectSummaryData];
-            if (dashboardFilters.reqNumber.trim()) result = result.filter(proj => (proj.reqNumber || '').toLowerCase().includes(dashboardFilters.reqNumber.toLowerCase()));
-            if (dashboardFilters.project.trim()) result = result.filter(proj => (proj.projectName || '').toLowerCase().includes(dashboardFilters.project.toLowerCase()));
-            if (dashboardFilters.date.trim()) result = result.filter(proj => formatDateDisplay(proj.date).toLowerCase().includes(dashboardFilters.date.toLowerCase()) || (proj.date || '').includes(dashboardFilters.date));
-            if (dashboardFilters.poNumber.trim()) result = result.filter(proj => (proj.poNumber || '').toLowerCase().includes(dashboardFilters.poNumber.toLowerCase()));
-            if (dashboardFilters.vendor.trim()) result = result.filter(proj => proj.supplierRanks.some(s => s.name.toLowerCase().includes(dashboardFilters.vendor.toLowerCase())) || (proj.grandWinner || '').toLowerCase().includes(dashboardFilters.vendor.toLowerCase()));
-            if (savingSortOrder === 'desc') result.sort((a, b) => b.totalSavingCost === a.totalSavingCost ? new Date(b.date).getTime() - new Date(a.date).getTime() : b.totalSavingCost - a.totalSavingCost);
-            else if (savingSortOrder === 'asc') result.sort((a, b) => a.totalSavingCost === b.totalSavingCost ? new Date(b.date).getTime() - new Date(a.date).getTime() : a.totalSavingCost - b.totalSavingCost);
-            return result;
-          }, [projectSummaryData, dashboardFilters, savingSortOrder]);
+  const totalSavingCost = projectSummaryData.reduce((acc, curr) => acc + curr.totalSavingCost, 0);
+  const baselinePriceCalc = mirroredTotalSpend + totalSavingCost;
+  const overallSavingPercentage = baselinePriceCalc > 0 ? ((totalSavingCost / baselinePriceCalc) * 100).toFixed(2) : 0;
 
-          const ITEMS_PER_PAGE = 10;
-          const paginatedProjects = filteredProjectSummaryData.slice((historyCurrentPage - 1) * ITEMS_PER_PAGE, historyCurrentPage * ITEMS_PER_PAGE);
-          const totalPages = Math.ceil(filteredProjectSummaryData.length / ITEMS_PER_PAGE);
-          
-          useEffect(() => { setHistoryCurrentPage(1); }, [dashboardFilters]);
+  const spendVsSavingData = useMemo(() => {
+      if (data.length === 0) {
+          return [{ name: 'Total Pengeluaran', value: mirroredTotalSpend }];
+      }
+      return [
+          { name: 'Total Pengeluaran', value: mirroredTotalSpend },
+          { name: 'Total Saving Cost', value: totalSavingCost }
+      ];
+  }, [mirroredTotalSpend, totalSavingCost, data.length]);
+  
+  const totalPieValue = mirroredTotalSpend + totalSavingCost;
 
-          const handleRefresh = () => {
-            setIsRefreshing(true);
-            setTimeout(() => setIsRefreshing(false), 800);
-          };
+  const paretoData = useMemo(() => {
+     const supplierSpend = {};
+     filteredSheetData.forEach(item => { if(item.vendor && item.vendor !== 'Tanpa Item') supplierSpend[item.vendor] = (supplierSpend[item.vendor] || 0) + (Number(item.total) || 0); });
+     const sorted = Object.keys(supplierSpend).map(key => ({ name: key, spend: supplierSpend[key] })).sort((a, b) => b.spend - a.spend);
+     const totalAllSpend = sorted.reduce((sum, item) => sum + item.spend, 0);
+     let currentSum = 0;
+     return sorted.slice(0, 10).map(item => {
+         currentSum += item.spend;
+         return { ...item, cumulativePercentage: totalAllSpend > 0 ? Number(((currentSum / totalAllSpend) * 100).toFixed(2)) : 0 };
+     });
+  }, [filteredSheetData]);
 
-          return (
-            <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
-              
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-5 rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Summary Dashboard</h1>
-                  <p className="text-sm text-slate-500 font-medium mt-0.5">Analisis Komparasi Harga & Saving Cost</p>
-                </div>
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                  <select value={poCodeFilter} onChange={(e) => setPoCodeFilter(e.target.value)} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat">
-                    <option value="all">Semua Kode PO</option>
-                    <option value="4M">PO Kode 4M</option>
-                    <option value="4T">PO Kode 4T</option>
-                  </select>
-                  <select value={selectedYear} onChange={(e) => { setSelectedYear(e.target.value); setSelectedMonth('all'); }} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat">
-                    <option value="all">Semua Tahun</option>
-                    {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                  <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} disabled={selectedYear === 'all'} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 disabled:opacity-50 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat">
-                    <option value="all">{selectedYear === 'all' ? 'Pilih Tahun Dahulu' : 'Semua Bulan'}</option>
-                    {availableMonths.map(m => <option key={m} value={m}>{formatMonthDisplay(m)}</option>)}
-                  </select>
-                </div>
-              </div>
+  const savingParetoData = useMemo(() => {
+     const supplierSavings = {};
+     projectSummaryData.forEach(proj => {
+         if (proj.grandWinner !== '-' && proj.totalSavingCost > 0) supplierSavings[proj.grandWinner] = (supplierSavings[proj.grandWinner] || 0) + proj.totalSavingCost;
+     });
+     const sorted = Object.keys(supplierSavings).map(key => ({ name: key, saving: supplierSavings[key] })).sort((a, b) => b.saving - a.saving);
+     const totalAllSaving = sorted.reduce((sum, item) => sum + item.saving, 0);
+     let currentSum = 0;
+     return sorted.slice(0, 10).map(item => {
+         currentSum += item.saving;
+         return { ...item, cumulativePercentage: totalAllSaving > 0 ? Number(((currentSum / totalAllSaving) * 100).toFixed(2)) : 0 };
+     });
+  }, [projectSummaryData]);
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-blue-200 transition-colors flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><DollarSign className="w-24 h-24 text-blue-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><DollarSign className="w-4 h-4 mr-1.5" /> Total Pengeluaran</div>
-                    <div className="text-2xl lg:text-3xl font-extrabold text-slate-800 tracking-tight">{formatCurrency(mirroredTotalSpend)}</div>
-                    <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Sumber: Google Sheets (Live)</div>
-                  </div>
-                </div>
-                
-                {/* Hiding values logic added below */}
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-slate-300 transition-colors flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Layers className="w-24 h-24 text-slate-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Layers className="w-4 h-4 mr-1.5" /> Harga Baseline</div>
-                    <div className="text-2xl lg:text-3xl font-extrabold text-slate-700 tracking-tight">{data.length > 0 ? formatCurrency(baselinePriceCalc) : '-'}</div>
-                    <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Estimasi Tanpa Negosiasi</div>
-                  </div>
-                </div>
+  const filteredProjectSummaryData = useMemo(() => {
+    let result = [...projectSummaryData];
+    if (dashboardFilters.reqNumber.trim()) result = result.filter(proj => (proj.reqNumber || '').toLowerCase().includes(dashboardFilters.reqNumber.toLowerCase()));
+    if (dashboardFilters.project.trim()) result = result.filter(proj => (proj.projectName || '').toLowerCase().includes(dashboardFilters.project.toLowerCase()));
+    if (dashboardFilters.date.trim()) result = result.filter(proj => formatDateDisplay(proj.date).toLowerCase().includes(dashboardFilters.date.toLowerCase()) || (proj.date || '').includes(dashboardFilters.date));
+    if (dashboardFilters.poNumber.trim()) result = result.filter(proj => (proj.poNumber || '').toLowerCase().includes(dashboardFilters.poNumber.toLowerCase()));
+    if (dashboardFilters.vendor.trim()) result = result.filter(proj => proj.supplierRanks.some(s => s.name.toLowerCase().includes(dashboardFilters.vendor.toLowerCase())) || (proj.grandWinner || '').toLowerCase().includes(dashboardFilters.vendor.toLowerCase()));
+    if (savingSortOrder === 'desc') result.sort((a, b) => b.totalSavingCost === a.totalSavingCost ? new Date(b.date).getTime() - new Date(a.date).getTime() : b.totalSavingCost - a.totalSavingCost);
+    else if (savingSortOrder === 'asc') result.sort((a, b) => a.totalSavingCost === b.totalSavingCost ? new Date(b.date).getTime() - new Date(a.date).getTime() : a.totalSavingCost - b.totalSavingCost);
+    return result;
+  }, [projectSummaryData, dashboardFilters, savingSortOrder]);
 
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-emerald-200 transition-colors flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingDown className="w-24 h-24 text-emerald-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><TrendingDown className="w-4 h-4 mr-1.5" /> Total Saving Cost</div>
-                    <div className="text-2xl lg:text-3xl font-extrabold text-emerald-600 tracking-tight">{data.length > 0 ? formatCurrency(totalSavingCost) : '-'}</div>
-                    <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Penghematan Aktual</div>
-                  </div>
-                </div>
+  const ITEMS_PER_PAGE = 10;
+  const paginatedProjects = filteredProjectSummaryData.slice((historyCurrentPage - 1) * ITEMS_PER_PAGE, historyCurrentPage * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProjectSummaryData.length / ITEMS_PER_PAGE);
+  
+  // Re-adjust page when search filter changes
+  useEffect(() => { setHistoryCurrentPage(1); }, [dashboardFilters]);
 
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-purple-200 transition-colors flex flex-col justify-between sm:col-span-2 md:col-span-3 lg:col-span-1">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Trophy className="w-24 h-24 text-purple-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full">
-                    <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Trophy className="w-4 h-4 mr-1.5" /> Persentase Saving</div>
-                    <div className="text-3xl lg:text-4xl font-extrabold text-purple-600 tracking-tight">{data.length > 0 ? `${overallSavingPercentage}%` : '-'}</div>
-                    <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-wide">Persentase Saving = (Total Saving Cost / Harga Baseline) * 100%</div>
-                  </div>
-                </div>
-              </div>
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 800);
+  };
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
-                  <div className="mb-6">
-                    <h2 className="text-base font-bold text-slate-800 tracking-tight">Top 10 Pengeluaran per Vendor</h2>
-                    <p className="text-xs text-slate-500 mt-1">Distribusi vendor penyerap anggaran terbesar (Berdasarkan Google Sheets)</p>
-                  </div>
-                  <div className="h-[320px]">
-                    {paretoData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={paretoData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
-                          <YAxis yAxisId="left" width={75} tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
-                          <YAxis yAxisId="right" orientation="right" width={40} tickFormatter={(value) => `${value}%`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
-                          <RechartsTooltip formatter={(value, name) => { if (name === 'spend') return [formatCurrency(value), 'Total Pengeluaran']; if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; return value; }} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}}/>
-                          <Bar yAxisId="left" dataKey="spend" fill="#2563eb" shape={(props) => <Custom3DBar {...props} />} maxBarSize={50} animationDuration={1000} />
-                          <Line yAxisId="right" type="monotone" dataKey="cumulativePercentage" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: '#f59e0b', strokeWidth: 2, stroke: '#fff' }} activeDot={{r: 6}} animationDuration={1000}/>
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    ) : <div className="flex h-full items-center justify-center text-slate-400 text-sm font-medium">Belum ada data</div>}
-                  </div>
-                </div>
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-5 rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Summary Dashboard</h1>
+          <p className="text-sm text-slate-500 font-medium mt-0.5">Analisis Komparasi Harga & Saving Cost</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <select value={poCodeFilter} onChange={(e) => setPoCodeFilter(e.target.value)} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat">
+            <option value="all">Semua Kode PO</option>
+            <option value="4M">PO Kode 4M</option>
+            <option value="4T">PO Kode 4T</option>
+          </select>
+          <select value={selectedYear} onChange={(e) => { setSelectedYear(e.target.value); setSelectedMonth('all'); }} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat">
+            <option value="all">Semua Tahun</option>
+            {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} disabled={selectedYear === 'all'} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 disabled:opacity-50 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat">
+            <option value="all">{selectedYear === 'all' ? 'Pilih Tahun Dahulu' : 'Semua Bulan'}</option>
+            {availableMonths.map(m => <option key={m} value={m}>{formatMonthDisplay(m)}</option>)}
+          </select>
+        </div>
+      </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 flex flex-col">
-                  <div className="mb-4">
-                    <h2 className="text-base font-bold text-slate-800 tracking-tight">Komposisi Anggaran</h2>
-                    <p className="text-xs text-slate-500 mt-1">Rasio Pengeluaran vs Saving</p>
-                  </div>
-                  <div className="flex-1 flex justify-center items-center h-48">
-                    {totalPieValue > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <defs>
-                              <filter id="3d-pie-effect-dash" x="-20%" y="-20%" width="140%" height="140%">
-                                  <feDropShadow dx="2" dy="5" stdDeviation="4" floodColor="#0f172a" floodOpacity="0.3" />
-                              </filter>
-                          </defs>
-                          <Pie data={spendVsSavingData} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={2} dataKey="value" stroke="none">
-                            {spendVsSavingData.map((entry, index) => <Cell key={`cell-${index}`} fill={SPEND_SAVING_COLORS[index % SPEND_SAVING_COLORS.length]} filter="url(#3d-pie-effect-dash)" />)}
-                          </Pie>
-                          <RechartsTooltip formatter={(value) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : <div className="text-slate-400 text-sm font-medium">Belum ada data</div>}
-                  </div>
-                  {totalPieValue > 0 && (
-                     <div className="mt-4 space-y-3 pt-4 border-t border-slate-100">
-                        {spendVsSavingData.map((item, index) => {
-                           const percent = totalPieValue > 0 ? ((item.value / totalPieValue) * 100).toFixed(1) : 0;
-                           return (
-                             <div key={item.name} className="flex items-center justify-between">
-                                <div className="flex items-center"><div className="w-3 h-3 rounded mr-2" style={{ backgroundColor: SPEND_SAVING_COLORS[index] }}></div><span className="text-sm text-slate-600 font-medium">{item.name}</span></div>
-                                <div className="text-right"><div className="text-sm font-bold text-slate-800 tracking-tight">{formatCurrency(item.value)}</div><div className="text-[11px] font-semibold" style={{ color: SPEND_SAVING_COLORS[index] }}>{percent}%</div></div>
-                             </div>
-                           )
-                        })}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-blue-200 transition-colors flex flex-col justify-between">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><DollarSign className="w-24 h-24 text-blue-600" /></div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><DollarSign className="w-4 h-4 mr-1.5" /> Total Pengeluaran</div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-slate-800 tracking-tight">{formatCurrency(mirroredTotalSpend)}</div>
+            <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Sumber: Google Sheets (Live)</div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-slate-300 transition-colors flex flex-col justify-between">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Layers className="w-24 h-24 text-slate-600" /></div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Layers className="w-4 h-4 mr-1.5" /> Harga Baseline</div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-slate-700 tracking-tight">{data.length > 0 ? formatCurrency(baselinePriceCalc) : '-'}</div>
+            <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Estimasi Tanpa Negosiasi</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-emerald-200 transition-colors flex flex-col justify-between">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingDown className="w-24 h-24 text-emerald-600" /></div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><TrendingDown className="w-4 h-4 mr-1.5" /> Total Saving Cost</div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-emerald-600 tracking-tight">{data.length > 0 ? formatCurrency(totalSavingCost) : '-'}</div>
+            <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Penghematan Aktual</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-purple-200 transition-colors flex flex-col justify-between sm:col-span-2 md:col-span-3 lg:col-span-1">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Trophy className="w-24 h-24 text-purple-600" /></div>
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Trophy className="w-4 h-4 mr-1.5" /> Persentase Saving</div>
+            <div className="text-3xl lg:text-4xl font-extrabold text-purple-600 tracking-tight">{data.length > 0 ? `${overallSavingPercentage}%` : '-'}</div>
+            <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-wide">Persentase Saving = (Total Saving Cost / Harga Baseline) * 100%</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
+          <div className="mb-6">
+            <h2 className="text-base font-bold text-slate-800 tracking-tight">Top 10 Pengeluaran per Vendor</h2>
+            <p className="text-xs text-slate-500 mt-1">Distribusi vendor penyerap anggaran terbesar (Berdasarkan Google Sheets)</p>
+          </div>
+          <div className="h-[320px]">
+            {paretoData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={paretoData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
+                  <YAxis yAxisId="left" width={75} tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
+                  <YAxis yAxisId="right" orientation="right" width={40} tickFormatter={(value) => `${value}%`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
+                  <RechartsTooltip formatter={(value, name) => { if (name === 'spend') return [formatCurrency(value), 'Total Pengeluaran']; if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; return value; }} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}}/>
+                  <Bar yAxisId="left" dataKey="spend" fill="#2563eb" shape={(props) => <Custom3DBar {...props} />} maxBarSize={50} animationDuration={1000} />
+                  <Line yAxisId="right" type="monotone" dataKey="cumulativePercentage" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: '#f59e0b', strokeWidth: 2, stroke: '#fff' }} activeDot={{r: 6}} animationDuration={1000}/>
+                </ComposedChart>
+              </ResponsiveContainer>
+            ) : <div className="flex h-full items-center justify-center text-slate-400 text-sm font-medium">Belum ada data</div>}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 flex flex-col">
+          <div className="mb-4">
+            <h2 className="text-base font-bold text-slate-800 tracking-tight">Komposisi Anggaran</h2>
+            <p className="text-xs text-slate-500 mt-1">Rasio Pengeluaran vs Saving</p>
+          </div>
+          <div className="flex-1 flex justify-center items-center h-48">
+            {totalPieValue > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <defs>
+                      <filter id="3d-pie-effect-dash" x="-20%" y="-20%" width="140%" height="140%">
+                          <feDropShadow dx="2" dy="5" stdDeviation="4" floodColor="#0f172a" floodOpacity="0.3" />
+                      </filter>
+                  </defs>
+                  <Pie data={spendVsSavingData} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={2} dataKey="value" stroke="none">
+                    {spendVsSavingData.map((entry, index) => <Cell key={`cell-${index}`} fill={SPEND_SAVING_COLORS[index % SPEND_SAVING_COLORS.length]} filter="url(#3d-pie-effect-dash)" />)}
+                  </Pie>
+                  <RechartsTooltip formatter={(value) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
+                </PieChart>
+              </ResponsiveContainer>
+            ) : <div className="text-slate-400 text-sm font-medium">Belum ada data</div>}
+          </div>
+          {totalPieValue > 0 && (
+             <div className="mt-4 space-y-3 pt-4 border-t border-slate-100">
+                {spendVsSavingData.map((item, index) => {
+                   const percent = totalPieValue > 0 ? ((item.value / totalPieValue) * 100).toFixed(1) : 0;
+                   return (
+                     <div key={item.name} className="flex items-center justify-between">
+                        <div className="flex items-center"><div className="w-3 h-3 rounded mr-2" style={{ backgroundColor: SPEND_SAVING_COLORS[index] }}></div><span className="text-sm text-slate-600 font-medium">{item.name}</span></div>
+                        <div className="text-right"><div className="text-sm font-bold text-slate-800 tracking-tight">{formatCurrency(item.value)}</div><div className="text-[11px] font-semibold" style={{ color: SPEND_SAVING_COLORS[index] }}>{percent}%</div></div>
                      </div>
-                  )}
-                </div>
-              </div>
+                   )
+                })}
+             </div>
+          )}
+        </div>
+      </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
-                <div className="mb-6">
-                  <h2 className="text-base font-bold text-slate-800 tracking-tight">Top 10 Saving Cost per Vendor</h2>
-                  <p className="text-xs text-slate-500 mt-1">Penyumbang penghematan terbesar berdasarkan filter aktif.</p>
-                </div>
-                <div className="h-[320px]">
-                  {savingParetoData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={savingParetoData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
-                        <YAxis yAxisId="left" width={75} tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
-                        <YAxis yAxisId="right" orientation="right" width={40} tickFormatter={(value) => `${value}%`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
-                        <RechartsTooltip formatter={(value, name) => { if (name === 'saving') return [formatCurrency(value), 'Total Saving Cost']; if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; return value; }} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}}/>
-                        <Bar yAxisId="left" dataKey="saving" fill="#10b981" shape={(props) => <Custom3DBar {...props} />} maxBarSize={50} animationDuration={1000} />
-                        <Line yAxisId="right" type="monotone" dataKey="cumulativePercentage" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{r: 6}} animationDuration={1000} />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  ) : <div className="flex h-full items-center justify-center text-slate-400 text-sm font-medium">Tidak ada data saving</div>}
-                </div>
-              </div>
+      <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-slate-800 tracking-tight">Top 10 Saving Cost per Vendor</h2>
+          <p className="text-xs text-slate-500 mt-1">Penyumbang penghematan terbesar berdasarkan filter aktif.</p>
+        </div>
+        <div className="h-[320px]">
+          {savingParetoData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={savingParetoData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
+                <YAxis yAxisId="left" width={75} tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
+                <YAxis yAxisId="right" orientation="right" width={40} tickFormatter={(value) => `${value}%`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
+                <RechartsTooltip formatter={(value, name) => { if (name === 'saving') return [formatCurrency(value), 'Total Saving Cost']; if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; return value; }} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}}/>
+                <Bar yAxisId="left" dataKey="saving" fill="#10b981" shape={(props) => <Custom3DBar {...props} />} maxBarSize={50} animationDuration={1000} />
+                <Line yAxisId="right" type="monotone" dataKey="cumulativePercentage" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{r: 6}} animationDuration={1000} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          ) : <div className="flex h-full items-center justify-center text-slate-400 text-sm font-medium">Tidak ada data saving</div>}
+        </div>
+      </div>
 
-              <div className="bg-white rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50/50 gap-4">
-                  <h2 className="text-base font-bold text-slate-800 tracking-tight flex items-center">
-                    <Files className="w-4 h-4 mr-2 text-blue-600"/> Riwayat Data Pekerjaan
-                  </h2>
-                  <div className="flex items-center gap-3">
-                     <button onClick={handleRefresh} disabled={isRefreshing || isLoading} className="flex items-center px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm font-bold text-[11px]">
-                         <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Data
-                     </button>
-                     {hasActiveDashboardFilters && <button type="button" onClick={() => setDashboardFilters({ reqNumber: '', project: '', date: '', poNumber: '', vendor: '' })} className="text-[11px] text-rose-600 hover:text-rose-700 font-bold px-3 py-1.5 border border-rose-200 bg-rose-50 rounded-lg transition-colors">Bersihkan Filter</button>}
-                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-white px-3 py-1.5 border border-slate-200 rounded-lg shadow-sm">Total: {filteredProjectSummaryData.length}</span>
-                  </div>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-[11px] text-slate-500 uppercase font-bold bg-white border-b border-slate-200 tracking-wider">
-                      <tr>
-                        <th className="px-5 py-4 min-w-[140px]">No. Pengajuan</th>
-                        <th className="px-5 py-4 min-w-[220px]">Informasi Project</th>
-                        <th className="px-5 py-4 min-w-[220px]">Deskripsi Item</th>
-                        <th className="px-5 py-4 min-w-[120px]">Vendor (Terbaik)</th>
-                        <th 
-                            className="px-5 py-4 text-right min-w-[150px] cursor-pointer hover:bg-slate-50 transition-colors"
-                            onClick={() => { if (savingSortOrder === 'none') setSavingSortOrder('desc'); else if (savingSortOrder === 'desc') setSavingSortOrder('asc'); else setSavingSortOrder('none'); }}
-                        >
-                            <div className="flex items-center justify-end group">
-                                <span>Saving Cost</span>
-                                <div className="ml-1.5 flex items-center justify-center p-0.5 rounded text-slate-400 group-hover:text-blue-600">
-                                   {savingSortOrder === 'none' && <ArrowUpDown className="w-3.5 h-3.5" />}
-                                   {savingSortOrder === 'desc' && <ArrowDown className="w-3.5 h-3.5 stroke-[2.5]" />}
-                                   {savingSortOrder === 'asc' && <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />}
-                                </div>
-                            </div>
-                        </th>
-                        <th className="px-5 py-4 text-center">Aksi</th>
-                      </tr>
-                      <tr className="bg-slate-50/50 border-t border-slate-100">
-                          <th className="px-3 py-2"><div className="relative"><Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5"/><input type="text" placeholder="Cari No..." className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm" value={dashboardFilters.reqNumber} onChange={e => setDashboardFilters({...dashboardFilters, reqNumber: e.target.value})} /></div></th>
-                          <th className="px-3 py-2"><div className="relative"><Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5"/><input type="text" placeholder="Cari project..." className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm" value={dashboardFilters.project} onChange={e => setDashboardFilters({...dashboardFilters, project: e.target.value})} /></div></th>
-                          <th className="px-3 py-2"></th>
-                          <th className="px-3 py-2"><div className="relative"><Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5"/><input type="text" placeholder="Cari vendor..." className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm" value={dashboardFilters.vendor} onChange={e => setDashboardFilters({...dashboardFilters, vendor: e.target.value})} /></div></th>
-                          <th className="px-3 py-2"></th>
-                          <th className="px-3 py-2"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {paginatedProjects.length > 0 ? paginatedProjects.map((row) => (
-                        <tr key={row.id} className="hover:bg-slate-50/80 transition-colors bg-white">
-                          <td className="px-5 py-4 align-top">
-                             <div className="font-mono text-[13px] font-bold text-slate-700 bg-slate-100/80 px-2 py-1 rounded border border-slate-200/60 inline-block mb-2">{row.reqNumber}</div>
-                             <div className="text-xs text-slate-500 font-medium flex items-center mt-1"><Calendar className="w-3 h-3 mr-1" />{formatDateDisplay(row.date)}</div>
-                             {row.poNumber && row.poNumber !== '-' && <div className="mt-2 flex flex-wrap gap-1">{row.poNumber.split(',').map((po, idx) => <span key={idx} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{po.trim()}</span>)}</div>}
-                          </td>
-                          <td className="px-5 py-4 align-top">
-                            <div className="font-bold text-slate-800 text-sm mb-1.5 leading-snug">{row.projectName}</div>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/50">{row.itemCount} Item</span>
-                          </td>
-                          <td className="px-5 py-4 align-top">
-                             <div className="max-h-32 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
-                                {data.filter(d => d.reqNumber === row.reqNumber && d.projectName === row.projectName).map((d, i) => (
-                                   <div key={i} className="text-xs text-slate-600 break-words whitespace-normal" title={`${d.qty} ${d.unit} - ${d.itemDescription}`}>
-                                       <strong className="text-slate-800">{d.qty} {d.unit}</strong> - {d.itemDescription}
-                                   </div>
-                                ))}
-                             </div>
-                          </td>
-                          <td className="px-5 py-4 align-top">
-                            {row.grandWinner !== '-' ? (
-                               <div className="mb-2">
-                                   <div className="text-xs font-bold text-emerald-700 mb-0.5 flex items-center"><Trophy className="w-3 h-3 mr-1 text-emerald-500" />{row.grandWinner}</div>
-                                   <div className="text-slate-900 font-extrabold text-sm tracking-tight">{formatCurrency(row.supplierRanks.find(s => s.name === row.grandWinner)?.totalValue || 0)}</div>
-                               </div>
-                            ) : <span className="text-slate-400 text-sm">-</span>}
-                          </td>
-                          <td className="px-5 py-4 text-right align-top">
-                            {row.totalSavingCost > 0 ? (
-                                <>
-                                    <div className="text-emerald-600 font-bold text-sm tracking-tight">{formatCurrency(row.totalSavingCost)}</div>
-                                    <div className="text-[10px] font-bold text-emerald-600 mt-1 uppercase bg-emerald-50 inline-block px-1.5 py-0.5 rounded border border-emerald-100">{row.savingPercentage}% Hemat</div>
-                                </>
-                            ) : <span className="text-xs text-slate-400">Tidak ada</span>}
-                          </td>
-                          <td className="px-5 py-4 text-center align-top">
-                            <div className="flex flex-col space-y-1.5 items-center">
-                                <button onClick={() => handleShowPdf(row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 hover:bg-slate-100 text-slate-600 rounded transition-colors text-xs font-bold w-full justify-center border border-transparent hover:border-slate-200"><Printer className="w-3.5 h-3.5 mr-1.5" /> Cetak</button>
-                                <button onClick={() => onEdit(row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 bg-blue-50/50 hover:bg-blue-100 text-blue-600 rounded transition-colors text-xs font-bold w-full justify-center"><Edit className="w-3.5 h-3.5 mr-1.5" /> Edit</button>
-                                <button onClick={() => setProjectToDelete({projectName: row.projectName, reqNumber: row.reqNumber})} className="flex items-center px-2 py-1.5 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded transition-colors text-xs font-bold w-full justify-center"><Trash2 className="w-3.5 h-3.5 mr-1.5" /> Hapus</button>
-                            </div>
-                          </td>
-                        </tr>
-                      )) : <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-500 bg-slate-50/50">{isLoading ? <div className="flex justify-center"><Loader2 className="w-6 h-6 text-blue-500 animate-spin" /></div> : 'Data tidak ditemukan.'}</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-                {totalPages > 1 && (
-                    <div className="px-6 py-3 border-t border-slate-100 bg-white flex items-center justify-between">
-                        <span className="text-xs text-slate-500 font-medium">Menampilkan {(historyCurrentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(historyCurrentPage * ITEMS_PER_PAGE, filteredProjectSummaryData.length)} dari {filteredProjectSummaryData.length}</span>
-                        <div className="flex items-center space-x-1.5">
-                            <button onClick={() => setHistoryCurrentPage(p => Math.max(1, p - 1))} disabled={historyCurrentPage === 1} className="p-1.5 border border-slate-200 rounded text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
-                            <span className="text-xs font-bold text-slate-700 px-2">{historyCurrentPage} / {totalPages}</span>
-                            <button onClick={() => setHistoryCurrentPage(p => Math.min(totalPages, p + 1))} disabled={historyCurrentPage === totalPages} className="p-1.5 border border-slate-200 rounded text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
+      <div className="bg-white rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 overflow-hidden">
+        <div className="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50/50 gap-4">
+          <h2 className="text-base font-bold text-slate-800 tracking-tight flex items-center">
+            <Files className="w-4 h-4 mr-2 text-blue-600"/> Riwayat Data Pekerjaan
+          </h2>
+          <div className="flex items-center gap-3">
+             <button onClick={handleRefresh} disabled={isRefreshing || isLoading} className="flex items-center px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm font-bold text-[11px]">
+                 <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Data
+             </button>
+             {hasActiveDashboardFilters && <button type="button" onClick={() => setDashboardFilters({ reqNumber: '', project: '', date: '', poNumber: '', vendor: '' })} className="text-[11px] text-rose-600 hover:text-rose-700 font-bold px-3 py-1.5 border border-rose-200 bg-rose-50 rounded-lg transition-colors">Bersihkan Filter</button>}
+             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-white px-3 py-1.5 border border-slate-200 rounded-lg shadow-sm">Total: {filteredProjectSummaryData.length}</span>
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="text-[11px] text-slate-500 uppercase font-bold bg-white border-b border-slate-200 tracking-wider">
+              <tr>
+                <th className="px-5 py-4 min-w-[140px]">No. Pengajuan</th>
+                <th className="px-5 py-4 min-w-[220px]">Informasi Project</th>
+                <th className="px-5 py-4 min-w-[220px]">Deskripsi Item</th>
+                <th className="px-5 py-4 min-w-[120px]">Vendor (Terbaik)</th>
+                <th 
+                    className="px-5 py-4 text-right min-w-[150px] cursor-pointer hover:bg-slate-50 transition-colors"
+                    onClick={() => { if (savingSortOrder === 'none') setSavingSortOrder('desc'); else if (savingSortOrder === 'desc') setSavingSortOrder('asc'); else setSavingSortOrder('none'); }}
+                >
+                    <div className="flex items-center justify-end group">
+                        <span>Saving Cost</span>
+                        <div className="ml-1.5 flex items-center justify-center p-0.5 rounded text-slate-400 group-hover:text-blue-600">
+                           {savingSortOrder === 'none' && <ArrowUpDown className="w-3.5 h-3.5" />}
+                           {savingSortOrder === 'desc' && <ArrowDown className="w-3.5 h-3.5 stroke-[2.5]" />}
+                           {savingSortOrder === 'asc' && <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />}
                         </div>
                     </div>
-                )}
-              </div>
+                </th>
+                <th className="px-5 py-4 text-center">Aksi</th>
+              </tr>
+              <tr className="bg-slate-50/50 border-t border-slate-100">
+                  <th className="px-3 py-2"><div className="relative"><Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5"/><input type="text" placeholder="Cari No..." className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm" value={dashboardFilters.reqNumber} onChange={e => setDashboardFilters({...dashboardFilters, reqNumber: e.target.value})} /></div></th>
+                  <th className="px-3 py-2"><div className="relative"><Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5"/><input type="text" placeholder="Cari project..." className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm" value={dashboardFilters.project} onChange={e => setDashboardFilters({...dashboardFilters, project: e.target.value})} /></div></th>
+                  <th className="px-3 py-2"></th>
+                  <th className="px-3 py-2"><div className="relative"><Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5"/><input type="text" placeholder="Cari vendor..." className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-slate-700 shadow-sm" value={dashboardFilters.vendor} onChange={e => setDashboardFilters({...dashboardFilters, vendor: e.target.value})} /></div></th>
+                  <th className="px-3 py-2"></th>
+                  <th className="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {paginatedProjects.length > 0 ? paginatedProjects.map((row) => (
+                <tr key={row.id} className="hover:bg-slate-50/80 transition-colors bg-white">
+                  <td className="px-5 py-4 align-top">
+                     <div className="font-mono text-[13px] font-bold text-slate-700 bg-slate-100/80 px-2 py-1 rounded border border-slate-200/60 inline-block mb-2">{row.reqNumber}</div>
+                     <div className="text-xs text-slate-500 font-medium flex items-center mt-1"><Calendar className="w-3 h-3 mr-1" />{formatDateDisplay(row.date)}</div>
+                     {row.poNumber && row.poNumber !== '-' && <div className="mt-2 flex flex-wrap gap-1">{row.poNumber.split(',').map((po, idx) => <span key={idx} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{po.trim()}</span>)}</div>}
+                  </td>
+                  <td className="px-5 py-4 align-top">
+                    <div className="font-bold text-slate-800 text-sm mb-1.5 leading-snug">{row.projectName}</div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/50">{row.itemCount} Item</span>
+                  </td>
+                  <td className="px-5 py-4 align-top">
+                     <div className="max-h-32 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+                        {data.filter(d => d.reqNumber === row.reqNumber && d.projectName === row.projectName).map((d, i) => (
+                           <div key={i} className="text-xs text-slate-600 break-words whitespace-normal" title={`${d.qty} ${d.unit} - ${d.itemDescription}`}>
+                               <strong className="text-slate-800">{d.qty} {d.unit}</strong> - {d.itemDescription}
+                           </div>
+                        ))}
+                     </div>
+                  </td>
+                  <td className="px-5 py-4 align-top">
+                    {row.grandWinner !== '-' ? (
+                       <div className="mb-2">
+                           <div className="text-xs font-bold text-emerald-700 mb-0.5 flex items-center"><Trophy className="w-3 h-3 mr-1 text-emerald-500" />{row.grandWinner}</div>
+                           <div className="text-slate-900 font-extrabold text-sm tracking-tight">{formatCurrency(row.supplierRanks.find(s => s.name === row.grandWinner)?.totalValue || 0)}</div>
+                       </div>
+                    ) : <span className="text-slate-400 text-sm">-</span>}
+                  </td>
+                  <td className="px-5 py-4 text-right align-top">
+                    {row.totalSavingCost > 0 ? (
+                        <>
+                            <div className="text-emerald-600 font-bold text-sm tracking-tight">{formatCurrency(row.totalSavingCost)}</div>
+                            <div className="text-[10px] font-bold text-emerald-600 mt-1 uppercase bg-emerald-50 inline-block px-1.5 py-0.5 rounded border border-emerald-100">{row.savingPercentage}% Hemat</div>
+                        </>
+                    ) : <span className="text-xs text-slate-400">Tidak ada</span>}
+                  </td>
+                  <td className="px-5 py-4 text-center align-top">
+                    <div className="flex flex-col space-y-1.5 items-center">
+                        <button onClick={() => handleShowPdf(row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 hover:bg-slate-100 text-slate-600 rounded transition-colors text-xs font-bold w-full justify-center border border-transparent hover:border-slate-200"><Printer className="w-3.5 h-3.5 mr-1.5" /> Cetak</button>
+                        <button onClick={() => onEdit(row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 bg-blue-50/50 hover:bg-blue-100 text-blue-600 rounded transition-colors text-xs font-bold w-full justify-center"><Edit className="w-3.5 h-3.5 mr-1.5" /> Edit</button>
+                        <button onClick={() => setProjectToDelete({projectName: row.projectName, reqNumber: row.reqNumber})} className="flex items-center px-2 py-1.5 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded transition-colors text-xs font-bold w-full justify-center"><Trash2 className="w-3.5 h-3.5 mr-1.5" /> Hapus</button>
+                    </div>
+                  </td>
+                </tr>
+              )) : <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-500 bg-slate-50/50">{isLoading ? <div className="flex justify-center"><Loader2 className="w-6 h-6 text-blue-500 animate-spin" /></div> : 'Data tidak ditemukan.'}</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        {totalPages > 1 && (
+            <div className="px-6 py-3 border-t border-slate-100 bg-white flex items-center justify-between">
+                <span className="text-xs text-slate-500 font-medium">Menampilkan {(historyCurrentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(historyCurrentPage * ITEMS_PER_PAGE, filteredProjectSummaryData.length)} dari {filteredProjectSummaryData.length}</span>
+                <div className="flex items-center space-x-1.5">
+                    <button onClick={() => setHistoryCurrentPage(p => Math.max(1, p - 1))} disabled={historyCurrentPage === 1} className="p-1.5 border border-slate-200 rounded text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
+                    <span className="text-xs font-bold text-slate-700 px-2">{historyCurrentPage} / {totalPages}</span>
+                    <button onClick={() => setHistoryCurrentPage(p => Math.min(totalPages, p + 1))} disabled={historyCurrentPage === totalPages} className="p-1.5 border border-slate-200 rounded text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
+                </div>
+            </div>
+        )}
+      </div>
 
-              {pdfData && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
-                   <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden my-8 relative flex flex-col max-h-[90vh]">
-                      <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-white sticky top-0 z-10">
-                         <h2 className="text-base font-bold text-slate-800 flex items-center"><FileText className="w-4 h-4 mr-2 text-blue-600"/> Tabulasi PDF</h2>
-                         <div className="flex space-x-2">
-                            <button onClick={handleDownloadJpg} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors">Unduh JPG</button>
-                            <button onClick={handleDownloadPdf} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Unduh PDF</button>
-                            <button onClick={() => setPdfData(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg"><X className="w-5 h-5" /></button>
-                         </div>
-                      </div>
-                      
-                      <div id="pdf-scroll-container" className="p-4 overflow-auto bg-slate-100 w-full flex-1">
-                         <div className="w-max min-w-full flex justify-center">
-                             <div className="bg-white p-8 shadow-sm text-left inline-block" id="pdf-content-area" style={{ minWidth: '297mm' }}>
-                                 <div className="flex justify-between items-start mb-6">
-                                     <div>
-                                         <h1 className="text-[#1e3a8a] text-2xl font-bold mb-4 uppercase tracking-wide">TABULASI KOMPARASI HARGA</h1>
-                                         <div className="flex flex-col space-y-1.5 text-sm font-bold text-slate-700 border-l-2 border-[#1e3a8a] pl-3">
-                                             <div className="grid grid-cols-[130px_1fr]"><span className="text-slate-500 font-semibold">Nama Project</span><span>: {pdfData.summary.projectName}</span></div>
-                                             <div className="grid grid-cols-[130px_1fr]"><span className="text-slate-500 font-semibold">No. Pengajuan</span><span>: {pdfData.summary.reqNumber}</span></div>
-                                             <div className="grid grid-cols-[130px_1fr]"><span className="text-slate-500 font-semibold">Tanggal Input</span><span>: {formatDateDisplay(pdfData.summary.date)}</span></div>
-                                         </div>
-                                     </div>
-                                     <div className="border border-slate-800 text-sm font-medium">
-                                         <div className="grid grid-cols-[120px_150px] border-b border-slate-800"><div className="p-1.5 border-r border-slate-800 text-slate-600">No. Dokumen</div><div className="p-1.5">: QF/SCM/PUR/003</div></div>
-                                         <div className="grid grid-cols-[120px_150px] border-b border-slate-800"><div className="p-1.5 border-r border-slate-800 text-slate-600">Rev. No.</div><div className="p-1.5">: 01</div></div>
-                                         <div className="grid grid-cols-[120px_150px] border-b border-slate-800"><div className="p-1.5 border-r border-slate-800 text-slate-600">Halaman</div><div className="p-1.5">: 1/1</div></div>
-                                         <div className="grid grid-cols-[120px_150px]"><div className="p-1.5 border-r border-slate-800 text-slate-600">Berlaku Tgl.</div><div className="p-1.5">: 23/07/2014</div></div>
-                                     </div>
+      {pdfData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+           <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden my-8 relative flex flex-col max-h-[90vh]">
+              <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-white sticky top-0 z-10">
+                 <h2 className="text-base font-bold text-slate-800 flex items-center"><FileText className="w-4 h-4 mr-2 text-blue-600"/> Tabulasi PDF</h2>
+                 <div className="flex space-x-2">
+                    <button onClick={handleDownloadJpg} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors">Unduh JPG</button>
+                    <button onClick={handleDownloadPdf} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Unduh PDF</button>
+                    <button onClick={() => setPdfData(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg"><X className="w-5 h-5" /></button>
+                 </div>
+              </div>
+              
+              <div id="pdf-scroll-container" className="p-4 overflow-auto bg-slate-100 w-full flex-1">
+                 <div className="w-max min-w-full flex justify-center">
+                     <div className="bg-white p-8 shadow-sm text-left inline-block" id="pdf-content-area" style={{ minWidth: '297mm' }}>
+                         <div className="flex justify-between items-start mb-6">
+                             <div>
+                                 <h1 className="text-[#1e3a8a] text-2xl font-bold mb-4 uppercase tracking-wide">TABULASI KOMPARASI HARGA</h1>
+                                 <div className="flex flex-col space-y-1.5 text-sm font-bold text-slate-700 border-l-2 border-[#1e3a8a] pl-3">
+                                     <div className="grid grid-cols-[130px_1fr]"><span className="text-slate-500 font-semibold">Nama Project</span><span>: {pdfData.summary.projectName}</span></div>
+                                     <div className="grid grid-cols-[130px_1fr]"><span className="text-slate-500 font-semibold">No. Pengajuan</span><span>: {pdfData.summary.reqNumber}</span></div>
+                                     <div className="grid grid-cols-[130px_1fr]"><span className="text-slate-500 font-semibold">Tanggal Input</span><span>: {formatDateDisplay(pdfData.summary.date)}</span></div>
                                  </div>
-                                 <table className="w-full border-collapse border border-[#1e3a8a] text-[11px]">
-                                     <thead>
-                                         <tr>
-                                             <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 w-8 text-center">No</th>
-                                             <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 text-left min-w-[200px]">Deskripsi Item</th>
-                                             <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 w-12 text-center">Qty</th>
-                                             <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 w-16 text-center">Satuan</th>
-                                             {pdfData.summary.supplierRanks.map(supp => (
-                                                 <th key={supp.name} colSpan={3} className="border border-white bg-[#1e3a8a] text-white p-2 uppercase text-center max-w-[250px] break-words whitespace-normal">{supp.name}</th>
-                                             ))}
-                                         </tr>
-                                         <tr>
-                                             {pdfData.summary.supplierRanks.map(supp => (
-                                                 <React.Fragment key={supp.name + '-sub'}>
-                                                     <th className="border border-white bg-[#1e3a8a] text-white p-1.5 font-medium text-[10px] text-center w-24">Harga Satuan</th>
-                                                     <th className="border border-white bg-[#1e3a8a] text-white p-1.5 font-medium text-[10px] text-center w-28">Total Harga</th>
-                                                     <th className="border border-white bg-[#1e3a8a] text-white p-1.5 font-medium text-[10px] text-center w-12">Ket</th>
+                             </div>
+                             <div className="border border-slate-800 text-sm font-medium">
+                                 <div className="grid grid-cols-[120px_150px] border-b border-slate-800"><div className="p-1.5 border-r border-slate-800 text-slate-600">No. Dokumen</div><div className="p-1.5">: QF/SCM/PUR/003</div></div>
+                                 <div className="grid grid-cols-[120px_150px] border-b border-slate-800"><div className="p-1.5 border-r border-slate-800 text-slate-600">Rev. No.</div><div className="p-1.5">: 01</div></div>
+                                 <div className="grid grid-cols-[120px_150px] border-b border-slate-800"><div className="p-1.5 border-r border-slate-800 text-slate-600">Halaman</div><div className="p-1.5">: 1/1</div></div>
+                                 <div className="grid grid-cols-[120px_150px]"><div className="p-1.5 border-r border-slate-800 text-slate-600">Berlaku Tgl.</div><div className="p-1.5">: 23/07/2014</div></div>
+                             </div>
+                         </div>
+                         <table className="w-full border-collapse border border-[#1e3a8a] text-[11px]">
+                             <thead>
+                                 <tr>
+                                     <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 w-8 text-center">No</th>
+                                     <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 text-left min-w-[200px]">Deskripsi Item</th>
+                                     <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 w-12 text-center">Qty</th>
+                                     <th rowSpan={2} className="border border-white bg-[#1e3a8a] text-white p-2 w-16 text-center">Satuan</th>
+                                     {pdfData.summary.supplierRanks.map(supp => (
+                                         <th key={supp.name} colSpan={3} className="border border-white bg-[#1e3a8a] text-white p-2 uppercase text-center max-w-[250px] break-words whitespace-normal">{supp.name}</th>
+                                     ))}
+                                 </tr>
+                                 <tr>
+                                     {pdfData.summary.supplierRanks.map(supp => (
+                                         <React.Fragment key={supp.name + '-sub'}>
+                                             <th className="border border-white bg-[#1e3a8a] text-white p-1.5 font-medium text-[10px] text-center w-24">Harga Satuan</th>
+                                             <th className="border border-white bg-[#1e3a8a] text-white p-1.5 font-medium text-[10px] text-center w-28">Total Harga</th>
+                                             <th className="border border-white bg-[#1e3a8a] text-white p-1.5 font-medium text-[10px] text-center w-12">Ket</th>
+                                         </React.Fragment>
+                                     ))}
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 {pdfData.items.map((item, idx) => (
+                                     <tr key={item.id} className="hover:bg-slate-50/50">
+                                         <td className="border border-[#1e3a8a] p-2 text-center font-medium text-slate-700">{idx + 1}</td>
+                                         <td className="border border-[#1e3a8a] p-2 text-slate-800 uppercase leading-snug break-words whitespace-normal max-w-[300px]">{item.itemDescription}</td>
+                                         <td className="border border-[#1e3a8a] p-2 text-center font-bold text-slate-800">{item.qty}</td>
+                                         <td className="border border-[#1e3a8a] p-2 text-center text-slate-600">{item.unit}</td>
+                                         {pdfData.summary.supplierRanks.map(supp => {
+                                             const bid = item.bids.find(b => b.supplier === supp.name);
+                                             return (
+                                                 <React.Fragment key={supp.name + '-val'}>
+                                                     <td className="border border-[#1e3a8a] p-2 text-right font-medium text-slate-600">{bid ? formatCurrency(bid.price) : '-'}</td>
+                                                     <td className="border border-[#1e3a8a] p-2 text-right font-bold text-slate-900">{bid ? formatCurrency(bid.price * item.qty) : '-'}</td>
+                                                     <td className="border border-[#1e3a8a] p-1.5 text-center text-[10px] text-slate-400">{bid?.note || '-'}</td>
                                                  </React.Fragment>
-                                             ))}
-                                         </tr>
-                                     </thead>
-                                     <tbody>
-                                         {pdfData.items.map((item, idx) => (
-                                             <tr key={item.id} className="hover:bg-slate-50/50">
-                                                 <td className="border border-[#1e3a8a] p-2 text-center font-medium text-slate-700">{idx + 1}</td>
-                                                 <td className="border border-[#1e3a8a] p-2 text-slate-800 uppercase leading-snug break-words whitespace-normal max-w-[300px]">{item.itemDescription}</td>
-                                                 <td className="border border-[#1e3a8a] p-2 text-center font-bold text-slate-800">{item.qty}</td>
-                                                 <td className="border border-[#1e3a8a] p-2 text-center text-slate-600">{item.unit}</td>
-                                                 {pdfData.summary.supplierRanks.map(supp => {
-                                                     const bid = item.bids.find(b => b.supplier === supp.name);
-                                                     return (
-                                                         <React.Fragment key={supp.name + '-val'}>
-                                                             <td className="border border-[#1e3a8a] p-2 text-right font-medium text-slate-600">{bid ? formatCurrency(bid.price) : '-'}</td>
-                                                             <td className="border border-[#1e3a8a] p-2 text-right font-bold text-slate-900">{bid ? formatCurrency(bid.price * item.qty) : '-'}</td>
-                                                             <td className="border border-[#1e3a8a] p-1.5 text-center text-[10px] text-slate-400">{bid?.note || '-'}</td>
-                                                        </React.Fragment>
-                                                    )
-                                                })}
-                                            </tr>
-                                        ))}
-                                        <tr className="font-bold bg-slate-50/80">
-                                            <td colSpan={4} className="border border-[#1e3a8a] p-2 text-[#1e3a8a] uppercase text-left tracking-wide">GRAND TOTAL</td>
-                                             {pdfData.summary.supplierRanks.map(supp => {
-                                                 const total = pdfData.items.reduce((sum, item) => sum + (item.bids.find(b => b.supplier === supp.name) ? item.bids.find(b => b.supplier === supp.name).price * item.qty : 0), 0);
-                                                 return (
-                                                     <React.Fragment key={supp.name + '-total'}>
-                                                         <td className="border border-[#1e3a8a] p-2"></td>
-                                                         <td className="border border-[#1e3a8a] p-2 text-right text-slate-900 font-extrabold">{formatCurrency(total)}</td>
-                                                         <td className="border border-[#1e3a8a] p-2"></td>
-                                                     </React.Fragment>
-                                                 )
-                                             })}
-                                         </tr>
-                                         <tr><td colSpan={4} className="border border-[#1e3a8a] p-2 text-slate-500 uppercase text-left text-[10px]">LEAD TIME</td>{pdfData.summary.supplierRanks.map(supp => <td key={supp.name + '-lt'} colSpan={3} className="border border-[#1e3a8a] p-2 text-center text-blue-600 font-medium">{pdfData.items[0]?.bids.find(b => b.supplier === supp.name)?.leadTime || '-'}</td>)}</tr>
-                                         <tr><td colSpan={4} className="border border-[#1e3a8a] p-2 text-slate-500 uppercase text-left text-[10px]">PEMBAYARAN</td>{pdfData.summary.supplierRanks.map(supp => <td key={supp.name + '-pay'} colSpan={3} className="border border-[#1e3a8a] p-2 text-center text-blue-600 font-medium">{pdfData.items[0]?.bids.find(b => b.supplier === supp.name)?.payment || '-'}</td>)}</tr>
-                                         <tr><td colSpan={4} className="border border-[#1e3a8a] p-2 text-slate-500 uppercase text-left text-[10px]">GARANSI</td>{pdfData.summary.supplierRanks.map(supp => <td key={supp.name + '-war'} colSpan={3} className="border border-[#1e3a8a] p-2 text-center text-blue-600 font-medium">{pdfData.items[0]?.bids.find(b => b.supplier === supp.name)?.warranty || '-'}</td>)}</tr>
+                                             )
+                                         })}
+                                     </tr>
+                                 ))}
+                                 <tr className="font-bold bg-slate-50/80">
+                                     <td colSpan={4} className="border border-[#1e3a8a] p-2 text-[#1e3a8a] uppercase text-left tracking-wide">GRAND TOTAL</td>
+                                     {pdfData.summary.supplierRanks.map(supp => {
+                                         const total = pdfData.items.reduce((sum, item) => sum + (item.bids.find(b => b.supplier === supp.name) ? item.bids.find(b => b.supplier === supp.name).price * item.qty : 0), 0);
+                                         return (
+                                             <React.Fragment key={supp.name + '-total'}>
+                                                 <td className="border border-[#1e3a8a] p-2"></td>
+                                                 <td className="border border-[#1e3a8a] p-2 text-right text-slate-900 font-extrabold">{formatCurrency(total)}</td>
+                                                 <td className="border border-[#1e3a8a] p-2"></td>
+                                             </React.Fragment>
+                                         )
+                                     })}
+                                 </tr>
+                                 <tr><td colSpan={4} className="border border-[#1e3a8a] p-2 text-slate-500 uppercase text-left text-[10px]">LEAD TIME</td>{pdfData.summary.supplierRanks.map(supp => <td key={supp.name + '-lt'} colSpan={3} className="border border-[#1e3a8a] p-2 text-center text-blue-600 font-medium">{pdfData.items[0]?.bids.find(b => b.supplier === supp.name)?.leadTime || '-'}</td>)}</tr>
+                                 <tr><td colSpan={4} className="border border-[#1e3a8a] p-2 text-slate-500 uppercase text-left text-[10px]">PEMBAYARAN</td>{pdfData.summary.supplierRanks.map(supp => <td key={supp.name + '-pay'} colSpan={3} className="border border-[#1e3a8a] p-2 text-center text-blue-600 font-medium">{pdfData.items[0]?.bids.find(b => b.supplier === supp.name)?.payment || '-'}</td>)}</tr>
+                                 <tr><td colSpan={4} className="border border-[#1e3a8a] p-2 text-slate-500 uppercase text-left text-[10px]">GARANSI</td>{pdfData.summary.supplierRanks.map(supp => <td key={supp.name + '-war'} colSpan={3} className="border border-[#1e3a8a] p-2 text-center text-blue-600 font-medium">{pdfData.items[0]?.bids.find(b => b.supplier === supp.name)?.warranty || '-'}</td>)}</tr>
                              </tbody>
                          </table>
                          
@@ -801,24 +783,35 @@
   );
 };
 
-// --- INPUT DATA VIEW ---
+/* =========================================================================
+   INPUT DATA VIEW
+   ========================================================================= */
 const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, userRole }) => {
   const [reqNumber, setReqNumber] = useState('');
   const [projectName, setProjectName] = useState('');
+  
   const [poList, setPoList] = useState([]);
   const [poInput, setPoInput] = useState('');
+  
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [supplierInput, setSupplierInput] = useState('');
   const [suppliers, setSuppliers] = useState([]);
+  
   const [supplierTerms, setSupplierTerms] = useState({});
-  const [items, setItems] = useState([{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+  const [items, setItems] = useState([
+    { id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }
+  ]);
+  
   const fileInputRef = useRef(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
+
   const [tableFilters, setTableFilters] = useState({ tanggal: '', deskripsi: '', vendor: '', po: '', harga: '' });
   const [historiPage, setHistoriPage] = useState(1);
   const [priceSortOrder, setPriceSortOrder] = useState('none');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const hasActiveFilters = Object.values(tableFilters).some(val => val !== '');
+
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [archiveYear, setArchiveYear] = useState('');
 
@@ -891,6 +884,7 @@ const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, user
     }
   }, [editData]);
 
+  // Initial sequence generator 
   useEffect(() => {
      if (!editData && !reqNumber) {
         const dateObj = new Date(); const prefix = `REQ/${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/`;
@@ -1273,10 +1267,13 @@ const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, user
   );
 };
 
-// --- G-SHEET DASHBOARD VIEW ---
+/* =========================================================================
+   LIVE DATA DASHBOARD (GOOGLE SHEETS)
+   ========================================================================= */
 const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, availableYears, fetchSheetData, persistentFilters, setPersistentFilters }) => {
   const [showLateModal, setShowLateModal] = useState(false);
 
+  // Load state filters from parent component memory
   const selectedYear = persistentFilters.year;
   const selectedMonth = persistentFilters.month;
   const selectedPoCode = persistentFilters.poCode;
@@ -1299,6 +1296,7 @@ const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, 
                  1: ['jan'], 2: ['feb'], 3: ['mar'], 4: ['apr'], 5: ['mei', 'may'], 6: ['jun'], 
                  7: ['jul'], 8: ['agu', 'aug', '8', '08'], 9: ['sep'], 10: ['okt', 'oct', '10'], 11: ['nov', 'nop', '11'], 12: ['des', 'dec', '12'] 
              };
+             
              filtered = filtered.filter(item => {
                  if (!item.month) return false;
                  const itemMonthStr = String(item.month).toLowerCase().trim();
@@ -1307,7 +1305,11 @@ const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, 
              });
          }
      }
-     if (selectedPoCode !== 'all') filtered = filtered.filter(item => String(item.source).toUpperCase().trim() === String(selectedPoCode).toUpperCase().trim());
+     
+     if (selectedPoCode !== 'all') {
+         filtered = filtered.filter(item => String(item.source).toUpperCase().trim() === String(selectedPoCode).toUpperCase().trim());
+     }
+     
      return filtered;
   }, [sheetData, selectedYear, selectedMonth, selectedPoCode]);
 
@@ -1396,6 +1398,7 @@ const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, 
         <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
+                
                 <div className="bg-white rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100 bg-white">
                         <h2 className="text-[13px] font-bold text-slate-700 tracking-wide text-center">Data Keterlambatan Kedatangan PO 4M</h2>
@@ -1447,6 +1450,21 @@ const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, 
                     <defs>
                         <filter id="3d-pie-effect" x="-20%" y="-20%" width="140%" height="140%">
                             <feDropShadow dx="2" dy="8" stdDeviation="5" floodColor="#0f172a" floodOpacity="0.4" />
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blurHighlight" />
+                            <feOffset dx="-3" dy="-3" result="offsetHighlight" />
+                            <feComposite in="SourceGraphic" in2="offsetHighlight" operator="arithmetic" k2="-1" k3="1" result="highlightDiff" />
+                            <feFlood floodColor="#ffffff" floodOpacity="0.5" />
+                            <feComposite in2="highlightDiff" operator="in" result="highlight" />
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blurShadow" />
+                            <feOffset dx="3" dy="3" result="offsetShadow" />
+                            <feComposite in="SourceGraphic" in2="offsetShadow" operator="arithmetic" k2="-1" k3="1" result="shadowDiff" />
+                            <feFlood floodColor="#000000" floodOpacity="0.3" />
+                            <feComposite in2="shadowDiff" operator="in" result="innerShadow" />
+                            <feMerge>
+                                <feMergeNode in="SourceGraphic" />
+                                <feMergeNode in="innerShadow" />
+                                <feMergeNode in="highlight" />
+                            </feMerge>
                         </filter>
                     </defs>
                     <Pie data={summaryData} cx="45%" cy="50%" innerRadius={85} outerRadius={150} paddingAngle={2} dataKey="value" stroke="none" labelLine={false} label={renderCustomizedLabel}>
@@ -1481,6 +1499,29 @@ const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, 
                 </ComposedChart>
               </ResponsiveContainer>
             ) : <div className="flex h-full items-center justify-center text-slate-400 font-medium text-sm">Tidak ada data item</div>}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 mt-6">
+          <div className="mb-6">
+             <h2 className="text-base font-bold text-slate-800 tracking-tight flex items-center"><Users className="w-5 h-5 mr-2 text-blue-500"/> Top 5 Nama Supplier</h2>
+             <p className="text-xs text-slate-500 mt-1">Supplier dengan total pembelian terbesar (Model 3D).</p>
+          </div>
+          <div className="h-[320px]">
+            {supplierParetoData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={supplierParetoData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} tickFormatter={(val) => val.length > 18 ? val.substring(0, 18) + '...' : val} />
+                  <YAxis yAxisId="left" width={75} tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}}/>
+                  <YAxis yAxisId="right" orientation="right" width={40} tickFormatter={(value) => `${value}%`} axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}}/>
+                  <RechartsTooltip formatter={(value, name) => { if (name === 'spend') return [formatCurrency(value), 'Total Pembelian']; if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; return value; }} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '10px' }} cursor={{fill: '#f8fafc'}} />
+                  <Legend wrapperStyle={{ paddingTop: '25px', fontSize: '12px', fontWeight: '600', color: '#475569' }} iconType="circle" formatter={(value) => value === 'spend' ? 'Total Pembelian' : 'Persentase Kumulatif'}/>
+                  <Bar yAxisId="left" dataKey="spend" fill="#3b82f6" shape={(props) => <Custom3DBar {...props} />} maxBarSize={55} animationDuration={1000} />
+                  <Line yAxisId="right" type="monotone" dataKey="cumulativePercentage" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4, fill: '#f43f5e', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            ) : <div className="flex h-full items-center justify-center text-slate-400 font-medium text-sm">Tidak ada data supplier</div>}
           </div>
         </div>
 
@@ -1525,7 +1566,9 @@ const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, 
   );
 };
 
-// --- DOCUMENT MANAGER VIEW ---
+/* =========================================================================
+   DOCUMENT MANAGER VIEW
+   ========================================================================= */
 const DocumentManagerView = ({ user, userRole, docType }) => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -1554,16 +1597,18 @@ const DocumentManagerView = ({ user, userRole, docType }) => {
   }
 
   useEffect(() => {
+    if (isDummyFirebase) {
+       setDocuments([]);
+       setIsLoading(false);
+       return;
+    }
     if (!user) return;
     setIsLoading(true);
     const docsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'documents');
     const unsubscribe = onSnapshot(docsRef, (snapshot) => {
       const fetchedData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })).filter(doc => doc.docType === docType);
       fetchedData.sort((a, b) => b.uploadDate - a.uploadDate); setDocuments(fetchedData); setIsLoading(false);
-    }, (error) => {
-      console.warn("Gagal memuat dokumen:", error);
-      setIsLoading(false);
-    });
+    }, () => setIsLoading(false));
     return () => unsubscribe();
   }, [user, docType]);
 
@@ -1577,6 +1622,7 @@ const DocumentManagerView = ({ user, userRole, docType }) => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    if (isDummyFirebase) return showNotification("Gunakan database asli untuk fitur dokumen.", "error");
     if (!user || userRole !== 'admin') return showNotification("Akses ditolak.", "error");
     if (!titleInput.trim() || !selectedFile) return showNotification("Isi judul & pilih file.", "error");
     setIsUploading(true);
@@ -1592,7 +1638,7 @@ const DocumentManagerView = ({ user, userRole, docType }) => {
   };
 
   const handleDelete = async (docId, docTitle) => {
-    if (!user || userRole !== 'admin') return;
+    if (isDummyFirebase || !user || userRole !== 'admin') return;
     if (window.confirm(`Hapus dokumen "${docTitle}"?`)) { await deleteDoc(doc(db, 'artifacts', safeAppId, 'public', 'data', 'documents', docId)); showNotification("Dokumen dihapus.", "success"); }
   };
 
@@ -1618,7 +1664,7 @@ const DocumentManagerView = ({ user, userRole, docType }) => {
             <div className="flex flex-col md:flex-row gap-5 items-end">
               <div className="flex-1 w-full"><label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Judul</label><input type="text" required value={titleInput} onChange={(e) => setTitleInput(e.target.value)} className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 font-medium text-sm" /></div>
               <div className="flex-1 w-full"><label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">File</label><input type="file" required ref={fileInputRef} onChange={handleFileChange} className="w-full px-3 py-2 border border-slate-200 bg-slate-50/50 rounded-xl text-sm" /></div>
-              <button type="submit" disabled={isUploading} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-[0_4px_12px_rgba(37,99,235,0.2)] text-sm">{isUploading ? 'Loading...' : 'Upload'}</button>
+              <button type="submit" disabled={isUploading || isDummyFirebase} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-xl font-bold transition-all shadow-[0_4px_12px_rgba(37,99,235,0.2)] text-sm">{isUploading ? 'Loading...' : 'Upload'}</button>
             </div>
           </form>
         </div>
@@ -1656,7 +1702,7 @@ const DocumentManagerView = ({ user, userRole, docType }) => {
                     {userRole === 'admin' && <button onClick={() => handleDelete(doc.id, doc.title)} className="p-1.5 text-rose-500 bg-white border border-slate-200 rounded-lg hover:bg-rose-50 shadow-sm"><Trash2 className="w-4 h-4" /></button>}
                   </td>
                 </tr>
-              )) : <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-400 font-medium text-sm">Tidak ada dokumen.</td></tr>}
+              )) : <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-400 font-medium text-sm">{isDummyFirebase ? 'Data dokumen tidak tersedia dalam Mode Offline.' : 'Tidak ada dokumen.'}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -1665,7 +1711,9 @@ const DocumentManagerView = ({ user, userRole, docType }) => {
   );
 };
 
-// --- GLOBAL DOCUMENT BACKUP & RESTORE VIEW ---
+/* =========================================================================
+   GLOBAL DOCUMENT BACKUP & RESTORE VIEW
+   ========================================================================= */
 const GlobalDocumentBackupView = ({ user, userRole }) => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -1673,16 +1721,18 @@ const GlobalDocumentBackupView = ({ user, userRole }) => {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
 
   useEffect(() => {
+    if (isDummyFirebase) {
+       setDocuments([]);
+       setIsLoading(false);
+       return;
+    }
     if (!user) return;
     setIsLoading(true);
     const docsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'documents');
     const unsubscribe = onSnapshot(docsRef, (snapshot) => {
       const fetchedData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setDocuments(fetchedData); setIsLoading(false);
-    }, (error) => {
-      console.warn("Gagal memuat dokumen untuk backup:", error);
-      setIsLoading(false);
-    });
+    }, () => setIsLoading(false));
     return () => unsubscribe();
   }, [user]);
 
@@ -1698,6 +1748,7 @@ const GlobalDocumentBackupView = ({ user, userRole }) => {
 
   const handleRestoreFileChange = (e) => {
       const file = e.target.files[0]; if (!file) return;
+      if (isDummyFirebase) return showNotification("Gunakan database asli untuk fitur ini.", "error");
       const reader = new FileReader();
       reader.onload = async (event) => {
           try {
@@ -1719,10 +1770,10 @@ const GlobalDocumentBackupView = ({ user, userRole }) => {
          <p className="text-slate-500 text-sm mb-8 max-w-lg mx-auto leading-relaxed">Pusat pencadangan dan pemulihan tersentralisasi untuk semua data Dokumen Legal (SOP & WI, Form Standar, Seleksi, dan Evaluasi Supplier).</p>
          
          <div className="flex flex-col sm:flex-row justify-center gap-4">
-             <button onClick={handleBackup} type="button" className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center"><Download className="w-5 h-5 mr-2" /> Backup Data</button>
+             <button onClick={handleBackup} disabled={isDummyFirebase} type="button" className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 disabled:opacity-50 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center"><Download className="w-5 h-5 mr-2" /> Backup Data</button>
              {userRole === 'admin' && (
                  <>
-                    <button onClick={() => restoreInputRef.current?.click()} type="button" className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center"><Upload className="w-5 h-5 mr-2" /> Restore Data</button>
+                    <button onClick={() => restoreInputRef.current?.click()} disabled={isDummyFirebase} type="button" className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 disabled:opacity-50 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center"><Upload className="w-5 h-5 mr-2" /> Restore Data</button>
                     <input type="file" ref={restoreInputRef} onChange={handleRestoreFileChange} className="hidden" accept=".json" />
                  </>
              )}
@@ -1741,7 +1792,9 @@ const GlobalDocumentBackupView = ({ user, userRole }) => {
   );
 };
 
-// --- MAIN APP COMPONENT ---
+/* =========================================================================
+   MAIN APP & AUTH LAYOUT (ENTERPRISE THEME)
+   ========================================================================= */
 function PriceComparisonApp() {
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard'); 
@@ -1751,10 +1804,12 @@ function PriceComparisonApp() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [projectToEdit, setProjectToEdit] = useState(null);
   
+  // Navigation states
   const [isKomparasiOpen, setIsKomparasiOpen] = useState(true);
   const [isMonitoringOpen, setIsMonitoringOpen] = useState(false);
   const [isDokumenOpen, setIsDokumenOpen] = useState(false);
 
+  // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [showAdminForm, setShowAdminForm] = useState(false);
@@ -1762,15 +1817,18 @@ function PriceComparisonApp() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  // Global persistent filters for Summary Dashboard & G-Sheets Dashboard
   const [persistentFilters, setPersistentFilters] = useState({
       year: 'all', month: 'all', poCode: 'all', 
       tableSearch: { reqNumber: '', project: '', date: '', poNumber: '', vendor: '' }
   });
 
+  // Logo settings
   const [appLogo, setAppLogo] = useState(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const logoInputRef = useRef(null);
 
+  // G-Sheets states lifted up
   const [sheetData, setSheetData] = useState([]);
   const [isSheetLoading, setIsSheetLoading] = useState(false);
   const [sheetErrorMsg, setSheetErrorMsg] = useState(null);
@@ -1779,17 +1837,23 @@ function PriceComparisonApp() {
 
   useEffect(() => {
     const initAuth = async () => {
+      if (isDummyFirebase) {
+         return; // Skip if offline dummy mode
+      }
       try {
           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
           else await signInAnonymously(auth);
       } catch(err) { console.error("Auth error:", err); }
     };
     initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
+    if (!isDummyFirebase) {
+        const unsubscribe = onAuthStateChanged(auth, setUser);
+        return () => unsubscribe();
+    }
   }, []);
 
   useEffect(() => {
+    if (isDummyFirebase) return;
     if (!user) return;
     const logoRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'settings', 'logo');
     const unsubscribeLogo = onSnapshot(logoRef, (docSnap) => {
@@ -1798,15 +1862,29 @@ function PriceComparisonApp() {
        } else {
            setAppLogo(null);
        }
-    }, (error) => console.warn("Logo Load Error:", error));
+    });
     return () => unsubscribeLogo();
   }, [user]);
 
   useEffect(() => {
-    if (!user || !userRole) {
+    if (!userRole) return; // Wait until they pick a role
+    
+    // OFFLINE MODE: Bypass Firebase entirely and use LocalStorage
+    if (isDummyFirebase) {
+        try {
+            const localData = localStorage.getItem('sja_procurement_data');
+            if (localData) setData(JSON.parse(localData));
+            else setData([]);
+        } catch(e) { setData([]); }
+        setIsLoadingData(false);
+        return;
+    }
+
+    if (!user) {
        if (userRole === 'guest') setIsLoadingData(false);
        return;
     }
+
     setIsLoadingData(true);
     const dataPath = userRole === 'admin' 
         ? collection(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items') 
@@ -1820,10 +1898,7 @@ function PriceComparisonApp() {
          return dateB - dateA;
       });
       setData(fetchedData); setIsLoadingData(false);
-    }, (error) => {
-       console.warn("Firebase Collection Fetch Error:", error);
-       setIsLoadingData(false);
-    });
+    }, () => setIsLoadingData(false));
     return () => unsubscribe();
   }, [user, userRole]);
 
@@ -1909,19 +1984,35 @@ function PriceComparisonApp() {
     } catch (err) { setSheetErrorMsg(err.message); } finally { setIsSheetLoading(false); }
   };
 
-  useEffect(() => { if (isAuthenticated) { fetchSheetData(); } }, [isAuthenticated]);
+  useEffect(() => {
+    if (isAuthenticated) {
+        fetchSheetData();
+    }
+  }, [isAuthenticated]);
 
   const handleAddData = (newItemsArray, oldIdsToDelete = [], isBulkImport = false) => {
-    if (!user || !userRole) return;
+    if (!isDummyFirebase && (!user || !userRole)) return;
     
     const getDocPath = (itemId) => userRole === 'admin' 
         ? doc(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items', itemId.toString())
         : doc(db, 'artifacts', safeAppId, 'users', user.uid, 'procurement_items', itemId.toString());
     
+    // Save to local state first
     setData(prev => {
         const currentData = oldIdsToDelete.length > 0 ? prev.filter(item => !oldIdsToDelete.includes(item.id)) : prev;
-        return [...newItemsArray, ...currentData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const finalData = [...newItemsArray, ...currentData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        // Save to LocalStorage if offline dummy mode
+        if (isDummyFirebase) localStorage.setItem('sja_procurement_data', JSON.stringify(finalData));
+        return finalData;
     });
+
+    if (isDummyFirebase) {
+        if (!isBulkImport) {
+            setProjectToEdit(null);
+            setActiveTab('dashboard');
+        }
+        return; // Stop here, no cloud connection needed
+    }
     
     if (isBulkImport) {
         setTimeout(async () => {
@@ -1949,13 +2040,22 @@ function PriceComparisonApp() {
   };
 
   const handleDeleteProject = (projectName, reqNumber) => {
-    if (!user || !userRole) return;
-    const itemsToDelete = data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
-    const idsToDelete = itemsToDelete.map(i => i.id);
-    setData(prev => prev.filter(item => !idsToDelete.includes(item.id)));
+    if (!isDummyFirebase && (!user || !userRole)) return;
+    
+    setData(prev => {
+        const itemsToDelete = prev.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
+        const idsToDelete = itemsToDelete.map(i => i.id);
+        const finalData = prev.filter(item => !idsToDelete.includes(item.id));
+        // Save to LocalStorage if offline dummy mode
+        if (isDummyFirebase) localStorage.setItem('sja_procurement_data', JSON.stringify(finalData));
+        return finalData;
+    });
+
+    if (isDummyFirebase) return; // Stop here, no cloud connection needed
 
     setTimeout(async () => {
         try {
+            const itemsToDelete = data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
             const promises = itemsToDelete.map(item => {
                 const itemPath = userRole === 'admin' 
                     ? doc(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items', item.id.toString())
@@ -1968,13 +2068,18 @@ function PriceComparisonApp() {
   };
 
   const handleEditProject = (projectName, reqNumber) => { setProjectToEdit(data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber)); setActiveTab('input'); };
-  const handleAdminLogin = (e) => { e.preventDefault(); if (username === 'SJA-Sukodono' && password === 'Skd123') { setIsAuthenticated(true); setUserRole('admin'); setLoginError(''); document.getElementById('root').firstChild.style.backgroundColor = 'transparent'; } else setLoginError('Username atau Password salah!'); };
-  const handleLogout = () => { setIsAuthenticated(false); setUserRole(null); setLoginError(''); setUsername(''); setPassword(''); setActiveTab('dashboard'); setData([]); document.getElementById('root').firstChild.style.backgroundColor = '#0f172a'; };
+  const handleAdminLogin = (e) => { e.preventDefault(); if (username === 'SJA-Sukodono' && password === 'Skd123') { setIsAuthenticated(true); setUserRole('admin'); setLoginError(''); } else setLoginError('Username atau Password salah!'); };
+  const handleLogout = () => { setIsAuthenticated(false); setUserRole(null); setLoginError(''); setUsername(''); setPassword(''); setActiveTab('dashboard'); setData([]); };
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 512000) { alert("Ukuran gambar terlalu besar. Maksimal 500KB agar database tidak berat."); e.target.value = ''; return; }
+    
+    if (isDummyFirebase) {
+       alert("Upload logo ditonaktifkan dalam Mode Offline GitHub.");
+       e.target.value = ''; return;
+    }
     
     setIsUploadingLogo(true);
     const reader = new FileReader();
@@ -2008,7 +2113,7 @@ function PriceComparisonApp() {
             {!showAdminForm ? (
                 <div className="space-y-3">
                    <button onClick={() => setShowAdminForm(true)} className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] border border-blue-500 active:scale-[0.98] text-sm"><ShieldCheck className="w-4 h-4 mr-2" /> Login Admin SJA</button>
-                   <button onClick={() => {setIsAuthenticated(true); setUserRole('guest'); document.getElementById('root').firstChild.style.backgroundColor = 'transparent'; }} className="w-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-300 py-3 px-4 rounded-xl font-bold transition-all border border-white/10 active:scale-[0.98] text-sm"><Users className="w-4 h-4 mr-2 opacity-70" /> Akses Tamu / Viewer</button>
+                   <button onClick={() => {setIsAuthenticated(true); setUserRole('guest');}} className="w-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-300 py-3 px-4 rounded-xl font-bold transition-all border border-white/10 active:scale-[0.98] text-sm"><Users className="w-4 h-4 mr-2 opacity-70" /> Akses Tamu / Viewer</button>
                 </div>
             ) : (
                 <form onSubmit={handleAdminLogin} className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -2020,6 +2125,12 @@ function PriceComparisonApp() {
                         <button type="submit" className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] text-sm">Otorisasi</button>
                     </div>
                 </form>
+            )}
+            
+            {isDummyFirebase && (
+               <div className="mt-8 text-[10px] text-slate-500 flex items-center justify-center border border-slate-700/50 bg-slate-800/30 rounded-lg py-1.5 px-3">
+                   <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Mode Offline (GitHub Pages) Aktif
+               </div>
             )}
         </div>
       </div>
@@ -2208,13 +2319,9 @@ function PriceComparisonApp() {
   );
 }
 
-        // --- RENDER APLIKASI ---
-        const rootElement = document.getElementById('root');
-        const root = createRoot(rootElement);
+        // Mount the App
+        const root = createRoot(document.getElementById('root'));
         root.render(<PriceComparisonApp />);
-        
-        // Hapus layar loading merah jika aplikasi sukses terload
-        rootElement.style.backgroundColor = 'transparent';
     </script>
 </body>
 </html>
