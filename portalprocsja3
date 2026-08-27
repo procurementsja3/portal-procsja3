@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Procurement - Standalone App</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Babel for transpiling JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        body { margin: 0; padding: 0; background-color: #0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; }
+        body { margin: 0; padding: 0; background-color: #0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         
-        /* Custom scrollbar for tailwind scrollbar-thin class */
+        /* Custom scrollbar styling */
         .scrollbar-thin::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -284,11 +281,9 @@
 
           const filteredSheetData = useMemo(() => {
              let filtered = sheetData || [];
-             
              if (selectedYear !== 'all') {
                  filtered = filtered.filter(item => String(item.year).trim() === String(selectedYear).trim());
              }
-             
              if (selectedMonth !== 'all') {
                  const monthParts = selectedMonth.split('-');
                  if (monthParts.length > 1) {
@@ -297,7 +292,6 @@
                          1: ['jan'], 2: ['feb'], 3: ['mar'], 4: ['apr'], 5: ['mei', 'may'], 6: ['jun'], 
                          7: ['jul'], 8: ['agu', 'aug', '8', '08'], 9: ['sep'], 10: ['okt', 'oct', '10'], 11: ['nov', 'nop', '11'], 12: ['des', 'dec', '12'] 
                      };
-                     
                      filtered = filtered.filter(item => {
                          if (!item.month) return false;
                          const itemMonthStr = String(item.month).toLowerCase().trim();
@@ -306,11 +300,9 @@
                      });
                  }
              }
-             
              if (poCodeFilter !== 'all') {
                  filtered = filtered.filter(item => String(item.source).toUpperCase().trim() === String(poCodeFilter).toUpperCase().trim());
              }
-             
              return filtered;
           }, [sheetData, selectedYear, selectedMonth, poCodeFilter]);
 
@@ -382,7 +374,6 @@
 
           return (
             <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
-              
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-5 rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
                 <div>
                   <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Summary Dashboard</h1>
@@ -405,7 +396,6 @@
                 </div>
               </div>
 
-              {}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-blue-200 transition-colors flex flex-col justify-between">
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><DollarSign className="w-24 h-24 text-blue-600" /></div>
@@ -444,7 +434,6 @@
                 </div>
               </div>
 
-              {}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
                   <div className="mb-6">
@@ -528,7 +517,6 @@
                 </div>
               </div>
 
-              {}
               <div className="bg-white rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50/50 gap-4">
                   <h2 className="text-base font-bold text-slate-800 tracking-tight flex items-center">
@@ -636,7 +624,6 @@
                 )}
               </div>
 
-              {}
               {pdfData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
                    <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden my-8 relative flex flex-col max-h-[90vh]">
@@ -1021,8 +1008,6 @@ const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, user
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-300">
-      
-      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-5 rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">{editData ? 'Edit Data Penawaran' : 'Input Penawaran'}</h1>
@@ -1101,7 +1086,6 @@ const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, user
           </div>
         </div>
 
-        {}
         <div className="bg-white rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 overflow-hidden">
           <div className="p-6 border-b border-slate-100"><h3 className="text-base font-bold text-slate-800 flex items-center"><Package className="w-4 h-4 mr-2 text-blue-600" /> Rincian Item & Harga</h3></div>
           <div className="overflow-x-auto p-6 bg-slate-50/30">
@@ -1186,7 +1170,6 @@ const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, user
         </div>
       </form>
 
-      {}
       <div className="bg-white rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 mt-12 overflow-hidden mb-8">
           <div className="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50/50 gap-4">
               <h3 className="text-base font-bold text-slate-800 flex items-center"><FileClock className="w-4 h-4 mr-2 text-slate-500"/> Histori Data</h3>
@@ -2190,6 +2173,7 @@ function PriceComparisonApp() {
         </div>
       )}
 
+      {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc]">
         <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:px-10 relative scrollbar-thin scrollbar-thumb-slate-200">
           {activeTab === 'dashboard' ? (
@@ -2233,7 +2217,6 @@ function PriceComparisonApp() {
   );
 }
 
-        // Mount the App
         const root = createRoot(document.getElementById('root'));
         root.render(<PriceComparisonApp />);
     </script>
