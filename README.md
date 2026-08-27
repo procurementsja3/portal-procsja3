@@ -1,2 +1,0 @@
-# portalprocurementsja3
-portalprocurement
