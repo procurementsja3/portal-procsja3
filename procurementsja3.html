@@ -342,12 +342,16 @@
           const baselinePriceCalc = mirroredTotalSpend + totalSavingCost;
           const overallSavingPercentage = baselinePriceCalc > 0 ? ((totalSavingCost / baselinePriceCalc) * 100).toFixed(2) : 0;
 
+          // Hiding total saving cost and baselines when data is empty
           const spendVsSavingData = useMemo(() => {
+              if (data.length === 0) {
+                  return [{ name: 'Total Pengeluaran', value: mirroredTotalSpend }];
+              }
               return [
                   { name: 'Total Pengeluaran', value: mirroredTotalSpend },
                   { name: 'Total Saving Cost', value: totalSavingCost }
               ];
-          }, [mirroredTotalSpend, totalSavingCost]);
+          }, [mirroredTotalSpend, totalSavingCost, data.length]);
           
           const totalPieValue = mirroredTotalSpend + totalSavingCost;
 
@@ -435,11 +439,12 @@
                   </div>
                 </div>
                 
+                {/* Hiding values logic added below */}
                 <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-slate-300 transition-colors flex flex-col justify-between">
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Layers className="w-24 h-24 text-slate-600" /></div>
                   <div className="relative z-10 flex flex-col justify-between h-full">
                     <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Layers className="w-4 h-4 mr-1.5" /> Harga Baseline</div>
-                    <div className="text-2xl lg:text-3xl font-extrabold text-slate-700 tracking-tight">{formatCurrency(baselinePriceCalc)}</div>
+                    <div className="text-2xl lg:text-3xl font-extrabold text-slate-700 tracking-tight">{data.length > 0 ? formatCurrency(baselinePriceCalc) : '-'}</div>
                     <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Estimasi Tanpa Negosiasi</div>
                   </div>
                 </div>
@@ -448,7 +453,7 @@
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingDown className="w-24 h-24 text-emerald-600" /></div>
                   <div className="relative z-10 flex flex-col justify-between h-full">
                     <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><TrendingDown className="w-4 h-4 mr-1.5" /> Total Saving Cost</div>
-                    <div className="text-2xl lg:text-3xl font-extrabold text-emerald-600 tracking-tight">{formatCurrency(totalSavingCost)}</div>
+                    <div className="text-2xl lg:text-3xl font-extrabold text-emerald-600 tracking-tight">{data.length > 0 ? formatCurrency(totalSavingCost) : '-'}</div>
                     <div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Penghematan Aktual</div>
                   </div>
                 </div>
@@ -457,8 +462,8 @@
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Trophy className="w-24 h-24 text-purple-600" /></div>
                   <div className="relative z-10 flex flex-col justify-between h-full">
                     <div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Trophy className="w-4 h-4 mr-1.5" /> Persentase Saving</div>
-                    <div className="text-3xl lg:text-4xl font-extrabold text-purple-600 tracking-tight">{overallSavingPercentage}%</div>
-                    <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-wide">Persentase Saving = (Total Saving / Harga Baseline)</div>
+                    <div className="text-3xl lg:text-4xl font-extrabold text-purple-600 tracking-tight">{data.length > 0 ? `${overallSavingPercentage}%` : '-'}</div>
+                    <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-wide">Persentase Saving = (Total Saving Cost / Harga Baseline) * 100%</div>
                   </div>
                 </div>
               </div>
@@ -2213,9 +2218,3 @@ function PriceComparisonApp() {
     </script>
 </body>
 </html>
-```
-
-### Jika Layarnya Tidak Lagi Kosong tapi Muncul Kotak Merah:
-Kotak merah ini sengaja saya buat agar aplikasi **tidak diam-diam memunculkan layar putih**. Jika kotak merah muncul, di dalamnya akan tertulis jelas apa yang membuat GitHub menolak menjalankan aplikasi Anda. (Cukup kirimkan pesan error merah tersebut ke saya untuk saya bantu selesaikan!). 
-
-Bila Anda menggunakan Firebase asli Anda, Anda cukup mengganti `"dummy"` pada bagian konfigurasi `fallbackConfig` dengan kode API Firebase dari akun Google Firebase milik perusahaan Anda.
