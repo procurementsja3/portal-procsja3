@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Procurement - SJA</title>
+    <title>Portal Procurement - Standalone App</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Babel for transpiling JSX -->
@@ -11,22 +11,22 @@
     <style>
         body { margin: 0; padding: 0; background-color: #0f172a; }
         /* Custom scrollbar for tailwind scrollbar-thin class */
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body>
-    <div id="root">
-        <!-- Tampilan Loading Awal -->
-        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif; background-color: #0f172a;">
-            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-            <p style="font-weight: bold; letter-spacing: 1px;">Memuat Sistem Procurement...</p>
-            <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
-        </div>
-    </div>
+    <div id="root"></div>
 
-    <!-- MAIN APP SCRIPT -->
     <script type="text/babel" data-type="module">
         import React, { useState, useMemo, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
@@ -41,12 +41,10 @@
           Eye, ClipboardList, Mountain, Printer, ArrowUpDown, ArrowDown, ArrowUp, Archive, RefreshCw, ExternalLink, Image as ImageIcon, Wrench
         } from 'https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0';
         
-        // Menggunakan Firebase resmi dari Gstatic
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
-        // --- KONFIGURASI FIREBASE ASLI SJA3 ---
         const firebaseConfig = {
           apiKey: "AIzaSyCE9ZUP0_1v13Wsbklj2gw7S3UCbYnzcxE",
           authDomain: "portal-procurement-sja3.firebaseapp.com",
@@ -116,6 +114,9 @@
             );
         };
 
+        /* =========================================================================
+           DASHBOARD VIEW (SUMMARY)
+           ========================================================================= */
         const DashboardView = ({ data, isLoading, onEdit, onDelete, sheetData, persistentFilters, setPersistentFilters }) => {
           const [projectToDelete, setProjectToDelete] = useState(null);
           const [isDeleting, setIsDeleting] = useState(false);
@@ -549,6 +550,9 @@
           );
         };
 
+        /* =========================================================================
+           INPUT DATA VIEW
+           ========================================================================= */
         const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, userRole }) => {
           const [reqNumber, setReqNumber] = useState('');
           const [projectName, setProjectName] = useState('');
@@ -1021,6 +1025,9 @@
           );
         };
 
+        /* =========================================================================
+           LIVE DATA DASHBOARD (GOOGLE SHEETS)
+           ========================================================================= */
         const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, availableYears, fetchSheetData, persistentFilters, setPersistentFilters }) => {
           const [showLateModal, setShowLateModal] = useState(false);
 
@@ -1220,6 +1227,9 @@
           );
         };
 
+        /* =========================================================================
+           DOCUMENT MANAGER VIEW
+           ========================================================================= */
         const DocumentManagerView = ({ user, userRole, docType }) => {
           const [documents, setDocuments] = useState([]);
           const [isLoading, setIsLoading] = useState(true);
@@ -1357,7 +1367,10 @@
           );
         };
 
-        const GlobalDocumentBackupView = ({ userRole }) => {
+        /* =========================================================================
+           GLOBAL DOCUMENT BACKUP & RESTORE VIEW
+           ========================================================================= */
+        const GlobalDocumentBackupView = ({ user, userRole }) => {
           const [documents, setDocuments] = useState([]);
           const [isLoading, setIsLoading] = useState(true);
           const restoreInputRef = useRef(null);
@@ -1439,6 +1452,9 @@
           );
         };
 
+        /* =========================================================================
+           MAIN APP & AUTH LAYOUT
+           ========================================================================= */
         function PriceComparisonApp() {
           const [data, setData] = useState([]);
           const [activeTab, setActiveTab] = useState('dashboard'); 
@@ -1472,9 +1488,7 @@
           const [sheetAvailableYears, setSheetAvailableYears] = useState([]);
 
           useEffect(() => {
-            const initAuth = async () => { 
-                try { await signInAnonymously(auth); } catch(err) { console.warn("Firebase Auth Warning:", err.message); } 
-            };
+            const initAuth = async () => { try { await signInAnonymously(auth); } catch(err) { console.warn("Firebase Auth Warning:", err.message); } };
             initAuth();
             const unsubscribe = onAuthStateChanged(auth, setUser);
             return () => unsubscribe();
@@ -1587,6 +1601,7 @@
                 ? doc(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items', itemId.toString())
                 : doc(db, 'artifacts', safeAppId, 'users', user?.uid || 'guest_user', 'procurement_items', itemId.toString());
             
+            // LAKUKAN PENYIMPANAN LOKAL & UPDATE UI INSTAN (Mencegah Loading Mutar)
             setData(prev => {
                 const currentData = oldIdsToDelete.length > 0 ? prev.filter(item => !oldIdsToDelete.includes(item.id)) : prev;
                 const finalData = [...newItemsArray, ...currentData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
