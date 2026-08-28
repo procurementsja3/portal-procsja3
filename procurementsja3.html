@@ -1494,31 +1494,41 @@
           const [sheetData, setSheetData] = useState([]);
           const [isSheetLoading, setIsSheetLoading] = useState(false);
           const [sheetErrorMsg, setSheetErrorMsg] = useState(null);
-          const [sheetAvailableMonths, setSheetAvailableMonths] = useState([]);
-          const [sheetAvailableYears, setSheetAvailableYears] = useState([]);
+  const [sheetAvailableMonths, setSheetAvailableMonths] = useState([]);
+  const [sheetAvailableYears, setSheetAvailableYears] = useState([]);
 
-          useEffect(() => {
-            const initAuth = async () => { 
-                try { await signInAnonymously(auth); } catch(err) { console.warn("Firebase Auth Warning:", err.message); } 
-            };
-            initAuth();
-            const unsubscribe = onAuthStateChanged(auth, setUser);
-            return () => unsubscribe();
-          }, []);
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+          // Langsung menggunakan Anonymous Sign-in untuk database SJA
+          await signInAnonymously(auth);
+      } catch(err) { 
+          console.warn("Info: Firebase Auth ditolak. Mode Tamu Lokal diaktifkan.", err.message); 
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
 
-          useEffect(() => {
-            if (!userRole) return;
-            const logoRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'settings', 'logo');
-            const unsubscribeLogo = onSnapshot(logoRef, (docSnap) => { 
-                if (docSnap.exists() && docSnap.data().imageUrl) setAppLogo(docSnap.data().imageUrl); 
-                else setAppLogo(null); 
-            }, () => {});
-            return () => unsubscribeLogo();
-          }, [userRole]);
+  // Memuat logo secara global sejak awal (termasuk di halaman login)
+  useEffect(() => {
+    const logoRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'settings', 'logo');
+    const unsubscribeLogo = onSnapshot(logoRef, (docSnap) => {
+       if (docSnap.exists() && docSnap.data().imageUrl) {
+           setAppLogo(docSnap.data().imageUrl);
+       } else {
+           setAppLogo(null);
+       }
+    }, (error) => {
+       console.warn("Gagal memuat logo:", error.message);
+    });
+    return () => unsubscribeLogo();
+  }, []);
 
-          useEffect(() => {
-            if (!userRole) return;
-            setIsLoadingData(true);
+  useEffect(() => {
+    if (!userRole) return;
+    setIsLoadingData(true);
             try {
                 const dataPath = userRole === 'admin' 
                     ? collection(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items') 
