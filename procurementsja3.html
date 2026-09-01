@@ -71,7 +71,6 @@
         const HISTORI_PER_PAGE = 10;
         const RADIAN = Math.PI / 180;
 
-        // --- HELPER FUNCTIONS ---
         const formatCurrency = (amount) => {
           return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount || 0);
         };
@@ -119,9 +118,6 @@
             );
         };
 
-        /* =========================================================================
-           DASHBOARD VIEW (SUMMARY)
-           ========================================================================= */
         const DashboardView = ({ data, isLoading, onEdit, onDelete, sheetData, persistentFilters, setPersistentFilters }) => {
           const [projectToDelete, setProjectToDelete] = useState(null);
           const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
@@ -169,13 +165,6 @@
                 window.html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
                     const link = document.createElement('a'); link.download = `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.jpg`; link.href = canvas.toDataURL('image/jpeg', 1.0); link.click();
                 });
-            }
-          };
-
-          const confirmDelete = () => {
-            if (projectToDelete) {
-              onDelete(projectToDelete.projectName, projectToDelete.reqNumber);
-              setProjectToDelete(null);
             }
           };
 
@@ -293,11 +282,25 @@
           }, [filteredSheetData]);
 
           const savingParetoData = useMemo(() => {
-             const supplierSavings = {};
-             projectSummaryData.forEach(proj => { if (proj.grandWinner !== '-' && proj.totalSavingCost > 0) supplierSavings[proj.grandWinner] = (supplierSavings[proj.grandWinner] || 0) + proj.totalSavingCost; });
-             const sorted = Object.keys(supplierSavings).map(key => ({ name: key, saving: supplierSavings[key] })).sort((a, b) => b.saving - a.saving);
-             const totalAllSaving = sorted.reduce((sum, item) => sum + item.saving, 0); let currentSum = 0;
-             return sorted.slice(0, 10).map(item => { currentSum += item.saving; return { ...item, cumulativePercentage: totalAllSaving > 0 ? Number(((currentSum / totalAllSaving) * 100).toFixed(2)) : 0 }; });
+             // UPDATE PENTING: Ambil individual project/transaksi yang saving-nya terbesar (tidak digabung per vendor)
+             const allTransactions = projectSummaryData
+                 .filter(proj => proj.grandWinner !== '-' && proj.totalSavingCost > 0)
+                 .map((proj, index) => ({
+                     uniqueId: `${proj.grandWinner}_${proj.reqNumber}_${index}`,
+                     name: proj.grandWinner,
+                     projectName: proj.projectName,
+                     reqNumber: proj.reqNumber,
+                     saving: proj.totalSavingCost
+                 }))
+                 .sort((a, b) => b.saving - a.saving); // Urutkan dari terbesar ke terkecil individu
+
+             const totalAllSaving = allTransactions.reduce((sum, item) => sum + item.saving, 0); 
+             let currentSum = 0;
+             
+             return allTransactions.slice(0, 10).map(item => { 
+                 currentSum += item.saving; 
+                 return { ...item, cumulativePercentage: totalAllSaving > 0 ? Number(((currentSum / totalAllSaving) * 100).toFixed(2)) : 0 }; 
+             });
           }, [projectSummaryData]);
 
           const filteredProjectSummaryData = useMemo(() => {
@@ -396,17 +399,39 @@
                 </div>
               </div>
 
+              {}
               <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
-                <div className="mb-6"><h2 className="text-base font-bold text-slate-800 tracking-tight">Top 10 Saving Cost per Vendor</h2><p className="text-xs text-slate-500 mt-1">Penyumbang penghematan terbesar berdasarkan filter aktif.</p></div>
+                <div className="mb-6"><h2 className="text-base font-bold text-slate-800 tracking-tight">Top 10 Saving Cost per Pekerjaan</h2><p className="text-xs text-slate-500 mt-1">Penyumbang penghematan terbesar berdasarkan nilai transaksi (individu).</p></div>
                 <div className="h-[320px]">
                   {savingParetoData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={savingParetoData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
+                        <XAxis 
+                          dataKey="uniqueId" 
+                          axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" height={80} 
+                          tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} 
+                          tickFormatter={(val) => { 
+                            const name = val.split('_')[0]; 
+                            return name.length > 15 ? name.substring(0, 15) + '...' : name; 
+                          }} 
+                        />
                         <YAxis yAxisId="left" width={75} tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
                         <YAxis yAxisId="right" orientation="right" width={40} tickFormatter={(value) => `${value}%`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}}/>
-                        <RechartsTooltip formatter={(value, name) => { if (name === 'saving') return [formatCurrency(value), 'Total Saving Cost']; if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; return value; }} labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}}/>
+                        <RechartsTooltip 
+                          formatter={(value, name) => { 
+                            if (name === 'saving') return [formatCurrency(value), 'Total Saving Cost']; 
+                            if (name === 'cumulativePercentage') return [`${value}%`, 'Persentase Kumulatif']; 
+                            return value; 
+                          }} 
+                          labelFormatter={(label, payload) => { 
+                            if (payload && payload.length > 0) { 
+                              return `${payload[0].payload.name} (${payload[0].payload.reqNumber})`; 
+                            } 
+                            return label ? label.split('_')[0] : ''; 
+                          }} 
+                          labelStyle={{color: '#1e293b', fontWeight: 'bold'}} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}}
+                        />
                         <Bar yAxisId="left" dataKey="saving" fill="#10b981" shape={(props) => <Custom3DBar {...props} />} maxBarSize={50} animationDuration={1000} />
                         <Line yAxisId="right" type="monotone" dataKey="cumulativePercentage" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{r: 6}} animationDuration={1000} />
                       </ComposedChart>
@@ -466,6 +491,7 @@
                 )}
               </div>
 
+              {}
               {pdfData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
                    <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden my-8 relative flex flex-col max-h-[90vh]">
@@ -549,9 +575,6 @@
           );
         };
 
-        /* =========================================================================
-           INPUT DATA VIEW
-           ========================================================================= */
         const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, userRole }) => {
           const [reqNumber, setReqNumber] = useState('');
           const [projectName, setProjectName] = useState('');
@@ -1019,9 +1042,6 @@
           );
         };
 
-        /* =========================================================================
-           LIVE DATA DASHBOARD (GOOGLE SHEETS)
-           ========================================================================= */
         const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, availableYears, fetchSheetData, persistentFilters, setPersistentFilters }) => {
           const [showLateModal, setShowLateModal] = useState(false);
 
@@ -1214,9 +1234,6 @@
           );
         };
 
-        /* =========================================================================
-           DOCUMENT MANAGER VIEW
-           ========================================================================= */
         const DocumentManagerView = ({ user, userRole, docType }) => {
           const [documents, setDocuments] = useState([]);
           const [isLoading, setIsLoading] = useState(true);
@@ -1354,9 +1371,6 @@
           );
         };
 
-        /* =========================================================================
-           GLOBAL DOCUMENT BACKUP & RESTORE VIEW
-           ========================================================================= */
         const GlobalDocumentBackupView = ({ user, userRole }) => {
           const [documents, setDocuments] = useState([]);
           const [isLoading, setIsLoading] = useState(true);
@@ -1439,9 +1453,6 @@
           );
         };
 
-        /* =========================================================================
-           MAIN APP & AUTH LAYOUT
-           ========================================================================= */
         function PriceComparisonApp() {
           const [data, setData] = useState([]);
           const [activeTab, setActiveTab] = useState('dashboard'); 
@@ -1631,7 +1642,6 @@
                 ? doc(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items', itemId.toString())
                 : doc(db, 'artifacts', safeAppId, 'users', user?.uid || 'guest_user', 'procurement_items', itemId.toString());
             
-            // LAKUKAN PENYIMPANAN LOKAL & UPDATE UI INSTAN (Mencegah Loading Mutar)
             setData(prev => {
                 const currentData = oldIdsToDelete.length > 0 ? prev.filter(item => !oldIdsToDelete.includes(item.id)) : prev;
                 const finalData = [...newItemsArray, ...currentData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
