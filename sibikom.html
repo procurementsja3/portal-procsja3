@@ -65,6 +65,34 @@
 </head>
 <body class="bg-kopi-bg text-slate-800 antialiased h-screen flex overflow-hidden selection:bg-brand-primary selection:text-white">
 
+    <!-- Login Screen -->
+    <div id="login-overlay" class="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 transform transition-all">
+            <div class="text-center mb-8">
+                <div id="login-logo-container" class="bg-brand-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-primary shadow-sm border border-brand-primary/20 overflow-hidden">
+                    <i id="login-default-icon" class="ph ph-coffee text-3xl font-bold"></i>
+                    <img id="login-custom-img" src="" class="hidden w-full h-full object-cover">
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Login SIBIKOM</h2>
+                <p class="text-sm text-slate-500 mt-1">Sistem Manajemen Biji Kopi</p>
+            </div>
+            <form id="login-form" onsubmit="processLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Username</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-3 text-sm rounded-lg border border-slate-300 outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-shadow" placeholder="Masukkan username...">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-3 text-sm rounded-lg border border-slate-300 outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-shadow" placeholder="••••••••">
+                </div>
+                <div id="login-error" class="hidden text-red-500 text-xs font-semibold text-center bg-red-50 border border-red-200 py-2.5 rounded-lg">Username atau Password salah!</div>
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-4">
+                    <i class="ph ph-sign-in text-lg"></i> Masuk Aplikasi
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast & Overlays -->
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
     <div id="sidebar-overlay" onclick="toggleMobileSidebar()" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[40] transition-opacity md:hidden cursor-pointer"></div>
@@ -90,31 +118,38 @@
         </div>
 
         <nav class="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
-            <button onclick="switchTab('main-dashboard'); toggleMobileSidebar()" id="btn-main-dashboard" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg bg-brand-primary/10 text-brand-primary transition-all duration-200 group text-left">
-                <i class="ph ph-squares-four text-lg mr-3 group-hover:scale-110 transition-transform"></i> Dashboard Utama
-            </button>
-            <button onclick="switchTab('produksi'); toggleMobileSidebar()" id="btn-produksi" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
-                <i class="ph ph-fire text-lg mr-3 group-hover:scale-110 transition-transform"></i> UPBM - Roasting
-            </button>
-            <button onclick="switchTab('dashboard'); toggleMobileSidebar()" id="btn-dashboard" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
-                <i class="ph ph-chart-line-up text-lg mr-3 group-hover:scale-110 transition-transform"></i> Rekap UPBM
-            </button>
-            
-            <div class="pt-4 pb-1">
-                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Manajemen Gudang</p>
+            <div id="nav-group-gudang-dash">
+                <button onclick="switchTab('main-dashboard'); toggleMobileSidebar()" id="btn-main-dashboard" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg bg-brand-primary/10 text-brand-primary transition-all duration-200 group text-left">
+                    <i class="ph ph-squares-four text-lg mr-3 group-hover:scale-110 transition-transform"></i> Dashboard Utama
+                </button>
             </div>
             
-            <div>
-                <button onclick="toggleDropdown('dropdown-gudang', 'arrow-gudang')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
-                    <div class="flex items-center"><i class="ph ph-package text-lg mr-3 group-hover:scale-110 transition-transform"></i> Operasional BKM</div>
-                    <i id="arrow-gudang" class="ph ph-caret-down transition-transform duration-300 text-xs"></i>
+            <div id="nav-group-upbm" class="space-y-1.5">
+                <button onclick="switchTab('produksi'); toggleMobileSidebar()" id="btn-produksi" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
+                    <i class="ph ph-fire text-lg mr-3 group-hover:scale-110 transition-transform"></i> UPBM - Roasting
                 </button>
-                <div id="dropdown-gudang" class="hidden flex-col pl-9 pr-2 py-1.5 space-y-1 border-l border-slate-700 ml-5 mt-1">
-                    <button onclick="switchTab('gudang-po'); toggleMobileSidebar()" id="btn-gudang-po" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Input PO Supplier</button>
-                    <button onclick="switchTab('gudang-penerimaan'); toggleMobileSidebar()" id="btn-gudang-penerimaan" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Penerimaan</button>
-                    <button onclick="switchTab('gudang-pengeluaran'); toggleMobileSidebar()" id="btn-gudang-pengeluaran" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Pengeluaran</button>
-                    <button onclick="switchTab('gudang-fifo'); toggleMobileSidebar()" id="btn-gudang-fifo" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cek Stok FIFO</button>
-                    <button onclick="switchTab('gudang-cetak-rmw'); toggleMobileSidebar()" id="btn-gudang-cetak-rmw" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cetak Bukti (RMW)</button>
+                <button onclick="switchTab('dashboard'); toggleMobileSidebar()" id="btn-dashboard" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
+                    <i class="ph ph-chart-line-up text-lg mr-3 group-hover:scale-110 transition-transform"></i> Rekap UPBM
+                </button>
+            </div>
+            
+            <div id="nav-group-gudang-ops">
+                <div class="pt-4 pb-1">
+                    <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Manajemen Gudang</p>
+                </div>
+                
+                <div>
+                    <button onclick="toggleDropdown('dropdown-gudang', 'arrow-gudang')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
+                        <div class="flex items-center"><i class="ph ph-package text-lg mr-3 group-hover:scale-110 transition-transform"></i> Operasional BKM</div>
+                        <i id="arrow-gudang" class="ph ph-caret-down transition-transform duration-300 text-xs"></i>
+                    </button>
+                    <div id="dropdown-gudang" class="hidden flex-col pl-9 pr-2 py-1.5 space-y-1 border-l border-slate-700 ml-5 mt-1">
+                        <button onclick="switchTab('gudang-po'); toggleMobileSidebar()" id="btn-gudang-po" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Input PO Supplier</button>
+                        <button onclick="switchTab('gudang-penerimaan'); toggleMobileSidebar()" id="btn-gudang-penerimaan" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Penerimaan</button>
+                        <button onclick="switchTab('gudang-pengeluaran'); toggleMobileSidebar()" id="btn-gudang-pengeluaran" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Pengeluaran</button>
+                        <button onclick="switchTab('gudang-fifo'); toggleMobileSidebar()" id="btn-gudang-fifo" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cek Stok FIFO</button>
+                        <button onclick="switchTab('gudang-cetak-rmw'); toggleMobileSidebar()" id="btn-gudang-cetak-rmw" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cetak Bukti (RMW)</button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -130,10 +165,12 @@
             </div>
             <div class="flex items-center gap-4 shrink-0">
                 <div class="text-right hidden sm:block">
-                    <p class="text-sm font-bold text-slate-700 leading-none">Admin Shift 1</p>
-                    <p class="text-[11px] text-emerald-500 font-medium mt-1 flex items-center justify-end gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online</p>
+                    <p id="user-display-name" class="text-sm font-bold text-slate-700 leading-none">Admin</p>
+                    <p id="user-display-role" class="text-[11px] text-emerald-500 font-medium mt-1 flex items-center justify-end gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online</p>
                 </div>
-                <div class="h-10 w-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary border border-brand-primary/20 shadow-sm"><i class="ph ph-user text-lg font-bold"></i></div>
+                <button onclick="processLogout()" class="h-10 w-10 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 border border-red-100 shadow-sm transition-colors" title="Keluar dari Aplikasi">
+                    <i class="ph ph-sign-out text-lg font-bold"></i>
+                </button>
             </div>
         </header>
 
@@ -734,6 +771,70 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6-ZoJW-LMgZEaq30BICkG285RxY_U3ly9t_H5MYy9I0s8Yh6WqOdqnH3qVmowYqqp/exec"; 
         const GVIZ_URL_BASE = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/gviz/tq?tqx=out:json";
 
+        // Fitur Login System
+        const USERS_DB = {
+            'UPBM-Skd': { pass: 'UPBM123', role: 'UPBM', name: 'Admin UPBM', defaultTab: 'produksi' },
+            'RMW-Skd': { pass: 'RMW123', role: 'Gudang', name: 'Admin Gudang', defaultTab: 'main-dashboard' }
+        };
+
+        function checkLoginState() {
+            const savedUser = localStorage.getItem('sibikom_logged_user');
+            if (savedUser && USERS_DB[savedUser]) {
+                applyUserRole(USERS_DB[savedUser]);
+                document.getElementById('login-overlay').classList.add('hidden');
+            } else {
+                document.getElementById('login-overlay').classList.remove('hidden');
+            }
+        }
+
+        function processLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value.trim();
+            const err = document.getElementById('login-error');
+            
+            if (USERS_DB[u] && USERS_DB[u].pass === p) {
+                err.classList.add('hidden');
+                localStorage.setItem('sibikom_logged_user', u);
+                document.getElementById('login-overlay').classList.add('hidden');
+                showToast(`Selamat datang, ${USERS_DB[u].name}!`, 'success');
+                applyUserRole(USERS_DB[u]);
+            } else {
+                err.classList.remove('hidden');
+                document.getElementById('login-password').value = '';
+            }
+        }
+
+        function processLogout() {
+            localStorage.removeItem('sibikom_logged_user');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-overlay').classList.remove('hidden');
+            showToast('Anda telah logout.', 'info');
+        }
+
+        function applyUserRole(userObj) {
+            document.getElementById('user-display-name').innerText = userObj.name;
+            document.getElementById('user-display-role').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Hak Akses: ${userObj.role}`;
+            
+            const upbmNav = document.getElementById('nav-group-upbm');
+            const gudangDashNav = document.getElementById('nav-group-gudang-dash');
+            const gudangOpsNav = document.getElementById('nav-group-gudang-ops');
+
+            if (userObj.role === 'UPBM') {
+                if(upbmNav) upbmNav.classList.remove('hidden');
+                if(gudangDashNav) gudangDashNav.classList.add('hidden');
+                if(gudangOpsNav) gudangOpsNav.classList.add('hidden');
+            } else if (userObj.role === 'Gudang') {
+                if(upbmNav) upbmNav.classList.add('hidden');
+                if(gudangDashNav) gudangDashNav.classList.remove('hidden');
+                if(gudangOpsNav) gudangOpsNav.classList.remove('hidden');
+            }
+            
+            switchTab(userObj.defaultTab);
+        }
+
         function toggleMobileSidebar() { if(window.innerWidth < 768) { const sb = document.getElementById('main-sidebar'); const ov = document.getElementById('sidebar-overlay'); sb.classList.toggle('mobile-sidebar-open'); ov.classList.toggle('mobile-overlay-open'); } }
         function toggleDesktopMobileSidebar() { const sb = document.getElementById('main-sidebar'); if (window.innerWidth < 768) { toggleMobileSidebar(); } else { sb.classList.toggle('md:-ml-64'); } }
         
@@ -755,16 +856,29 @@
             const icon = document.getElementById('default-logo-icon');
             const img = document.getElementById('custom-logo-img');
             const container = document.getElementById('logo-container');
+            
+            const loginIcon = document.getElementById('login-default-icon');
+            const loginImg = document.getElementById('login-custom-img');
+            const loginContainer = document.getElementById('login-logo-container');
+
             if (base64Data) {
                 icon.classList.add('hidden');
                 img.src = base64Data;
                 img.classList.remove('hidden');
                 container.classList.remove('p-2', 'bg-brand-primary'); // Remove padding so image fits full box
+                
+                if (loginIcon) loginIcon.classList.add('hidden');
+                if (loginImg) { loginImg.src = base64Data; loginImg.classList.remove('hidden'); }
+                if (loginContainer) { loginContainer.classList.remove('bg-brand-primary/10'); loginContainer.classList.add('bg-transparent'); }
             } else {
                 icon.classList.remove('hidden');
                 img.classList.add('hidden');
                 img.src = "";
                 container.classList.add('p-2', 'bg-brand-primary');
+                
+                if (loginIcon) loginIcon.classList.remove('hidden');
+                if (loginImg) { loginImg.classList.add('hidden'); loginImg.src = ""; }
+                if (loginContainer) { loginContainer.classList.remove('bg-transparent'); loginContainer.classList.add('bg-brand-primary/10'); }
             }
         }
 
@@ -1752,7 +1866,7 @@
             }; reader.readAsText(file);
         }
 
-        document.addEventListener('DOMContentLoaded', () => { syncMainDashboard(); loadSavedLogo(); });
+        document.addEventListener('DOMContentLoaded', () => { checkLoginState(); loadSavedLogo(); });
     </script>
 </body>
 </html>
