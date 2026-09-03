@@ -1493,14 +1493,23 @@
           }, []);
 
           useEffect(() => {
-            if (!userRole) return;
+            // Cek cache lokal agar logo instan tampil
+            const localLogo = localStorage.getItem('sja_app_logo');
+            if (localLogo) setAppLogo(localLogo);
+
+            // Dengarkan Firebase untuk Logo secara global (tanpa syarat userRole)
             const logoRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'settings', 'logo');
             const unsubscribeLogo = onSnapshot(logoRef, (docSnap) => { 
-                if (docSnap.exists() && docSnap.data().imageUrl) setAppLogo(docSnap.data().imageUrl); 
-                else setAppLogo(null); 
+                if (docSnap.exists() && docSnap.data().imageUrl) {
+                    setAppLogo(docSnap.data().imageUrl); 
+                    localStorage.setItem('sja_app_logo', docSnap.data().imageUrl);
+                } else { 
+                    setAppLogo(null); 
+                    localStorage.removeItem('sja_app_logo');
+                }
             }, () => {});
             return () => unsubscribeLogo();
-          }, [userRole]);
+          }, []);
 
           useEffect(() => {
             if (!userRole) return;
@@ -1718,7 +1727,10 @@
             if (file.size > 512000) { alert("Ukuran gambar terlalu besar. Maksimal 500KB."); e.target.value = ''; return; }
             setIsUploadingLogo(true); const reader = new FileReader(); reader.readAsDataURL(file);
             reader.onload = async () => {
-              try { await setDoc(doc(db, 'artifacts', safeAppId, 'public', 'data', 'settings', 'logo'), { imageUrl: reader.result }); } catch (error) { alert("Gagal mengubah logo."); } finally { setIsUploadingLogo(false); e.target.value = ''; }
+              try { 
+                  await setDoc(doc(db, 'artifacts', safeAppId, 'public', 'data', 'settings', 'logo'), { imageUrl: reader.result }); 
+                  localStorage.setItem('sja_app_logo', reader.result);
+              } catch (error) { alert("Gagal mengubah logo."); } finally { setIsUploadingLogo(false); e.target.value = ''; }
             };
           };
 
