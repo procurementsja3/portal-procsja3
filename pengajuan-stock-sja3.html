@@ -1,0 +1,1974 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  doc,
+  updateDoc,
+  writeBatch,
+  setDoc
+} from 'firebase/firestore';
+import { signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
+
+import { auth, db, appId } from './firebase';
+import { PengajuanItem, ToastState, HistoryLog, DokumenItem } from './types';
+import { APP_USERS, INITIAL_FORM_STATE, SAMPLE_DEMO_SUBMISSIONS, formatBulan } from './constants';
+
+import { LoginScreen } from './components/LoginScreen';
+import { FormSectionUser } from './components/FormSectionUser';
+import { FormSectionProcurement } from './components/FormSectionProcurement';
+import { FormSectionSupplyChain } from './components/FormSectionSupplyChain';
+import { FormSectionPlantManager } from './components/FormSectionPlantManager';
+import { FormSectionGudang } from './components/FormSectionGudang';
+import { SubmissionsTable } from './components/SubmissionsTable';
+import { PrintableDocument } from './components/PrintableDocument';
+import { DashboardPareto } from './components/DashboardPareto';
+import { Modals } from './components/Modals';
+
+declare const __initial_auth_token: string | undefined;
+declare global {
+  interface Window {
+    html2pdf?: any;
+  }
+}
+
+export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(true);
+
+  // LOGIN STATE
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loggedInName, setLoggedInName] = useState('');
+  const [appRole, setAppRole] = useState('');
+
+  const [editId, setEditId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('active');
+  const [viewItem, setViewItem] = useState<PengajuanItem | null>(null);
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
+  const [submitSuccess, setSubmitSuccess] = useState({ show: false, nomor: '', isEdit: false });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterReq, setFilterReq] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterBarang, setFilterBarang] = useState('');
+  const [filterTotal, setFilterTotal] = useState('');
+  const [filterPic, setFilterPic] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const [unlockUserForm, setUnlockUserForm] = useState(false);
+  const [unlockProcurementForm, setUnlockProcurementForm] = useState(false);
+  const [unlockSupplyChainForm, setUnlockSupplyChainForm] = useState(false);
+
+  const [itemToDelete, setItemToDelete] = useState<PengajuanItem | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showClearDbConfirm, setShowClearDbConfirm] = useState(false);
+  const [clearDbPassword, setClearDbPassword] = useState('');
+  const [clearDbError, setClearDbError] = useState('');
+
+  const [procurementEmails, setProcurementEmails] = useState<string[]>([]);
+  const [isEmailEnabled, setIsEmailEnabled] = useState(false);
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [dashboardMonth, setDashboardMonth] = useState(new Date().toISOString().slice(0, 7));
+
+  const [googleSheetUrl, setGoogleSheetUrl] = useState(
+    'https://docs.google.com/spreadsheets/d/1JwUEI6pJwSCs3LmnOkizaLuhSXBUr6P6jFP9cY8J0qo/edit?usp=sharing'
+  );
+  const [isSyncingGlobal, setIsSyncingGlobal] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('');
+
+  const [formData, setFormData] = useState<PengajuanItem>(INITIAL_FORM_STATE);
+  const [submissions, setSubmissions] = useState<PengajuanItem[]>([]);
+  const [submissionCounter, setSubmissionCounter] = useState(1);
+  const [resetKey, setResetKey] = useState(0);
+
+  // THEME CLASSES
+  const themeBg = isDarkMode ? 'bg-slate-900' : 'bg-slate-100';
+  const themeCard = isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200';
+  const themeText = isDarkMode ? 'text-slate-100' : 'text-slate-800';
+  const themeTextMuted = isDarkMode ? 'text-slate-400' : 'text-slate-500';
+  const themeLabel = isDarkMode ? 'text-slate-300' : 'text-slate-700';
+  const themeBorder = isDarkMode ? 'border-slate-700' : 'border-slate-200';
+  const themeTableHead = isDarkMode
+    ? 'bg-slate-700 text-slate-200 border-slate-600'
+    : 'bg-slate-50 text-slate-600 border-slate-200';
+  const themeTableRow = isDarkMode
+    ? 'hover:bg-slate-700/50 border-slate-700 text-slate-200'
+    : 'hover:bg-slate-50 border-slate-200 text-slate-900';
+  const filterInputClass = `w-full px-2 py-1.5 mt-2 text-xs border rounded font-normal outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
+    isDarkMode ? 'bg-slate-800 border-slate-600 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400'
+  }`;
+  const themeInputStr = `w-full px-3 py-2 border rounded text-sm outline-none transition-colors ${
+    isDarkMode
+      ? 'bg-slate-700 border-slate-600 text-white read-only:bg-slate-800 read-only:text-slate-400 disabled:bg-slate-800 disabled:text-slate-400'
+      : 'bg-white border-slate-300 text-slate-900 read-only:bg-slate-50 read-only:text-slate-500 disabled:bg-slate-50 disabled:text-slate-500'
+  }`;
+
+  const showToast = (m: string, t: 'info' | 'success' | 'error' = 'info') => {
+    setToast({ show: true, message: String(m), type: t });
+    setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 4000);
+  };
+
+  const handleCopyText = (text: string, label: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      showToast(`${label} disalin!`, 'success');
+    } catch (err) {
+      showToast('Gagal menyalin.', 'error');
+    }
+    document.body.removeChild(textArea);
+  };
+
+  // AUTH INIT
+  useEffect(() => {
+    if (!auth) {
+      setIsConnecting(false);
+      return;
+    }
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.warn('Auth init fallback:', err);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  // LOAD SUBMISSIONS (FIRESTORE OR LOCALSTORAGE)
+  useEffect(() => {
+    if (!db) {
+      // Local fallback
+      const saved = localStorage.getItem('pengajuan_data');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setSubmissions(parsed);
+        } catch (e) {
+          setSubmissions(SAMPLE_DEMO_SUBMISSIONS);
+        }
+      } else {
+        setSubmissions(SAMPLE_DEMO_SUBMISSIONS);
+        localStorage.setItem('pengajuan_data', JSON.stringify(SAMPLE_DEMO_SUBMISSIONS));
+      }
+      setIsConnecting(false);
+      return;
+    }
+
+    if (!user) { setIsConnecting(false); return; }
+
+    const pengajuanRef = collection(db, 'artifacts', appId, 'public', 'data', 'pengajuan');
+    const unsubscribeSubmissions = onSnapshot(
+      pengajuanRef,
+      (snapshot) => {
+        const data = snapshot.docs.map((d) => {
+          const docData = d.data() as any;
+          let determinedStatus = docData.status;
+          if (!['Ditolak', 'Dihapus'].includes(determinedStatus) && !determinedStatus.startsWith('Dikembalikan')) {
+            if (determinedStatus === 'Selesai' && docData.keputusanGudang !== 'Approve')
+              determinedStatus = 'Menunggu Gudang';
+            if (
+              determinedStatus === 'Menunggu Gudang' &&
+              (!docData.keputusanPlantManager || docData.keputusanPlantManager !== 'Approve')
+            )
+              determinedStatus = 'Menunggu Plant Manager';
+            if (determinedStatus === 'Menunggu Plant Manager' && !docData.ttdSupplyChain)
+              determinedStatus = 'Menunggu Supply Chain';
+            if (determinedStatus === 'Menunggu Supply Chain' && !docData.hargaProcurement)
+              determinedStatus = 'Menunggu Procurement';
+          }
+
+          let historyLogs: HistoryLog[] = [];
+          try {
+            historyLogs =
+              typeof docData.historyLogs === 'string'
+                ? JSON.parse(docData.historyLogs)
+                : docData.historyLogs || [];
+          } catch (e) {}
+
+          let dokumenPenawaran: DokumenItem[] = [];
+          try {
+            dokumenPenawaran =
+              typeof docData.dokumenPenawaran === 'string'
+                ? JSON.parse(docData.dokumenPenawaran)
+                : docData.dokumenPenawaran || [];
+          } catch (e) {}
+
+          return {
+            id: d.id,
+            ...docData,
+            historyLogs,
+            dokumenPenawaran,
+            status: determinedStatus || docData.status
+          } as PengajuanItem;
+        });
+
+        data.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        const currentYearStr = new Date().getFullYear().toString();
+        let maxCounter = 0;
+        data.forEach((d) => {
+          if (d.nomorPengajuan) {
+            const parts = d.nomorPengajuan.split('/');
+            if (parts.length === 4 && parts[1] === currentYearStr) {
+              const num = parseInt(parts[3], 10);
+              if (!isNaN(num) && num > maxCounter) {
+                maxCounter = num;
+              }
+            }
+          }
+        });
+        setSubmissionCounter(maxCounter + 1);
+        setSubmissions(data);
+        setIsConnecting(false);
+      },
+      (error) => {
+        console.warn('Firestore fallback to local:', error);
+        const saved = localStorage.getItem('pengajuan_data');
+        if (saved) {
+          try {
+            setSubmissions(JSON.parse(saved));
+          } catch (e) {}
+        }
+        setIsConnecting(false);
+      }
+    );
+
+    const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'email_settings');
+    const unsubscribeConfig = onSnapshot(configRef, (snap) => {
+      if (snap.exists()) {
+        setProcurementEmails(snap.data().emails || []);
+        setIsEmailEnabled(!!snap.data().enabled);
+      }
+    }, (error) => {
+      console.warn('Firestore config fallback to local:', error);
+    });
+
+    const sheetConfigRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'sheet_settings');
+    const unsubscribeSheetConfig = onSnapshot(sheetConfigRef, (snap) => {
+      if (snap.exists() && snap.data().url) setGoogleSheetUrl(snap.data().url);
+    }, (error) => {
+      console.warn('Firestore sheet config fallback to local:', error);
+    });
+
+    return () => {
+      unsubscribeSubmissions();
+      unsubscribeConfig();
+      unsubscribeSheetConfig();
+    };
+  }, [user]);
+
+  // Sync to local storage if in local mode
+  const persistLocalSubmissions = (updated: PengajuanItem[]) => {
+    setSubmissions(updated);
+    localStorage.setItem('pengajuan_data', JSON.stringify(updated));
+  };
+
+  // COUNTER CALCULATION FOR NEW REQUEST
+  useEffect(() => {
+    const currentYearStr = new Date().getFullYear().toString();
+    let maxCounter = 0;
+    submissions.forEach((d) => {
+      if (d.nomorPengajuan) {
+        const parts = d.nomorPengajuan.split('/');
+        if (parts.length === 4 && parts[1] === currentYearStr) {
+          const num = parseInt(parts[3], 10);
+          if (!isNaN(num) && num > maxCounter) {
+            maxCounter = num;
+          }
+        }
+      }
+    });
+    setSubmissionCounter(maxCounter + 1);
+  }, [submissions]);
+
+  // FILTERED ITEMS & PAGINATION
+  const { currentItems, totalPages, availableMonths } = useMemo(() => {
+    const base = submissions.filter((item) =>
+      activeTab === 'deleted'
+        ? item.status === 'Dihapus'
+        : activeTab === 'rejected'
+        ? item.status === 'Ditolak'
+        : item.status !== 'Dihapus' && item.status !== 'Ditolak'
+    );
+    const searchGlobal = searchQuery.toLowerCase();
+    const filtered = base.filter((item) => {
+      const matchesGlobal =
+        !searchQuery ||
+        item.nomorPengajuan?.toLowerCase().includes(searchGlobal) ||
+        item.namaBarang?.toLowerCase().includes(searchGlobal) ||
+        item.pic?.toLowerCase().includes(searchGlobal);
+      const matchesReq = !filterReq || item.nomorPengajuan?.toLowerCase().includes(filterReq.toLowerCase());
+      const matchesStatus = !filterStatus || item.status === filterStatus;
+      const matchesBarang = !filterBarang || item.namaBarang?.toLowerCase().includes(filterBarang.toLowerCase());
+      const matchesTotal =
+        !filterTotal ||
+        (item.hargaTotal
+          ? `${item.mataUang || 'IDR'} ${Number(item.hargaTotal).toLocaleString('id-ID')}`
+              .toLowerCase()
+              .includes(filterTotal.toLowerCase())
+          : false);
+      const matchesPic = !filterPic || item.pic?.toLowerCase().includes(filterPic.toLowerCase());
+      return matchesGlobal && matchesReq && matchesStatus && matchesBarang && matchesTotal && matchesPic;
+    });
+
+    return {
+      currentItems: filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+      totalPages: Math.ceil(filtered.length / itemsPerPage) || 1,
+      availableMonths: [
+        ...new Set(submissions.filter((s) => s.status !== 'Dihapus' && s.tanggal).map((s) => s.tanggal.slice(0, 7)))
+      ]
+        .sort()
+        .reverse()
+    };
+  }, [submissions, activeTab, searchQuery, filterReq, filterStatus, filterBarang, filterTotal, filterPic, currentPage]);
+
+  // PARETO & TREND DATA
+  const { dashboardData, dashboardItemData, maxDashboardValue, maxDashboardItemValue, grandTotalMonth, trendData } =
+    useMemo(() => {
+      let dData: { department: string; total: number }[] = [];
+      let maxDVal = 0;
+      let dItemData: { name: string; total: number }[] = [];
+      let maxDIVal = 0;
+      let gTotal = 0;
+      let tData: { month: string; total: number }[] = [];
+
+      if (showDashboard) {
+        const filteredByMonth = submissions.filter(
+          (s) =>
+            s.status !== 'Dihapus' &&
+            s.tanggal &&
+            s.tanggal.slice(0, 7) === dashboardMonth &&
+            ['Selesai', 'Menunggu Supply Chain', 'Menunggu Plant Manager', 'Menunggu Gudang'].includes(s.status)
+        );
+        const deptTotals: Record<string, number> = {};
+        const itemTotals: Record<string, number> = {};
+        filteredByMonth.forEach((s) => {
+          const cost = parseFloat(
+            s.hargaTotalKonversiRupiah ||
+              String(s.hargaTotal) ||
+              String(parseFloat(s.jumlahPemakaian || '0') * parseFloat(s.hargaProcurement || '0'))
+          );
+          if (cost > 0) {
+            deptTotals[s.department] = (deptTotals[s.department] || 0) + cost;
+            const itemKey = s.namaBarang ? s.namaBarang.toUpperCase() : 'TANPA NAMA';
+            itemTotals[itemKey] = (itemTotals[itemKey] || 0) + cost;
+            gTotal += cost;
+          }
+        });
+        dData = Object.keys(deptTotals)
+          .map((dept) => ({ department: dept, total: deptTotals[dept] }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 5);
+        dItemData = Object.keys(itemTotals)
+          .map((item) => ({ name: item, total: itemTotals[item] }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 5);
+        if (dData.length > 0) maxDVal = dData[0].total;
+        if (dItemData.length > 0) maxDIVal = dItemData[0].total;
+
+        const monthlyTotals: Record<string, number> = {};
+        submissions.forEach((s) => {
+          if (s.status !== 'Dihapus' && s.status !== 'Ditolak' && s.tanggal) {
+            const month = s.tanggal.slice(0, 7);
+            const cost = parseFloat(
+              s.hargaTotalKonversiRupiah ||
+                String(s.hargaTotal) ||
+                String(parseFloat(s.jumlahPemakaian || '0') * parseFloat(s.hargaProcurement || '0'))
+            );
+            if (cost > 0) monthlyTotals[month] = (monthlyTotals[month] || 0) + cost;
+          }
+        });
+        tData = Object.keys(monthlyTotals)
+          .filter((m) => m <= dashboardMonth)
+          .sort()
+          .slice(-6)
+          .map((m) => ({ month: m, total: monthlyTotals[m] }));
+      }
+      return {
+        dashboardData: dData,
+        dashboardItemData: dItemData,
+        maxDashboardValue: maxDVal,
+        maxDashboardItemValue: maxDIVal,
+        grandTotalMonth: gTotal,
+        trendData: tData
+      };
+    }, [submissions, showDashboard, dashboardMonth]);
+
+  const isSelesaiMode = formData.status === 'Selesai' && appRole !== 'admin';
+  const isFormLockedForUser = isSelesaiMode || (appRole !== 'user' && appRole !== 'admin' && !unlockUserForm);
+  const isProcurementLocked = isSelesaiMode || (appRole !== 'procurement' && appRole !== 'admin' && !unlockProcurementForm);
+  const isSupplyChainLocked = isSelesaiMode || (appRole !== 'supplychain' && appRole !== 'admin' && !unlockSupplyChainForm);
+  const isPlantManagerLocked = isSelesaiMode || (appRole !== 'plantmanager' && appRole !== 'admin');
+  const isGudangLocked = isSelesaiMode || (appRole !== 'gudang' && appRole !== 'admin');
+
+  const dateObj = new Date();
+  const year = dateObj.getFullYear();
+  const currentNomorPengajuan = `REQ/${year}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(
+    submissionCounter
+  ).padStart(3, '0')}`;
+  const displayNomorPengajuan = editId ? formData.nomorPengajuan : currentNomorPengajuan;
+
+  const currentKonsekuensi = Math.max(
+    parseInt(formData.safety || '0', 10),
+    parseInt(formData.environment || '0', 10),
+    parseInt(formData.quality || '0', 10),
+    parseInt(formData.hargaEstimasi || '0', 10)
+  );
+  const currentMatrixScore = currentKonsekuensi * parseInt(formData.demand || '0', 10);
+  const currentUsulan =
+    currentMatrixScore >= 12
+      ? 'Order (Beli untuk Persediaan)'
+      : currentMatrixScore >= 6
+      ? 'Order (Persediaan Minimum)'
+      : 'Beli Langsung (Non-Stock)';
+
+  const totalHargaVal =
+    (parseFloat(formData.jumlahPemakaian || '0') || 0) * (parseFloat(formData.hargaProcurement || '0') || 0);
+
+  let qValue = 0;
+  let miValue = 0;
+  if (formData.metodePenetapan === 'EOQ') {
+    let rawFrekuensi =
+      formData.frekuensiTipe === 'kali_per_tahun'
+        ? parseFloat(formData.frekuensiNilai1 || '0') || 0
+        : formData.frekuensiTipe === 'satu_kali_per_tahun'
+        ? 1 / (parseFloat(formData.frekuensiNilai2 || '1') || 1)
+        : parseFloat(formData.frekuensiNilai3 || '0') || 0;
+    const d = rawFrekuensi;
+    const biayaPesanS = parseFloat(formData.biayaPesan || '0') || 0;
+    const hargaSatuanP = parseFloat(formData.hargaProcurement || '0') || 0;
+
+    if (d > 0 && biayaPesanS > 0 && hargaSatuanP > 0) {
+      qValue = Math.round(Math.sqrt((2 * d * biayaPesanS) / (0.0597 * hargaSatuanP)));
+    }
+  }
+  miValue = Math.round(Number(qValue || 0) + Number(formData.ropValue || 0));
+
+  // LOGIN & LOGOUT
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const foundUser = APP_USERS[loginUsername];
+    if (foundUser && foundUser.password === loginPassword) {
+      setIsLoggedIn(true);
+      setAppRole(foundUser.role);
+      setLoggedInName(foundUser.name);
+      setLoginError('');
+      setFormData(INITIAL_FORM_STATE);
+      setEditId(null);
+    } else {
+      setLoginError('Username atau Password tidak valid!');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setAppRole('');
+    setLoggedInName('');
+    setLoginUsername('');
+    setLoginPassword('');
+    setFormData(INITIAL_FORM_STATE);
+    setEditId(null);
+  };
+
+  const handleToggleEmail = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsEmailEnabled(e.target.checked);
+    if (!db) return showToast('Email preference tersimpan lokal.', 'success');
+    try {
+      await setDoc(
+        doc(db, 'artifacts', appId, 'public', 'data', 'config', 'email_settings'),
+        { enabled: e.target.checked },
+        { merge: true }
+      );
+      showToast('Email preference updated.', 'success');
+    } catch (err) {}
+  };
+
+  const handleSaveSheetUrl = async (newUrl: string) => {
+    setGoogleSheetUrl(newUrl);
+    if (db && user) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'sheet_settings'), { url: newUrl }, { merge: true });
+  };
+
+  const fetchAndParseCSV = async (url: string) => {
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) throw new Error('Link Google Sheet tidak valid.');
+    const docId = match[1];
+    let gid = '0';
+    const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+    if (gidMatch) gid = gidMatch[1];
+    const exportUrl = `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
+    const response = await fetch(exportUrl);
+    if (!response.ok) throw new Error('Gagal menarik data.');
+    const csvText = await response.text();
+    if (csvText.trim().toLowerCase().startsWith('<!doctype html>')) throw new Error('Akses ditolak.');
+
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let cur = '';
+    let insideQuote = false;
+    for (let i = 0; i < csvText.length; i++) {
+      const char = csvText[i];
+      if (insideQuote) {
+        if (char === '"') {
+          if (csvText[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else insideQuote = false;
+        } else cur += char;
+      } else {
+        if (char === '"') insideQuote = true;
+        else if (char === ',') {
+          row.push(cur.trim());
+          cur = '';
+        } else if (char === '\n' || char === '\r') {
+          if (char === '\r' && csvText[i + 1] === '\n') i++;
+          row.push(cur.trim());
+          if (row.some((c) => c !== '')) rows.push(row);
+          row = [];
+          cur = '';
+        } else cur += char;
+      }
+    }
+    if (cur || row.length > 0) {
+      row.push(cur.trim());
+      if (row.some((c) => c !== '')) rows.push(row);
+    }
+    return rows.length < 2 ? [] : rows;
+  };
+
+  const handleGlobalSync = async () => {
+    if (!googleSheetUrl) return showToast('Link Google Sheet belum diatur.', 'error');
+    setIsSyncingGlobal(true);
+    try {
+      const rows = await fetchAndParseCSV(googleSheetUrl);
+      const headers = rows.length > 0 ? rows[0].map((h) => h.toLowerCase()) : [];
+      const idxReq = headers.findIndex((h) => h.includes('req') || h.includes('nomor pengajuan') || h.includes('no pengajuan'));
+      const idxStatusSheet = headers.findIndex((h) => h === 'status' || h.includes('sub status'));
+      const idxOracle = headers.findIndex((h) => h.includes('kode oracle'));
+      const idxGuna = headers.findIndex((h) => h.includes('kode guna') || h.includes('guna'));
+      const idxSatuan = headers.findIndex((h) => h === 'satuan' || h.includes('satuan oracle'));
+      const idxNamaOracle = headers.findIndex(
+        (h) =>
+          h.includes('nama barang oracle') ||
+          h.includes('nama barang di oracle') ||
+          h.includes('nama brg di oracle') ||
+          h.includes('deskripsi oracle')
+      );
+
+      let updateCount = 0;
+      const updatedSubmissions = [...submissions];
+
+      for (let i = 0; i < updatedSubmissions.length; i++) {
+        const item = updatedSubmissions[i];
+        if (item.status === 'Dihapus' || item.status === 'Ditolak') continue;
+        const targetReq = item.nomorPengajuan.trim().toLowerCase();
+        const foundRow = rows.length > 0 && idxReq !== -1 ? rows.find((r) => r[idxReq] && r[idxReq].toLowerCase() === targetReq) : null;
+        const updates: any = {};
+        if (foundRow) {
+          if (idxStatusSheet !== -1) updates.subStatusGudang = foundRow[idxStatusSheet] || '';
+          if (idxOracle !== -1) updates.kodeOracle = foundRow[idxOracle] || '';
+          if (idxGuna !== -1) updates.kodeGunaOracle = foundRow[idxGuna] || '';
+          if (idxSatuan !== -1) updates.satuanOracle = foundRow[idxSatuan] || '';
+          if (idxNamaOracle !== -1) updates.namaBrgOracleGudang = foundRow[idxNamaOracle] || '';
+        }
+
+        if (Object.keys(updates).length > 0) {
+          updatedSubmissions[i] = { ...item, ...updates };
+          updateCount++;
+          if (db && user && item.id) {
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', item.id), updates, { merge: true });
+          }
+        }
+      }
+
+      persistLocalSubmissions(updatedSubmissions);
+      showToast(`Berhasil sinkronisasi ${updateCount} pengajuan!`, 'success');
+    } catch (error) {
+      showToast('Gagal sinkronisasi data sheet.', 'error');
+    } finally {
+      setIsSyncingGlobal(false);
+    }
+  };
+
+  const handleSyncFromSheet = async () => {
+    if (!googleSheetUrl) return showToast('Masukkan link Google Sheet!', 'error');
+    setSyncStatus('loading');
+    try {
+      const rows = await fetchAndParseCSV(googleSheetUrl);
+      let foundData: string[] | null = null;
+      let idxReq = -1,
+        idxOracle = -1,
+        idxGuna = -1,
+        idxSatuan = -1,
+        idxStatusSheet = -1,
+        idxNamaOracle = -1;
+      if (rows.length > 0) {
+        const headers = rows[0].map((h) => h.toLowerCase());
+        idxReq = headers.findIndex((h) => h.includes('req') || h.includes('nomor pengajuan') || h.includes('no pengajuan'));
+        idxOracle = headers.findIndex((h) => h.includes('kode oracle'));
+        idxGuna = headers.findIndex((h) => h.includes('guna') || h.includes('kode guna'));
+        idxSatuan = headers.findIndex((h) => h === 'satuan' || h.includes('satuan oracle'));
+        idxStatusSheet = headers.findIndex((h) => h === 'status' || h.includes('sub status'));
+        idxNamaOracle = headers.findIndex(
+          (h) =>
+            h.includes('nama barang oracle') ||
+            h.includes('nama barang di oracle') ||
+            h.includes('nama brg di oracle') ||
+            h.includes('deskripsi oracle')
+        );
+        if (idxReq !== -1) {
+          const targetReq = formData.nomorPengajuan.trim().toLowerCase();
+          for (let i = 1; i < rows.length; i++) {
+            if (rows[i][idxReq] && rows[i][idxReq].toLowerCase() === targetReq) {
+              foundData = rows[i];
+              break;
+            }
+          }
+        }
+      }
+      if (foundData) {
+        const newKodeOracle = idxOracle !== -1 ? foundData[idxOracle] || '' : formData.kodeOracle;
+        const newKodeGunaOracle = idxGuna !== -1 ? foundData[idxGuna] || '' : formData.kodeGunaOracle;
+        const newSatuanOracle = idxSatuan !== -1 ? foundData[idxSatuan] || '' : formData.satuanOracle;
+        const newNamaOracleGudang = idxNamaOracle !== -1 ? foundData[idxNamaOracle] || '' : formData.namaBrgOracleGudang;
+        const fetchedSubStatus = idxStatusSheet !== -1 ? foundData[idxStatusSheet] || '' : formData.subStatusGudang;
+        setFormData((prev) => ({
+          ...prev,
+          kodeOracle: newKodeOracle,
+          kodeGunaOracle: newKodeGunaOracle,
+          satuanOracle: newSatuanOracle,
+          namaBrgOracleGudang: newNamaOracleGudang,
+          subStatusGudang: fetchedSubStatus
+        }));
+        if (editId && db && user) {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', editId), {
+            kodeOracle: newKodeOracle,
+            kodeGunaOracle: newKodeGunaOracle,
+            satuanOracle: newSatuanOracle,
+            namaBrgOracleGudang: newNamaOracleGudang,
+            subStatusGudang: fetchedSubStatus
+          }, { merge: true });
+        }
+        setSyncStatus('success');
+        showToast('Data berhasil ditarik dari Google Sheets', 'success');
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          kodeOracle: '',
+          kodeGunaOracle: '',
+          satuanOracle: '',
+          namaBrgOracleGudang: '',
+          subStatusGudang: ''
+        }));
+        setSyncStatus('not_found');
+        showToast('Data tidak ditemukan di sheet, di-reset.', 'info');
+      }
+    } catch (err) {
+      setSyncStatus('error');
+      showToast('Gagal sinkronisasi Google Sheet.', 'error');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const finalValue = name === 'picLainnya' ? value.toUpperCase() : value;
+      const newData = { ...prev, [name]: finalValue };
+      if (name === 'namaBarang') {
+        newData.namaBarangOracle = finalValue;
+      }
+      return newData;
+    });
+  };
+
+  const handleFotoBarangUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1.5 * 1024 * 1024) {
+        showToast('Maksimal input foto adalah 1.5 MB.', 'error');
+        e.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > 600) {
+              h *= 600 / w;
+              w = 600;
+            }
+          } else {
+            if (h > 600) {
+              w *= 600 / h;
+              h = 600;
+            }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          ctx?.drawImage(img, 0, 0, w, h);
+          setFormData((prev) => ({ ...prev, fotoBarang: canvas.toDataURL('image/jpeg', 0.6) }));
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDokumenUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (appRole !== 'procurement' && appRole !== 'admin' && !unlockProcurementForm) return;
+    const files: File[] = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const currentDocs = Array.isArray(formData.dokumenPenawaran) ? formData.dokumenPenawaran : [];
+    if (currentDocs.length + files.length > 5) {
+      showToast('Maksimal 5 dokumen penawaran.', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    let hasLargeFile = false;
+    files.forEach((file: File) => {
+      if (file.size > 1 * 1024 * 1024) {
+        hasLargeFile = true;
+        return;
+      }
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            let w = img.width;
+            let h = img.height;
+            if (w > h) {
+              if (w > 600) {
+                h *= 600 / w;
+                w = 600;
+              }
+            } else {
+              if (h > 600) {
+                w *= 600 / h;
+                h = 600;
+              }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            ctx?.drawImage(img, 0, 0, w, h);
+            const compressedData = canvas.toDataURL('image/jpeg', 0.6);
+            setFormData((p) => ({
+              ...p,
+              dokumenPenawaran: [
+                ...(Array.isArray(p.dokumenPenawaran) ? p.dokumenPenawaran : []),
+                { name: file.name, data: compressedData }
+              ]
+            }));
+          };
+          img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () =>
+          setFormData((p) => ({
+            ...p,
+            dokumenPenawaran: [
+              ...(Array.isArray(p.dokumenPenawaran) ? p.dokumenPenawaran : []),
+              { name: file.name, data: reader.result as string }
+            ]
+          }));
+        reader.readAsDataURL(file);
+      }
+    });
+    if (hasLargeFile) showToast('Beberapa file diabaikan karena ukurannya melebihi 1 MB.', 'error');
+    e.target.value = '';
+  };
+
+  const removeDokumen = (index: number) =>
+    setFormData((prev) => ({
+      ...prev,
+      dokumenPenawaran: (Array.isArray(prev.dokumenPenawaran) ? prev.dokumenPenawaran : []).filter((_, i) => i !== index)
+    }));
+
+  const downloadImage = (dataUrl: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = filename || `foto_${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // SUBMIT & UPDATE
+  const handleSubmit = async (e: React.FormEvent, actionType: 'Approve' | 'Reject' = 'Approve') => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    let finalKeputusanPM = formData.keputusanPlantManager;
+
+    if (appRole !== 'admin') {
+      if (appRole === 'user' || unlockUserForm) {
+        if (!formData.ttdDiajukan || !formData.ttdDisetujui || !formData.namaDiajukan || !formData.namaDisetujui)
+          return showToast('Lengkapi Tanda Tangan pengesahan.', 'error');
+        if (formData.minimumStock === '' || formData.minimumStock === null || formData.minimumStock === undefined)
+          return showToast('Minimum Stock wajib diisi.', 'error');
+        if (!formData.jumlahPemakaian || parseFloat(formData.jumlahPemakaian) <= 0)
+          return showToast('Jumlah Pemakaian wajib diisi.', 'error');
+      }
+      if (appRole === 'procurement' || unlockProcurementForm) {
+        if (!formData.leadTime || !formData.hargaProcurement)
+          return showToast('Lengkapi Lead Time dan Harga Barang.', 'error');
+      }
+      if (appRole === 'supplychain' || unlockSupplyChainForm) {
+        if (!formData.ttdSupplyChain || !formData.namaSupplyChain)
+          return showToast('Lengkapi Tanda Tangan Supply Chain.', 'error');
+        if (formData.metodePenetapan === 'EOQ' && (!formData.biayaPesan || parseFloat(formData.biayaPesan) <= 0))
+          return showToast('Biaya Pesan (S) wajib diisi manual untuk kalkulasi EOQ.', 'error');
+      }
+      if (appRole === 'plantmanager') {
+        finalKeputusanPM = actionType === 'Reject' ? 'Tidak Approve' : 'Approve';
+        if (finalKeputusanPM === 'Tidak Approve' && (!formData.alasanTidakApprove || formData.alasanTidakApprove.trim() === ''))
+          return showToast('Isikan alasan menolak pada kolom Catatan.', 'error');
+      }
+      if (appRole === 'gudang') {
+        if (formData.keputusanGudang !== 'Approve' || !formData.namaGudang)
+          return showToast('Mohon berikan persetujuan Gudang.', 'error');
+      }
+    } else {
+      if (!formData.namaBarang) return showToast('Nama Barang wajib diisi.', 'error');
+    }
+
+    let finalPersyaratan: string[] = Array.isArray(formData.persyaratanKhusus) ? [...formData.persyaratanKhusus] : [];
+    if (finalPersyaratan.includes('Lainnya...')) {
+      finalPersyaratan = finalPersyaratan.filter((item) => item !== 'Lainnya...');
+      if (formData.persyaratanLainnya && String(formData.persyaratanLainnya).trim() !== '')
+        finalPersyaratan.push(`Lainnya (${String(formData.persyaratanLainnya)})`);
+    }
+
+    const safeDokumen: DokumenItem[] = Array.isArray(formData.dokumenPenawaran)
+      ? formData.dokumenPenawaran.map((d) => ({
+          name: String(d?.name || 'document'),
+          data: String(d?.data || '')
+        }))
+      : [];
+
+    let finalDepartment = formData.department === 'Lainnya...' ? formData.departmentLainnya : formData.department;
+    let finalSatuan = formData.satuan === 'Lainnya...' ? formData.satuanLainnya : formData.satuan;
+    let finalFrekuensi =
+      formData.frekuensiTipe === 'kali_per_tahun'
+        ? `${formData.frekuensiNilai1} kali / tahun`
+        : formData.frekuensiTipe === 'satu_kali_per_tahun'
+        ? `1 kali / ${formData.frekuensiNilai2} tahun`
+        : formData.frekuensiNilai3;
+    finalFrekuensi = finalFrekuensi ? finalFrekuensi.replace(/tahun\s*tahun/gi, 'tahun') : '';
+
+    setIsSubmitting(true);
+    let nextStatus = formData.status;
+    let logAction = '';
+
+    if (appRole !== 'admin') {
+      if (appRole === 'user') {
+        nextStatus = 'Menunggu Procurement';
+        logAction = editId ? 'Memperbarui Pengajuan (Revisi User)' : 'Membuat Pengajuan Baru (Submit)';
+      } else if (appRole === 'procurement') {
+        nextStatus = 'Menunggu Supply Chain';
+        logAction = 'Melengkapi Data Procurement (Approve)';
+      } else if (appRole === 'supplychain') {
+        nextStatus = 'Menunggu Plant Manager';
+        logAction = 'Melengkapi Data Supply Chain (Approve)';
+      } else if (appRole === 'plantmanager') {
+        nextStatus = finalKeputusanPM === 'Approve' ? 'Menunggu Gudang' : 'Ditolak';
+        logAction = finalKeputusanPM === 'Approve' ? 'Mengesahkan Pengajuan (Approve PM)' : 'Menolak Pengajuan (Reject PM)';
+      } else if (appRole === 'gudang') {
+        nextStatus = 'Selesai';
+        logAction = 'Mengesahkan di Gudang Sparepart (Selesai)';
+      }
+
+      if (editId) {
+        if (appRole === 'user' && formData.status === 'Dikembalikan ke User') nextStatus = 'Menunggu Procurement';
+        if (appRole === 'procurement' && formData.status === 'Dikembalikan ke Procurement')
+          nextStatus = 'Menunggu Supply Chain';
+        if (appRole === 'supplychain' && formData.status === 'Dikembalikan ke Supply Chain')
+          nextStatus = 'Menunggu Plant Manager';
+      }
+    } else {
+      logAction = `Mengubah Data (Super Admin) - Set Status ke: ${nextStatus}`;
+    }
+
+    const tStamp =
+      new Date().toLocaleString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) + ' WIB';
+
+    let currentLogs: HistoryLog[] = Array.isArray(formData.historyLogs) ? [...formData.historyLogs] : [];
+
+    let komentarCatatan = formData.alasanTidakApprove || '';
+    if (appRole === 'user' && formData.status === 'Dikembalikan ke User' && formData.komentarBalasanUser) {
+      komentarCatatan = formData.komentarBalasanUser;
+    }
+
+    let finalPic = formData.pic === 'Lainnya...' ? formData.picLainnya : formData.pic;
+
+    currentLogs.unshift({
+      timestamp: Date.now(),
+      dateString: tStamp,
+      userRole: appRole.toUpperCase(),
+      userName:
+        appRole === 'user'
+          ? finalPic || 'User'
+          : appRole === 'admin'
+          ? 'Super Admin'
+          : appRole === 'procurement'
+          ? 'Procurement'
+          : appRole === 'supplychain'
+          ? formData.namaSupplyChain || 'Supply Chain'
+          : appRole === 'gudang'
+          ? formData.namaGudang || 'Gudang'
+          : 'Plant Manager',
+      action: logAction,
+      type: 'approve',
+      comment: komentarCatatan
+    });
+
+    const submissionData: PengajuanItem = {
+      ...formData,
+      pic: finalPic || '',
+      keputusanPlantManager: finalKeputusanPM,
+      nomorPengajuan: displayNomorPengajuan,
+      department: finalDepartment || '',
+      satuan: finalSatuan || '',
+      frekuensi: finalFrekuensi,
+      persyaratanKhusus: finalPersyaratan.length > 0 ? finalPersyaratan.join(', ') : '-',
+      dokumenPenawaran: safeDokumen,
+      historyLogs: currentLogs,
+      konsekuensi: currentKonsekuensi || '-',
+      matrixScore: currentMatrixScore || '-',
+      usulanMatrix: currentUsulan,
+      hargaTotal: totalHargaVal,
+      qValue: qValue,
+      miDitetapkan: formData.miDitetapkan || '',
+      waktuSubmitUser: appRole === 'user' || unlockUserForm ? tStamp : formData.waktuSubmitUser || null,
+      status: nextStatus,
+      timestamp: editId ? formData.timestamp || Date.now() : Date.now(),
+      userId: user?.uid || 'offline-user'
+    };
+
+    try {
+      if (db && user) {
+        const firestorePayload = {
+          ...submissionData,
+          dokumenPenawaran: JSON.stringify(safeDokumen),
+          historyLogs: JSON.stringify(currentLogs)
+        };
+        if (editId) {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', editId), firestorePayload, { merge: true });
+        } else {
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pengajuan'), firestorePayload);
+        }
+      } else {
+        // Local persist fallback
+        if (editId) {
+          const updated = submissions.map((s) => (s.id === editId ? { ...submissionData, id: editId } : s));
+          persistLocalSubmissions(updated);
+        } else {
+          const newItem = { ...submissionData, id: `local-${Date.now()}` };
+          persistLocalSubmissions([newItem, ...submissions]);
+        }
+      }
+
+      setSubmitSuccess({ show: true, nomor: displayNomorPengajuan, isEdit: !!editId });
+      setEditId(null);
+      setFormData(INITIAL_FORM_STATE);
+      setUnlockUserForm(false);
+      setUnlockProcurementForm(false);
+      setUnlockSupplyChainForm(false);
+      setResetKey((prev) => prev + 1);
+      showToast('Data pengajuan berhasil disimpan!', 'success');
+    } catch (err: any) {
+      console.error('Save Error:', err);
+      showToast('Gagal menyimpan: ' + (err.message || 'Error pada sistem'), 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReturn = async (target: string) => {
+    if (!editId) return;
+
+    let returnComment =
+      appRole === 'procurement'
+        ? formData.komentarProcurement
+        : appRole === 'supplychain'
+        ? formData.komentarReturnSC
+        : appRole === 'plantmanager'
+        ? formData.alasanTidakApprove
+        : formData.komentarReturnGudang;
+
+    if (!returnComment || returnComment.trim() === '') {
+      if (appRole === 'plantmanager') return showToast('Pilih "Tidak Approve" & isikan Alasan Penolakan / Retur.', 'error');
+      return showToast('Mohon isikan Komentar Retur.', 'error');
+    }
+
+    let currentLogs: HistoryLog[] = Array.isArray(formData.historyLogs) ? [...formData.historyLogs] : [];
+    currentLogs.unshift({
+      timestamp: Date.now(),
+      dateString: new Date().toLocaleString('id-ID') + ' WIB',
+      userRole: appRole.toUpperCase(),
+      userName: 'Return',
+      action: `Mengembalikan ke ${target}`,
+      type: 'revise',
+      comment: returnComment
+    });
+
+    const updateData: any = {
+      status: `Dikembalikan ke ${target}`,
+      historyLogs: currentLogs,
+      ...(appRole === 'procurement' && { komentarProcurement: returnComment }),
+      ...(appRole === 'supplychain' && { komentarReturnSC: returnComment }),
+      ...(appRole === 'plantmanager' && { alasanTidakApprove: returnComment }),
+      ...(appRole === 'gudang' && { komentarReturnGudang: returnComment })
+    };
+
+    setIsSubmitting(true);
+    try {
+      if (db && user) {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', editId), {
+          ...updateData,
+          historyLogs: JSON.stringify(currentLogs)
+        }, { merge: true });
+      } else {
+        const updated = submissions.map((s) => (s.id === editId ? { ...s, ...updateData } : s));
+        persistLocalSubmissions(updated);
+      }
+      showToast(`Dikembalikan ke ${target}.`, 'success');
+      setEditId(null);
+      setFormData(INITIAL_FORM_STATE);
+      setUnlockUserForm(false);
+      setUnlockProcurementForm(false);
+      setUnlockSupplyChainForm(false);
+      setResetKey((prev) => prev + 1);
+    } catch (err) {
+      showToast('Gagal memproses Return/Pengembalian dokumen.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (item: PengajuanItem) => {
+    setSubmitSuccess({ show: false, nomor: '', isEdit: false });
+    let pK: string[] = [];
+    let pL = '';
+    if (item.persyaratanKhusus && item.persyaratanKhusus !== '-') {
+      const pStr = Array.isArray(item.persyaratanKhusus) ? item.persyaratanKhusus.join(', ') : item.persyaratanKhusus;
+      pStr.split(', ').forEach((p) => {
+        if (p.trim().startsWith('Lainnya')) {
+          pK.push('Lainnya...');
+          pL = p.match(/\((.*?)\)/)?.[1] || '';
+        } else pK.push(p.trim());
+      });
+    }
+
+    let fT = 'lain_lain',
+      f1 = '',
+      f2 = '',
+      f3 = '';
+    if (item.frekuensi) {
+      const m1 = item.frekuensi.match(/^(\d+)\s*kali/i);
+      const m2 = item.frekuensi.match(/^1\s*kali\s*\/\s*(\d+)/i);
+      if (m1) {
+        fT = 'kali_per_tahun';
+        f1 = m1[1];
+      } else if (m2) {
+        fT = 'satu_kali_per_tahun';
+        f2 = m2[1];
+      } else {
+        fT = 'lain_lain';
+        f3 = item.frekuensi;
+      }
+    }
+
+    const predefinedPics = ['ANI Y', 'FEBRYAN', 'WAHYU', 'NUR R'];
+    let finalPic = item.pic;
+    let finalPicLainnya = '';
+    if (item.pic && !predefinedPics.includes(item.pic)) {
+      finalPic = 'Lainnya...';
+      finalPicLainnya = item.pic;
+    }
+
+    setFormData({
+      ...item,
+      pic: finalPic,
+      picLainnya: finalPicLainnya,
+      komentarBalasanUser: '',
+      namaBrgOracleGudang: item.namaBrgOracleGudang || '',
+      namaBarangOracle: item.namaBarangOracle || item.namaBarang || '',
+      satuan: ['Pcs', 'Unit', 'Set', 'Liter', 'Kg', 'Meter'].includes(item.satuan) ? item.satuan : 'Lainnya...',
+      satuanLainnya: !['Pcs', 'Unit', 'Set', 'Liter', 'Kg', 'Meter'].includes(item.satuan) ? item.satuan : '',
+      department: ['Maintenance', 'Utility'].includes(item.department) ? item.department : 'Lainnya...',
+      departmentLainnya: !['Maintenance', 'Utility'].includes(item.department) ? item.department : '',
+      frekuensiTipe: fT,
+      frekuensiNilai1: f1,
+      frekuensiNilai2: f2,
+      frekuensiNilai3: f3,
+      persyaratanKhusus: pK,
+      persyaratanLainnya: pL,
+      dokumenPenawaran: Array.isArray(item.dokumenPenawaran) ? item.dokumenPenawaran : []
+    });
+    setEditId(item.id || null);
+    setUnlockUserForm(false);
+    setUnlockProcurementForm(false);
+    setUnlockSupplyChainForm(false);
+    setResetKey((prev) => prev + 1);
+
+    let targetBlockId = 'blok-user';
+    if (appRole !== 'admin') {
+      if (item.status === 'Dikembalikan ke Procurement' || item.status === 'Menunggu Procurement') {
+        targetBlockId = 'blok-procurement';
+      } else if (item.status === 'Dikembalikan ke Supply Chain' || item.status === 'Menunggu Supply Chain') {
+        targetBlockId = 'blok-supplychain';
+      } else if (item.status === 'Menunggu Plant Manager') {
+        targetBlockId = 'blok-plantmanager';
+      } else if (item.status === 'Menunggu Gudang') {
+        targetBlockId = 'blok-gudang';
+      }
+    } else {
+      if (item.status === 'Menunggu Procurement' || item.status === 'Dikembalikan ke Procurement')
+        targetBlockId = 'blok-procurement';
+      else if (item.status === 'Menunggu Supply Chain' || item.status === 'Dikembalikan ke Supply Chain')
+        targetBlockId = 'blok-supplychain';
+      else if (item.status === 'Menunggu Plant Manager') targetBlockId = 'blok-plantmanager';
+      else if (item.status === 'Menunggu Gudang') targetBlockId = 'blok-gudang';
+    }
+
+    setTimeout(() => {
+      const el = document.getElementById(targetBlockId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 150);
+  };
+
+  const handleCancelEdit = () => {
+    setEditId(null);
+    setFormData(INITIAL_FORM_STATE);
+    setSubmitSuccess({ show: false, nomor: '', isEdit: false });
+    setUnlockUserForm(false);
+    setUnlockProcurementForm(false);
+    setUnlockSupplyChainForm(false);
+    setResetKey((prev) => prev + 1);
+    setSyncStatus('');
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete || !deleteReason.trim()) return showToast('Alasan wajib diisi.', 'error');
+    try {
+      if (db && user && itemToDelete.id) {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', itemToDelete.id), {
+          status: 'Dihapus',
+          alasanHapus: deleteReason,
+          waktuHapus: Date.now()
+        }, { merge: true });
+      } else {
+        const updated = submissions.map((s) =>
+          s.id === itemToDelete.id ? { ...s, status: 'Dihapus', alasanHapus: deleteReason, waktuHapus: Date.now() } : s
+        );
+        persistLocalSubmissions(updated);
+      }
+      setItemToDelete(null);
+      showToast('Pengajuan dipindahkan ke Histori Dihapus.', 'success');
+    } catch (err: any) {
+      console.error(err);
+      showToast('Gagal menghapus: ' + (err.message || 'Error pada sistem'), 'error');
+    }
+  };
+
+  const handleRestoreItem = async (item: PengajuanItem) => {
+    try {
+      const nextStatus = item.hargaProcurement
+        ? item.ttdSupplyChain
+          ? item.keputusanPlantManager
+            ? item.keputusanPlantManager === 'Approve'
+              ? item.keputusanGudang === 'Approve'
+                ? 'Selesai'
+                : 'Menunggu Gudang'
+              : 'Ditolak'
+            : 'Menunggu Plant Manager'
+          : 'Menunggu Supply Chain'
+        : 'Menunggu Procurement';
+
+      if (db && user && item.id) {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', item.id), {
+          status: nextStatus,
+          alasanHapus: null,
+          waktuHapus: null
+        }, { merge: true });
+      } else {
+        const updated = submissions.map((s) =>
+          s.id === item.id ? { ...s, status: nextStatus, alasanHapus: null, waktuHapus: null } : s
+        );
+        persistLocalSubmissions(updated);
+      }
+      showToast('Pengajuan berhasil direstore.', 'success');
+    } catch (err) {}
+  };
+
+  const exportToExcel = () => {
+    if (submissions.length === 0) return showToast('Tidak ada data untuk diexport.', 'error');
+    showToast('Menyiapkan file Excel CSV...', 'info');
+
+    const headers = [
+      'No. Req',
+      'Tanggal',
+      'PIC',
+      'Department',
+      'Nama Barang',
+      'Merk',
+      'Spesifikasi',
+      'Jumlah',
+      'Satuan',
+      'Min Stock',
+      'Mata Uang',
+      'Harga Satuan',
+      'Total Harga',
+      'Status',
+      'Metode Penetapan',
+      'Q',
+      'ROP',
+      'MI',
+      'Kode Oracle',
+      'Kode Guna',
+      'Satuan Oracle',
+      'Nama Barang Oracle'
+    ];
+
+    const escapeCsv = (str: any) => {
+      if (str === null || str === undefined) return '""';
+      const safeStr = String(str).replace(/"/g, '""');
+      return `"${safeStr}"`;
+    };
+
+    const csvRows = submissions.map((item) =>
+      [
+        escapeCsv(item.nomorPengajuan),
+        escapeCsv(item.tanggal),
+        escapeCsv(item.pic),
+        escapeCsv(item.department === 'Lainnya...' ? item.departmentLainnya : item.department),
+        escapeCsv(item.namaBarang),
+        escapeCsv(item.merk),
+        escapeCsv(item.spesifikasi),
+        escapeCsv(item.jumlahPemakaian),
+        escapeCsv(item.satuan === 'Lainnya...' ? item.satuanLainnya : item.satuan),
+        escapeCsv(item.minimumStock),
+        escapeCsv(item.mataUang),
+        escapeCsv(item.hargaProcurement),
+        escapeCsv(item.hargaTotal),
+        escapeCsv(item.status),
+        escapeCsv(item.metodePenetapan),
+        escapeCsv(item.qDitetapkan || (item.qValue ? Math.round(Number(item.qValue)) : '')),
+        escapeCsv(item.ropDitetapkan || item.ropValue || ''),
+        escapeCsv(item.miDitetapkan || Math.round(Number(item.qValue || 0) + Number(item.ropValue || 0)) || ''),
+        escapeCsv(item.kodeOracle),
+        escapeCsv(item.kodeGunaOracle),
+        escapeCsv(item.satuanOracle),
+        escapeCsv(item.namaBrgOracleGudang || item.namaBarangOracle)
+      ].join(';')
+    );
+
+    const csvContent = [headers.map(escapeCsv).join(';'), ...csvRows].join('\n');
+    const finalCsvData = 'sep=;\n' + csvContent;
+
+    const blob = new Blob(['\ufeff' + finalCsvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Data_Pengajuan_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Data berhasil diexport.', 'success');
+  };
+
+  const exportGudangExcel = () => {
+    const validItems = submissions.filter((s) => s.status === 'Menunggu Gudang');
+    if (validItems.length === 0) return showToast("Tidak ada data 'Menunggu Gudang' untuk diexport.", 'error');
+    showToast('Menyiapkan file Excel Gudang...', 'info');
+
+    const headers = ['Nomor Req', 'Nama Barang', 'Satuan', 'Kode Oracle', 'Kode Guna', 'Nama Barang di Oracle'];
+
+    const escapeCsv = (str: any) => {
+      if (str === null || str === undefined) return '""';
+      const safeStr = String(str).replace(/"/g, '""');
+      return `"${safeStr}"`;
+    };
+
+    const csvRows = validItems.map((item) =>
+      [
+        escapeCsv(item.nomorPengajuan),
+        escapeCsv(item.namaBarang),
+        escapeCsv(item.satuan === 'Lainnya...' ? item.satuanLainnya : item.satuan),
+        escapeCsv(item.kodeOracle),
+        escapeCsv(item.kodeGunaOracle),
+        escapeCsv(item.namaBrgOracleGudang)
+      ].join(';')
+    );
+
+    const csvContent = [headers.map(escapeCsv).join(';'), ...csvRows].join('\n');
+    const finalCsvData = 'sep=;\n' + csvContent;
+
+    const blob = new Blob(['\ufeff' + finalCsvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Data_Gudang_Oracle_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Data Gudang berhasil diexport.', 'success');
+  };
+
+  const handleBackupDatabase = () => {
+    if (submissions.length === 0) return showToast('Tidak ada data untuk dibackup.', 'error');
+    showToast('Membuat Backup JSON...', 'info');
+    const dataStr = JSON.stringify(submissions, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_pengajuan_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup berhasil diunduh.', 'success');
+  };
+
+  const handleRestoreDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    showToast('Membaca file backup...', 'info');
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (!Array.isArray(data)) return showToast('Format JSON harus array.', 'error');
+
+        if (db && user) {
+          showToast(`Merestore ${data.length} data ke cloud...`, 'info');
+          const batchSize = 10;
+          for (let i = 0; i < data.length; i += batchSize) {
+            const chunk = data.slice(i, i + batchSize);
+            const batch = writeBatch(db);
+            chunk.forEach((item) => {
+              const docId = item.id;
+              const docData = { ...item };
+              delete docData.id;
+              if (Array.isArray(docData.historyLogs)) docData.historyLogs = JSON.stringify(docData.historyLogs);
+              if (Array.isArray(docData.dokumenPenawaran)) docData.dokumenPenawaran = JSON.stringify(docData.dokumenPenawaran);
+
+              if (docId) {
+                batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', docId), docData);
+              } else {
+                batch.set(doc(collection(db, 'artifacts', appId, 'public', 'data', 'pengajuan')), docData);
+              }
+            });
+            await batch.commit();
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        } else {
+          persistLocalSubmissions(data);
+        }
+        showToast('Restore Database Berhasil!', 'success');
+      } catch (err) {
+        showToast('Gagal memproses file JSON.', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleClearDatabase = async () => {
+    if (clearDbPassword !== APP_USERS['admin'].password) {
+      setClearDbError('Password Salah!');
+      return;
+    }
+    try {
+      if (db && user) {
+        const batchSize = 50;
+        for (let i = 0; i < submissions.length; i += batchSize) {
+          const chunk = submissions.slice(i, i + batchSize);
+          const batch = writeBatch(db);
+          chunk.forEach((item) => {
+            if (item.id) batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'pengajuan', item.id));
+          });
+          await batch.commit();
+        }
+      } else {
+        persistLocalSubmissions([]);
+      }
+      setShowClearDbConfirm(false);
+      setClearDbPassword('');
+      setClearDbError('');
+      showToast('Database berhasil dikosongkan.', 'success');
+    } catch (err) {
+      showToast('Gagal mengosongkan database.', 'error');
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!viewItem) return;
+    setIsGeneratingPDF(true);
+    const wasDarkMode = isDarkMode;
+    if (wasDarkMode) setIsDarkMode(false);
+    setTimeout(() => {
+      const element = document.getElementById('printable-document');
+      const opt = {
+        margin: [10, 0, 10, 0],
+        filename: `Pengajuan_${viewItem.nomorPengajuan.replace(/\//g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      if (!window.html2pdf) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.onload = () =>
+          window
+            .html2pdf()
+            .set(opt)
+            .from(element)
+            .save()
+            .finally(() => {
+              setIsGeneratingPDF(false);
+              if (wasDarkMode) setIsDarkMode(true);
+            });
+        document.body.appendChild(script);
+      } else {
+        window
+          .html2pdf()
+          .set(opt)
+          .from(element)
+          .save()
+          .finally(() => {
+            setIsGeneratingPDF(false);
+            if (wasDarkMode) setIsDarkMode(true);
+          });
+      }
+    }, 800);
+  };
+
+  const hasDikembalikanUser = submissions.some((s) => s.status === 'Dikembalikan ke User');
+  const hasDikembalikanProc = submissions.some((s) => s.status === 'Dikembalikan ke Procurement');
+  const hasDikembalikanSC = submissions.some((s) => s.status === 'Dikembalikan ke Supply Chain');
+
+  // IF NOT LOGGED IN, DISPLAY LOGIN SCREEN
+  if (!isLoggedIn) {
+    return (
+      <LoginScreen
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        loginUsername={loginUsername}
+        setLoginUsername={setLoginUsername}
+        loginPassword={loginPassword}
+        setLoginPassword={setLoginPassword}
+        loginError={loginError}
+        handleLoginSubmit={handleLoginSubmit}
+        isConnecting={isConnecting}
+      />
+    );
+  }
+
+  return (
+    <div className={`min-h-screen font-sans transition-colors duration-300 print:bg-white print:text-black ${themeBg} ${themeText}`}>
+      {/* Modals & Dialogs */}
+      <Modals
+        toast={toast}
+        showEmailSettings={showEmailSettings}
+        setShowEmailSettings={setShowEmailSettings}
+        isEmailEnabled={isEmailEnabled}
+        handleToggleEmail={handleToggleEmail}
+        itemToDelete={itemToDelete}
+        setItemToDelete={setItemToDelete}
+        deleteReason={deleteReason}
+        setDeleteReason={setDeleteReason}
+        confirmDelete={confirmDelete}
+        showClearDbConfirm={showClearDbConfirm}
+        setShowClearDbConfirm={setShowClearDbConfirm}
+        clearDbPassword={clearDbPassword}
+        setClearDbPassword={setClearDbPassword}
+        clearDbError={clearDbError}
+        setClearDbError={setClearDbError}
+        handleClearDatabase={handleClearDatabase}
+        isConnecting={isConnecting}
+        enlargedImage={enlargedImage}
+        setEnlargedImage={setEnlargedImage}
+        downloadImage={downloadImage}
+        isDarkMode={isDarkMode}
+        themeText={themeText}
+        themeTextMuted={themeTextMuted}
+        themeInputStr={themeInputStr}
+      />
+
+      {/* Dashboard Pareto */}
+      {showDashboard && (
+        <DashboardPareto
+          isDarkMode={isDarkMode}
+          dashboardMonth={dashboardMonth}
+          setDashboardMonth={setDashboardMonth}
+          availableMonths={availableMonths}
+          dashboardData={dashboardData}
+          dashboardItemData={dashboardItemData}
+          maxDashboardValue={maxDashboardValue}
+          maxDashboardItemValue={maxDashboardItemValue}
+          grandTotalMonth={grandTotalMonth}
+          trendData={trendData}
+          onClose={() => setShowDashboard(false)}
+        />
+      )}
+
+      {/* PDF View Modal */}
+      {viewItem && (
+        <PrintableDocument
+          viewItem={viewItem}
+          isGeneratingPDF={isGeneratingPDF}
+          handleDownloadPDF={handleDownloadPDF}
+          onClose={() => setViewItem(null)}
+        />
+      )}
+
+      {/* Main Content Body */}
+      <div className={`p-4 md:p-8 ${viewItem ? 'print:hidden' : ''}`}>
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Top Bar with Role & Actions */}
+          <div
+            className={`flex flex-col sm:flex-row justify-between items-center p-3 rounded-xl shadow-sm border print:hidden ${
+              isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+            }`}
+          >
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <span className={`text-sm font-semibold ${themeTextMuted}`}>Login Role:</span>
+              <div
+                className={`px-4 py-1.5 rounded-lg border font-bold text-sm uppercase tracking-wider shadow-sm ${
+                  isDarkMode
+                    ? 'bg-slate-900 border-slate-700 text-blue-400'
+                    : 'bg-blue-50 border-blue-200 text-blue-700'
+                }`}
+              >
+                {loggedInName} ({appRole})
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-3 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm ${
+                  isDarkMode
+                    ? 'bg-slate-700 text-yellow-400 border border-slate-600'
+                    : 'bg-slate-50 text-slate-600 border border-slate-200'
+                }`}
+              >
+                Mode {isDarkMode ? 'Terang' : 'Gelap'}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-red-600 text-white hover:bg-red-700 shadow-md transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+
+          {/* Form Card */}
+          <div className={`p-6 md:p-8 rounded-xl shadow-sm border transition-colors duration-300 relative overflow-hidden ${themeCard}`}>
+            {editId && appRole === 'admin' && (
+              <div className="absolute top-0 left-0 w-full bg-red-600 text-white text-center text-xs font-bold py-1 uppercase tracking-widest">
+                Mode Super Admin Terbuka
+              </div>
+            )}
+
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 border-b pb-4">
+              <div>
+                <h2
+                  className={`text-2xl font-bold ${
+                    appRole === 'procurement'
+                      ? 'text-emerald-600'
+                      : appRole === 'supplychain'
+                      ? 'text-orange-600'
+                      : appRole === 'gudang'
+                      ? 'text-purple-600'
+                      : appRole === 'admin'
+                      ? 'text-red-600'
+                      : 'text-blue-600'
+                  }`}
+                >
+                  Form Pengajuan Barang Stock
+                </h2>
+              </div>
+            </div>
+
+            {submitSuccess.show ? (
+              <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${themeText} animate-fade-in`}>
+                <h3 className="text-2xl font-bold mb-2 text-green-500">Penyimpanan Berhasil!</h3>
+                <p className={`mb-8 ${themeTextMuted}`}>
+                  Data dengan nomor{' '}
+                  <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                    {submitSuccess.nomor}
+                  </span>{' '}
+                  telah tersimpan di database.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmitSuccess({ show: false, nomor: '', isEdit: false });
+                    setFormData(INITIAL_FORM_STATE);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all active:scale-95"
+                >
+                  Buat Pengajuan Baru
+                </button>
+              </div>
+            ) : !editId && appRole !== 'user' && appRole !== 'admin' ? (
+              <div className="text-center py-16 px-4">
+                <h3 className={`text-xl font-bold mb-2 ${themeText}`}>Pilih Pengajuan dari Tabel</h3>
+                <p className={themeTextMuted}>
+                  Silakan gulir ke bawah dan klik ikon <b>Proses (Pensil)</b> pada tabel <br />
+                  untuk mulai memproses data pengajuan.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+                {appRole === 'admin' && editId && (
+                  <div className="p-5 border-2 border-red-500 bg-red-50/40 dark:bg-red-900/15 rounded-xl mb-6">
+                    <h4 className="text-sm font-black text-red-700 dark:text-red-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      KONTROL STATUS DOKUMEN (ADMIN)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-xs font-bold mb-1 ${themeLabel}`}>Set Status Alur Dokumen</label>
+                        <select
+                          name="status"
+                          value={formData.status}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-2.5 border rounded-lg outline-none font-bold text-sm ${
+                            isDarkMode ? 'bg-slate-850 border-slate-650 text-white' : 'bg-white border-red-300 text-red-900'
+                          }`}
+                        >
+                          <option value="Menunggu Procurement">🟠 Menunggu Procurement</option>
+                          <option value="Menunggu Supply Chain">🟡 Menunggu Supply Chain</option>
+                          <option value="Menunggu Plant Manager">🔵 Menunggu Plant Manager</option>
+                          <option value="Menunggu Gudang">🟣 Menunggu Gudang</option>
+                          <option value="Selesai">🟢 Selesai (Disetujui Semua)</option>
+                          <option value="Dikembalikan ke User">🔴 Dikembalikan ke User (Revisi)</option>
+                          <option value="Dikembalikan ke Procurement">🔴 Dikembalikan ke Procurement (Revisi)</option>
+                          <option value="Dikembalikan ke Supply Chain">🔴 Dikembalikan ke Supply Chain (Revisi)</option>
+                          <option value="Ditolak">⚫ Ditolak / Reject</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isSelesaiMode && (
+                  <div className="p-4 mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-3 text-green-800 dark:text-green-400 animate-fade-in">
+                    <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                      <p className="font-bold text-sm">Dokumen Selesai (Read-Only)</p>
+                      <p className="text-xs mt-0.5">
+                        Pengajuan ini telah selesai diproses. Seluruh form dikunci dan seluruh data antar divisi ditampilkan untuk dibaca.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* USER / PIC FORM SECTION */}
+                <FormSectionUser
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleInputChange={handleInputChange}
+                  isFormLockedForUser={isFormLockedForUser}
+                  appRole={appRole}
+                  editId={editId}
+                  isSelesaiMode={isSelesaiMode}
+                  unlockUserForm={unlockUserForm}
+                  setUnlockUserForm={setUnlockUserForm}
+                  displayNomorPengajuan={displayNomorPengajuan}
+                  handleCopyText={handleCopyText}
+                  themeInputStr={themeInputStr}
+                  themeLabel={themeLabel}
+                  themeBorder={themeBorder}
+                  themeText={themeText}
+                  isDarkMode={isDarkMode}
+                  handleFotoBarangUpload={handleFotoBarangUpload}
+                  setEnlargedImage={setEnlargedImage}
+                  currentKonsekuensi={currentKonsekuensi}
+                  currentMatrixScore={currentMatrixScore}
+                  currentUsulan={currentUsulan}
+                  resetKey={resetKey}
+                />
+
+                {/* PROCUREMENT FORM SECTION */}
+                {(appRole === 'procurement' ||
+                  appRole === 'supplychain' ||
+                  appRole === 'plantmanager' ||
+                  appRole === 'gudang' ||
+                  appRole === 'admin' ||
+                  formData.status === 'Selesai') &&
+                  editId && (
+                    <FormSectionProcurement
+                      formData={formData}
+                      setFormData={setFormData}
+                      handleInputChange={handleInputChange}
+                      isProcurementLocked={isProcurementLocked}
+                      appRole={appRole}
+                      editId={editId}
+                      isSelesaiMode={isSelesaiMode}
+                      unlockProcurementForm={unlockProcurementForm}
+                      setUnlockProcurementForm={setUnlockProcurementForm}
+                      totalHargaVal={totalHargaVal}
+                      themeInputStr={themeInputStr}
+                      themeLabel={themeLabel}
+                      themeBorder={themeBorder}
+                      isDarkMode={isDarkMode}
+                      handleDokumenUpload={handleDokumenUpload}
+                      removeDokumen={removeDokumen}
+                    />
+                  )}
+
+                {/* SUPPLY CHAIN FORM SECTION */}
+                {(appRole === 'supplychain' ||
+                  appRole === 'plantmanager' ||
+                  appRole === 'gudang' ||
+                  appRole === 'admin' ||
+                  formData.status === 'Selesai') &&
+                  editId && (
+                    <FormSectionSupplyChain
+                      formData={formData}
+                      setFormData={setFormData}
+                      handleInputChange={handleInputChange}
+                      isSupplyChainLocked={isSupplyChainLocked}
+                      appRole={appRole}
+                      editId={editId}
+                      isSelesaiMode={isSelesaiMode}
+                      unlockSupplyChainForm={unlockSupplyChainForm}
+                      setUnlockSupplyChainForm={setUnlockSupplyChainForm}
+                      qValue={qValue}
+                      miValue={miValue}
+                      handleCopyText={handleCopyText}
+                      themeInputStr={themeInputStr}
+                      themeTextMuted={themeTextMuted}
+                      isDarkMode={isDarkMode}
+                    />
+                  )}
+
+                {/* PLANT MANAGER FORM SECTION */}
+                {(appRole === 'plantmanager' ||
+                  appRole === 'gudang' ||
+                  appRole === 'admin' ||
+                  formData.status === 'Selesai') &&
+                  editId && (
+                    <FormSectionPlantManager
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      isPlantManagerLocked={isPlantManagerLocked}
+                      themeInputStr={themeInputStr}
+                      isDarkMode={isDarkMode}
+                    />
+                  )}
+
+                {/* GUDANG FORM SECTION */}
+                {(appRole === 'gudang' || appRole === 'admin' || formData.status === 'Selesai') && editId && (
+                  <FormSectionGudang
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    isGudangLocked={isGudangLocked}
+                    isSelesaiMode={isSelesaiMode}
+                    appRole={appRole}
+                    googleSheetUrl={googleSheetUrl}
+                    handleSaveSheetUrl={handleSaveSheetUrl}
+                    handleSyncFromSheet={handleSyncFromSheet}
+                    handleGlobalSync={handleGlobalSync}
+                    exportGudangExcel={exportGudangExcel}
+                    syncStatus={syncStatus}
+                    isSyncingGlobal={isSyncingGlobal}
+                    handleCopyText={handleCopyText}
+                    themeInputStr={themeInputStr}
+                    isDarkMode={isDarkMode}
+                  />
+                )}
+
+                {/* Form Buttons */}
+                <div className="flex flex-wrap justify-end gap-3 pt-6 border-t mt-6">
+                  {editId && (
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="px-5 py-2.5 font-bold rounded-lg bg-slate-200 text-slate-800 hover:bg-slate-300 transition-colors"
+                    >
+                      {isSelesaiMode ? 'Tutup Tampilan' : 'Batal'}
+                    </button>
+                  )}
+
+                  {!isSelesaiMode && (
+                    <>
+                      {editId && appRole !== 'user' && appRole !== 'admin' && (
+                        <button
+                          type="button"
+                          onClick={() => handleReturn('User')}
+                          className="px-5 py-2.5 font-bold rounded-lg bg-rose-500 text-white hover:bg-rose-600 transition-colors"
+                        >
+                          Return User
+                        </button>
+                      )}
+                      {editId && ['supplychain', 'plantmanager'].includes(appRole) && (
+                        <button
+                          type="button"
+                          onClick={() => handleReturn('Procurement')}
+                          className="px-5 py-2.5 font-bold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                        >
+                          Return Proc
+                        </button>
+                      )}
+                      {editId && appRole === 'gudang' && (
+                        <button
+                          type="button"
+                          onClick={() => handleReturn('Supply Chain')}
+                          className="px-5 py-2.5 font-bold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                        >
+                          Return SC
+                        </button>
+                      )}
+
+                      {editId && appRole === 'plantmanager' && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleSubmit(e, 'Reject')}
+                          disabled={isSubmitting}
+                          className="px-5 py-2.5 font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-6 py-2.5 font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md transition-all active:scale-95"
+                      >
+                        {isSubmitting ? 'Memproses...' : appRole === 'plantmanager' ? 'Approve' : 'Simpan Dokumen'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </form>
+            )}
+          </div>
+
+          {/* Histori Log Tampil di Bawah Form */}
+          {editId && Array.isArray(formData.historyLogs) && formData.historyLogs.length > 0 && (
+            <div className={`p-6 md:p-8 rounded-xl shadow-sm border ${themeCard}`}>
+              <h3 className="text-lg font-bold mb-4 uppercase tracking-widest text-slate-500">
+                Timeline Perjalanan Dokumen
+              </h3>
+              <div className="border-l-2 border-blue-200 pl-4 space-y-4 ml-2">
+                {formData.historyLogs.map((lg, i) => (
+                  <div key={i} className="relative">
+                    <div
+                      className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${
+                        lg.type === 'revise' ? 'bg-red-500' : 'bg-blue-500'
+                      }`}
+                    ></div>
+                    <p className="text-sm font-bold">
+                      {lg.action} <span className="opacity-60 ml-2 font-mono text-xs">{lg.dateString}</span>
+                    </p>
+                    <p className="text-xs uppercase font-bold text-slate-500 mt-1">
+                      {lg.userRole} - {lg.userName}
+                    </p>
+                    {lg.comment && (
+                      <p className="text-xs italic bg-slate-100 dark:bg-slate-800 p-2 rounded mt-2 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        "{lg.comment}"
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tabel Database Submissions */}
+          <SubmissionsTable
+            currentItems={currentItems}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filterReq={filterReq}
+            setFilterReq={setFilterReq}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            filterBarang={filterBarang}
+            setFilterBarang={setFilterBarang}
+            filterTotal={filterTotal}
+            setFilterTotal={setFilterTotal}
+            filterPic={filterPic}
+            setFilterPic={setFilterPic}
+            hasDikembalikanUser={hasDikembalikanUser}
+            hasDikembalikanProc={hasDikembalikanProc}
+            hasDikembalikanSC={hasDikembalikanSC}
+            onViewItem={(item) => setViewItem(item)}
+            onEditItem={(item) => handleEdit(item)}
+            onDeleteItem={(item) => setItemToDelete(item)}
+            onRestoreItem={(item) => handleRestoreItem(item)}
+            onShowDashboard={() => setShowDashboard(true)}
+            onExportExcel={exportToExcel}
+            onBackupDatabase={handleBackupDatabase}
+            onRestoreDatabase={handleRestoreDatabase}
+            onShowClearDb={() => setShowClearDbConfirm(true)}
+            appRole={appRole}
+            isDarkMode={isDarkMode}
+            themeCard={themeCard}
+            themeBorder={themeBorder}
+            themeText={themeText}
+            themeTextMuted={themeTextMuted}
+            themeTableHead={themeTableHead}
+            themeTableRow={themeTableRow}
+            filterInputClass={filterInputClass}
+            themeInputStr={themeInputStr}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
