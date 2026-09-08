@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Procurement - SJA</title>
+    <meta name="description" content="Portal Procurement - SJA">
+    <meta property="og:title" content="Portal Procurement - SJA">
+    <meta property="og:description" content="Portal Procurement - SJA">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Babel for transpiling JSX -->
@@ -91,6 +94,19 @@
           }
         };
 
+        const getProjectKey = (item) => {
+          if (!item) return 'proj_unknown';
+          if (item.submissionId) return String(item.submissionId);
+          if (item.timestamp) {
+            const req = (item.reqNumber && item.reqNumber !== '-' && item.reqNumber !== 'NO-REQ') ? item.reqNumber : '';
+            return `sub_${req}_${item.projectName || 'Tanpa Nama Project'}_${item.timestamp}`;
+          }
+          if (item.reqNumber && item.reqNumber !== '-' && item.reqNumber !== 'NO-REQ') {
+            return `req_${item.reqNumber}_${item.projectName || 'Tanpa Nama Project'}_${item.date || ''}`;
+          }
+          return `item_${item.id || Math.random()}`;
+        };
+
         const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, payload }) => {
             const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
             const x = cx + radius * Math.cos(-midAngle * RADIAN); const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -145,10 +161,16 @@
             }
           }, []);
 
-          const handleShowPdf = (projectName, reqNumber) => {
-            const projectItems = data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
-            const summary = projectSummaryData.find(p => p.projectName === projectName && p.reqNumber === reqNumber);
-            if (projectItems.length > 0 && summary) setPdfData({ items: projectItems, summary: summary });
+          const handleShowPdf = (projectKey, projectName, reqNumber) => {
+            const projectItems = data.filter(item => {
+              if (projectKey && getProjectKey(item) === projectKey) return true;
+              return false;
+            });
+            const finalItems = projectItems.length > 0
+              ? projectItems
+              : data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
+            const summary = projectSummaryData.find(p => p.id === projectKey) || projectSummaryData.find(p => p.projectName === projectName && p.reqNumber === reqNumber);
+            if (finalItems.length > 0 && summary) setPdfData({ items: finalItems, summary: summary });
           };
 
           const handleDownloadPdf = () => {
@@ -209,10 +231,10 @@
             processedData.forEach(item => {
               const pName = item.projectName || 'Tanpa Nama Project';
               const reqNum = item.reqNumber || 'NO-REQ';
-              const key = reqNum + '-' + pName;
+              const key = getProjectKey(item);
 
               if (!grouped[key]) {
-                grouped[key] = { id: key, reqNumber: item.reqNumber || '-', projectName: pName, poNumber: item.poNumber || '-', date: item.date, timestamp: item.timestamp || parseInt(item.id) || 0, itemCount: 0, suppliers: new Map() };
+                grouped[key] = { id: key, submissionId: item.submissionId || key, reqNumber: item.reqNumber || '-', projectName: pName, poNumber: item.poNumber || '-', date: item.date, timestamp: item.timestamp || parseInt(item.id) || 0, itemCount: 0, suppliers: new Map() };
               } else {
                 const itemTime = item.timestamp || parseInt(item.id) || 0;
                 if (itemTime > grouped[key].timestamp) grouped[key].timestamp = itemTime;
@@ -471,14 +493,14 @@
                         <tr key={row.id} className="hover:bg-slate-50/80 transition-colors bg-white">
                           <td className="px-5 py-4 align-top"><div className="font-mono text-[13px] font-bold text-slate-700 bg-slate-100/80 px-2 py-1 rounded border border-slate-200/60 inline-block mb-2">{row.reqNumber}</div><div className="text-xs text-slate-500 font-medium flex items-center mt-1"><Calendar className="w-3 h-3 mr-1" />{formatDateDisplay(row.date)}</div>{row.poNumber && row.poNumber !== '-' && <div className="mt-2 flex flex-wrap gap-1">{row.poNumber.split(',').map((po, idx) => <span key={idx} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{po.trim()}</span>)}</div>}</td>
                           <td className="px-5 py-4 align-top"><div className="font-bold text-slate-800 text-sm mb-1.5 leading-snug">{row.projectName}</div><span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/50">{row.itemCount} Item</span></td>
-                          <td className="px-5 py-4 align-top"><div className="max-h-32 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">{data.filter(d => d.reqNumber === row.reqNumber && d.projectName === row.projectName).map((d, i) => (<div key={i} className="text-xs text-slate-600 break-words whitespace-normal" title={`${d.qty} ${d.unit} - ${d.itemDescription}`}><strong className="text-slate-800">{d.qty} {d.unit}</strong> - {d.itemDescription}</div>))}</div></td>
+                          <td className="px-5 py-4 align-top"><div className="max-h-32 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">{data.filter(d => getProjectKey(d) === row.id).map((d, i) => (<div key={i} className="text-xs text-slate-600 break-words whitespace-normal" title={`${d.qty} ${d.unit} - ${d.itemDescription}`}><strong className="text-slate-800">{d.qty} {d.unit}</strong> - {d.itemDescription}</div>))}</div></td>
                           <td className="px-5 py-4 align-top">{row.grandWinner !== '-' ? (<div className="mb-2"><div className="text-xs font-bold text-emerald-700 mb-0.5 flex items-center"><Trophy className="w-3 h-3 mr-1 text-emerald-500" />{row.grandWinner}</div><div className="text-slate-900 font-extrabold text-sm tracking-tight">{formatCurrency(row.supplierRanks.find(s => s.name === row.grandWinner)?.totalValue || 0)}</div></div>) : <span className="text-slate-400 text-sm">-</span>}</td>
                           <td className="px-5 py-4 text-right align-top">{row.totalSavingCost > 0 ? (<><div className="text-emerald-600 font-bold text-sm tracking-tight">{formatCurrency(row.totalSavingCost)}</div><div className="text-[10px] font-bold text-emerald-600 mt-1 uppercase bg-emerald-50 inline-block px-1.5 py-0.5 rounded border border-emerald-100">{row.savingPercentage}% Hemat</div></>) : <span className="text-xs text-slate-400">Tidak ada</span>}</td>
                           <td className="px-5 py-4 text-center align-top">
                             <div className="flex flex-col space-y-1.5 items-center">
-                                <button onClick={() => handleShowPdf(row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 hover:bg-slate-100 text-slate-600 rounded transition-colors text-xs font-bold w-full justify-center border border-transparent hover:border-slate-200"><Printer className="w-3.5 h-3.5 mr-1.5" /> Cetak</button>
-                                <button onClick={() => onEdit(row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 bg-blue-50/50 hover:bg-blue-100 text-blue-600 rounded transition-colors text-xs font-bold w-full justify-center"><Edit className="w-3.5 h-3.5 mr-1.5" /> Edit</button>
-                                <button onClick={() => setProjectToDelete({projectName: row.projectName, reqNumber: row.reqNumber})} className="flex items-center px-2 py-1.5 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded transition-colors text-xs font-bold w-full justify-center"><Trash2 className="w-3.5 h-3.5 mr-1.5" /> Hapus</button>
+                                <button onClick={() => handleShowPdf(row.id, row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 hover:bg-slate-100 text-slate-600 rounded transition-colors text-xs font-bold w-full justify-center border border-transparent hover:border-slate-200"><Printer className="w-3.5 h-3.5 mr-1.5" /> Cetak</button>
+                                <button onClick={() => onEdit(row.id, row.projectName, row.reqNumber)} className="flex items-center px-2 py-1.5 bg-blue-50/50 hover:bg-blue-100 text-blue-600 rounded transition-colors text-xs font-bold w-full justify-center"><Edit className="w-3.5 h-3.5 mr-1.5" /> Edit</button>
+                                <button onClick={() => setProjectToDelete({projectKey: row.id, projectName: row.projectName, reqNumber: row.reqNumber})} className="flex items-center px-2 py-1.5 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded transition-colors text-xs font-bold w-full justify-center"><Trash2 className="w-3.5 h-3.5 mr-1.5" /> Hapus</button>
                             </div>
                           </td>
                         </tr>
@@ -490,6 +512,20 @@
                     <div className="px-6 py-3 border-t border-slate-100 bg-white flex items-center justify-between"><span className="text-xs text-slate-500 font-medium">Menampilkan {(historyCurrentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(historyCurrentPage * ITEMS_PER_PAGE, filteredProjectSummaryData.length)} dari {filteredProjectSummaryData.length}</span><div className="flex items-center space-x-1.5"><button onClick={() => setHistoryCurrentPage(p => Math.max(1, p - 1))} disabled={historyCurrentPage === 1} className="p-1.5 border border-slate-200 rounded text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button><span className="text-xs font-bold text-slate-700 px-2">{historyCurrentPage} / {totalPages}</span><button onClick={() => setHistoryCurrentPage(p => Math.min(totalPages, p + 1))} disabled={historyCurrentPage === totalPages} className="p-1.5 border border-slate-200 rounded text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button></div></div>
                 )}
               </div>
+
+              {projectToDelete && (
+                <div className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                  <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
+                    <div className="flex justify-center mb-4"><div className="p-3 bg-rose-100 text-rose-600 rounded-full"><Trash2 className="w-6 h-6" /></div></div>
+                    <h3 className="text-lg font-bold text-center text-slate-900 mb-2">Hapus Data Pengadaan?</h3>
+                    <p className="text-center text-slate-500 text-xs mb-5 leading-relaxed">Apakah Anda yakin ingin menghapus data pengadaan <strong className="text-slate-700">{projectToDelete.projectName}</strong> ({projectToDelete.reqNumber})? Tindakan ini tidak dapat dibatalkan.</p>
+                    <div className="flex space-x-3">
+                      <button onClick={() => setProjectToDelete(null)} type="button" className="flex-1 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-bold text-sm">Batal</button>
+                      <button onClick={() => { onDelete(projectToDelete.projectKey, projectToDelete.projectName, projectToDelete.reqNumber); setProjectToDelete(null); }} type="button" className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-sm shadow-sm">Hapus</button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {}
               {pdfData && (
@@ -736,7 +772,12 @@
             e.preventDefault();
             if (suppliers.length === 0) return showNotification("Harap masukkan setidaknya 1 nama vendor/supplier.", "error");
             const finalPoNumber = poList.length > 0 ? poList.join(', ') : '-';
-            const timestampMs = Date.now();
+            const timestampMs = editData && editData[0]?.timestamp ? editData[0].timestamp : Date.now();
+            const currentSubmissionId = editData && editData[0]?.submissionId 
+                ? editData[0].submissionId 
+                : (editData && editData[0]?.timestamp 
+                    ? `sub_${editData[0].projectName || ''}_${editData[0].timestamp}` 
+                    : `SUB_${timestampMs}_${Math.random().toString(36).substr(2, 6)}`);
             
             let finalReqNumber = reqNumber || '-';
             if (!editData && finalReqNumber.startsWith('REQ/')) {
@@ -769,7 +810,19 @@
                 return { supplier: supp, price: actualCurrency !== 'IDR' ? cleanAmount * cleanRate : cleanAmount, originalAmount: cleanAmount, currency: actualCurrency, exchangeRate: actualCurrency === 'IDR' ? 1 : cleanRate, leadTime: supplierTerms[supp]?.leadTime?.value.trim() ? `${supplierTerms[supp].leadTime.value} ${supplierTerms[supp].leadTime.unit}` : '-', payment: formatPaymentTerm(supplierTerms[supp]?.payment), warranty: supplierTerms[supp]?.warranty?.value.trim() ? `${supplierTerms[supp].warranty.value} ${supplierTerms[supp].warranty.unit}` : '-', note: priceData.note || '' };
               });
               const parsedQty = Number(String(item.qty).replace(/,/g, '.'));
-              return { id: Date.now() + Math.random(), timestamp: timestampMs, reqNumber: finalReqNumber, projectName: projectName || 'Tanpa Nama Project', poNumber: finalPoNumber, date: date, itemDescription: item.description, qty: isNaN(parsedQty) || parsedQty <= 0 ? 1 : parsedQty, unit: item.unit === 'Lainnya' && item.customUnit.trim() !== '' ? item.customUnit : item.unit, bids: bids };
+              return { 
+                id: item.id && editData ? item.id : (Date.now() + Math.random()), 
+                submissionId: currentSubmissionId,
+                timestamp: timestampMs, 
+                reqNumber: finalReqNumber, 
+                projectName: projectName || 'Tanpa Nama Project', 
+                poNumber: finalPoNumber, 
+                date: date, 
+                itemDescription: item.description, 
+                qty: isNaN(parsedQty) || parsedQty <= 0 ? 1 : parsedQty, 
+                unit: item.unit === 'Lainnya' && item.customUnit.trim() !== '' ? item.customUnit : item.unit, 
+                bids: bids 
+              };
             });
             onAddData(newFormattedData, editData ? editData.map(item => item.id) : []);
             showNotification(`Berhasil! Data telah ${editData ? 'diperbarui' : 'ditambahkan'}.`, 'success');
@@ -787,11 +840,33 @@
           const historiDataList = useMemo(() => {
               const grouped = {};
               data.forEach(item => {
-                const key = (item.reqNumber || 'NO-REQ') + '-' + (item.projectName || 'Tanpa Nama Project');
-                if (!grouped[key]) { grouped[key] = { id: key, date: item.date, timestamp: item.timestamp || parseInt(item.id) || 0, displayDate: formatDateDisplay(item.date), poNumber: item.poNumber || '-', projectName: item.projectName || 'Tanpa Nama Project', reqNumber: item.reqNumber || 'NO-REQ', items: [], supplierTotals: {} }; } 
-                else { const itemTime = item.timestamp || parseInt(item.id) || 0; if (itemTime > grouped[key].timestamp) grouped[key].timestamp = itemTime; }
+                const key = getProjectKey(item);
+                if (!grouped[key]) { 
+                  grouped[key] = { 
+                    id: key, 
+                    submissionId: item.submissionId || key,
+                    date: item.date, 
+                    timestamp: item.timestamp || parseInt(item.id) || 0, 
+                    displayDate: formatDateDisplay(item.date), 
+                    poNumber: item.poNumber || '-', 
+                    projectName: item.projectName || 'Tanpa Nama Project', 
+                    reqNumber: item.reqNumber || 'NO-REQ', 
+                    items: [], 
+                    supplierTotals: {} 
+                  }; 
+                } else { 
+                  const itemTime = item.timestamp || parseInt(item.id) || 0; 
+                  if (itemTime > grouped[key].timestamp) grouped[key].timestamp = itemTime; 
+                  if (item.poNumber && item.poNumber !== '-' && grouped[key].poNumber === '-') {
+                    grouped[key].poNumber = item.poNumber;
+                  }
+                }
                 grouped[key].items.push(item.itemDescription);
-                item.bids.forEach(bid => { if (bid.price * item.qty > 0) grouped[key].supplierTotals[bid.supplier] = (grouped[key].supplierTotals[bid.supplier] || 0) + (bid.price * item.qty); });
+                item.bids.forEach(bid => { 
+                  if (bid.price * item.qty > 0) {
+                    grouped[key].supplierTotals[bid.supplier] = (grouped[key].supplierTotals[bid.supplier] || 0) + (bid.price * item.qty); 
+                  }
+                });
               });
               return Object.values(grouped).map(proj => {
                   let grandWinner = 'N/A', grandTotal = 0;
@@ -1009,7 +1084,7 @@
                                       <td className="px-5 py-4">{h.poNumber !== '-' ? <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{h.poNumber}</span> : <span className="text-[11px] text-slate-400">N/A</span>}</td>
                                       <td className="px-5 py-4 text-right font-extrabold text-slate-800 tracking-tight">{h.displayPrice}</td>
                                       <td className="px-5 py-4 text-center">
-                                          <button onClick={() => { const ev = new CustomEvent('editProjectEvent', { detail: { projectName: h.projectName, reqNumber: h.reqNumber } }); window.dispatchEvent(ev); }} className="p-1.5 text-blue-600 bg-white hover:bg-blue-50 rounded-lg transition-colors border border-slate-200 shadow-sm" title="Edit"><Edit className="w-4 h-4" /></button>
+                                          <button onClick={() => { const ev = new CustomEvent('editProjectEvent', { detail: { projectKey: h.id, projectName: h.projectName, reqNumber: h.reqNumber, submissionId: h.submissionId } }); window.dispatchEvent(ev); }} className="p-1.5 text-blue-600 bg-white hover:bg-blue-50 rounded-lg transition-colors border border-slate-200 shadow-sm" title="Edit"><Edit className="w-4 h-4" /></button>
                                       </td>
                                   </tr>
                               )) : <tr><td colSpan="6" className="px-6 py-8 text-center text-slate-500 font-medium">Tidak ada riwayat.</td></tr>}
@@ -1544,7 +1619,11 @@
           }, [user, userRole]);
 
           useEffect(() => {
-            const handleCustomEdit = (event) => { if (event.detail && event.detail.projectName) handleEditProject(event.detail.projectName, event.detail.reqNumber); };
+            const handleCustomEdit = (event) => { 
+              if (event.detail && (event.detail.projectKey || event.detail.projectName)) {
+                handleEditProject(event.detail.projectKey, event.detail.projectName, event.detail.reqNumber); 
+              }
+            };
             window.addEventListener('editProjectEvent', handleCustomEdit);
             return () => window.removeEventListener('editProjectEvent', handleCustomEdit);
           }, [data]);
@@ -1694,10 +1773,16 @@
             }, 100);
           };
 
-          const handleDeleteProject = (projectName, reqNumber) => {
+          const handleDeleteProject = (projectKey, projectName, reqNumber) => {
             if (!userRole) return;
-            const itemsToDelete = data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
-            const idsToDelete = itemsToDelete.map(i => i.id);
+            const itemsToDelete = data.filter(item => {
+              if (projectKey && getProjectKey(item) === projectKey) return true;
+              return false;
+            });
+            const finalToDelete = itemsToDelete.length > 0 
+              ? itemsToDelete 
+              : data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
+            const idsToDelete = finalToDelete.map(i => i.id);
             
             setData(prev => {
                 const finalData = prev.filter(item => !idsToDelete.includes(item.id));
@@ -1707,7 +1792,7 @@
 
             setTimeout(async () => {
                 try {
-                    const promises = itemsToDelete.map(item => {
+                    const promises = finalToDelete.map(item => {
                         const itemPath = userRole === 'admin' 
                             ? doc(db, 'artifacts', safeAppId, 'public', 'data', 'procurement_items', item.id.toString())
                             : doc(db, 'artifacts', safeAppId, 'users', user?.uid || 'guest_user', 'procurement_items', item.id.toString());
@@ -1718,7 +1803,17 @@
             }, 100);
           };
 
-          const handleEditProject = (projectName, reqNumber) => { setProjectToEdit(data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber)); setActiveTab('input'); };
+          const handleEditProject = (projectKey, projectName, reqNumber) => { 
+            const matchedItems = data.filter(item => {
+              if (projectKey && getProjectKey(item) === projectKey) return true;
+              return false;
+            });
+            const itemsToEdit = matchedItems.length > 0 
+              ? matchedItems 
+              : data.filter(item => item.projectName === projectName && item.reqNumber === reqNumber);
+            setProjectToEdit(itemsToEdit); 
+            setActiveTab('input'); 
+          };
           const handleAdminLogin = (e) => { e.preventDefault(); if (username === 'SJA-Sukodono' && password === 'Skd123') { setIsAuthenticated(true); setUserRole('admin'); setLoginError(''); } else setLoginError('Username atau Password salah!'); };
           const handleLogout = () => { setIsAuthenticated(false); setUserRole(null); setLoginError(''); setUsername(''); setPassword(''); setActiveTab('dashboard'); setData([]); };
 
