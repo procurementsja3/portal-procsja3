@@ -1,0 +1,6 @@
+{
+  "name": "Portal Procurement - SJA",
+  "description": "Portal Procurement SJA & Sistem Biji Kopi",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
