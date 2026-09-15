@@ -1132,8 +1132,13 @@
                         Data ceklist diupdate secara berkala dari spreadsheet Google Sheet. Masukkan link Google Sheet Anda atau Sheet ID di bawah ini:
                     </p>
                     <div>
-                        <label class="block font-semibold text-slate-700 mb-1">URL / Link Google Sheet Ceklist</label>
-                        <input type="text" id="input-config-sheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../edit" class="w-full px-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none focus:border-indigo-500 bg-white font-mono">
+                        <label class="block font-semibold text-slate-700 mb-1">URL Google Apps Script / GVIZ Link</label>
+                        <input type="text" id="input-config-sheet-url" placeholder="https://script.google.com/... ATAU https://docs.google.com/..." class="w-full px-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none focus:border-indigo-500 bg-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">URL Google Sheet (Untuk Tombol Buka Sheet)</label>
+                        <input type="text" id="input-config-sheet-view-url" placeholder="https://docs.google.com/spreadsheets/d/.../edit" class="w-full px-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none focus:border-indigo-500 bg-white font-mono">
+                        <p class="text-[11px] text-slate-400 mt-1">Isi dengan link Google Sheet khusus untuk Ceklist WH Inspektor agar tombol "Buka Google Sheet" mengarah dengan benar.</p>
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Nama Tab Sheet (Opsional)</label>
@@ -2697,6 +2702,7 @@ function testReadData() {
         const DEFAULT_CEKLIST_SHEET_ID = "12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk";
         let ceklistSheetId = localStorage.getItem('sibikom_ceklist_sheet_id') || DEFAULT_CEKLIST_SHEET_ID;
         let ceklistSheetTab = localStorage.getItem('sibikom_ceklist_sheet_tab') || 'DATA_CEKLIST_WAREHOUSE';
+        let ceklistSheetViewUrl = localStorage.getItem('sibikom_ceklist_sheet_view_url') || "";
         let ceklistAutoSyncTimer = null;
 
         let allCeklistData = [];
@@ -2977,8 +2983,10 @@ function testReadData() {
         function loadDataCeklistWarehouse() {
             const linkGview = document.getElementById('link-gview-sheet');
             if (linkGview) {
-                if (ceklistSheetId.includes('script.google.com')) {
-                    linkGview.href = ceklistSheetId;
+                if (ceklistSheetViewUrl) {
+                    linkGview.href = ceklistSheetViewUrl;
+                } else if (ceklistSheetId.includes('script.google.com')) {
+                    linkGview.href = `https://docs.google.com/spreadsheets/d/${DEFAULT_CEKLIST_SHEET_ID}/edit`;
                 } else {
                     linkGview.href = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
                 }
@@ -3553,6 +3561,7 @@ function testReadData() {
         // Modal Sheet Configuration Handlers
         function openModalConfigSheet() {
             const urlInput = document.getElementById('input-config-sheet-url');
+            const viewUrlInput = document.getElementById('input-config-sheet-view-url');
             const nameInput = document.getElementById('input-config-sheet-name');
             if (urlInput) {
                 if (ceklistSheetId.includes('script.google.com')) {
@@ -3561,6 +3570,7 @@ function testReadData() {
                     urlInput.value = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
                 }
             }
+            if (viewUrlInput) viewUrlInput.value = ceklistSheetViewUrl;
             if (nameInput) nameInput.value = ceklistSheetTab || '';
             document.getElementById('modal-config-sheet-ceklist').classList.remove('hidden');
         }
@@ -3571,6 +3581,7 @@ function testReadData() {
 
         function saveConfigSheet() {
             const urlVal = document.getElementById('input-config-sheet-url').value.trim();
+            const viewUrlVal = document.getElementById('input-config-sheet-view-url').value.trim();
             const tabVal = document.getElementById('input-config-sheet-name').value.trim() || 'DATA_CEKLIST_WAREHOUSE';
 
             let sheetId = urlVal;
@@ -3591,13 +3602,17 @@ function testReadData() {
 
             ceklistSheetId = sheetId;
             ceklistSheetTab = tabVal;
+            ceklistSheetViewUrl = viewUrlVal;
             localStorage.setItem('sibikom_ceklist_sheet_id', sheetId);
             localStorage.setItem('sibikom_ceklist_sheet_tab', tabVal);
+            localStorage.setItem('sibikom_ceklist_sheet_view_url', viewUrlVal);
 
             const linkGview = document.getElementById('link-gview-sheet');
             if (linkGview) {
-                if (sheetId.includes('script.google.com')) {
-                    linkGview.href = sheetId;
+                if (ceklistSheetViewUrl) {
+                    linkGview.href = ceklistSheetViewUrl;
+                } else if (sheetId.includes('script.google.com')) {
+                    linkGview.href = `https://docs.google.com/spreadsheets/d/${DEFAULT_CEKLIST_SHEET_ID}/edit`;
                 } else {
                     linkGview.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
                 }
@@ -3640,13 +3655,23 @@ function testReadData() {
         function resetDefaultConfigSheet() {
             ceklistSheetId = DEFAULT_CEKLIST_SHEET_ID;
             ceklistSheetTab = 'DATA_CEKLIST_WAREHOUSE';
+            ceklistSheetViewUrl = '';
             localStorage.removeItem('sibikom_ceklist_sheet_id');
             localStorage.removeItem('sibikom_ceklist_sheet_tab');
+            localStorage.removeItem('sibikom_ceklist_sheet_view_url');
+
             const urlInput = document.getElementById('input-config-sheet-url');
+            const viewUrlInput = document.getElementById('input-config-sheet-view-url');
             const nameInput = document.getElementById('input-config-sheet-name');
             if (urlInput) urlInput.value = `https://docs.google.com/spreadsheets/d/${DEFAULT_CEKLIST_SHEET_ID}/edit`;
+            if (viewUrlInput) viewUrlInput.value = '';
             if (nameInput) nameInput.value = 'DATA_CEKLIST_WAREHOUSE';
+
+            const linkGview = document.getElementById('link-gview-sheet');
+            if (linkGview) linkGview.href = `https://docs.google.com/spreadsheets/d/${DEFAULT_CEKLIST_SHEET_ID}/edit`;
+
             showToast("Pengaturan telah di-reset ke Google Sheet default SIBIKOM.", "info");
+            syncCeklistGoogleSheet(true);
         }
 
         async function backupDataJSON() {
