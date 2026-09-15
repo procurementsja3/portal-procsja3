@@ -16,11 +16,15 @@ app.get('/procurementsja3', (req, res) => {
   res.sendFile(path.join(__dirname, 'procurementsja3.html'));
 });
 
+app.get('/procurement', (req, res) => {
+  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+});
+
 app.get('/sibikom', (req, res) => {
   res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
 
-// Primary landing page
+// Primary landing page (SIBIKOM)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
