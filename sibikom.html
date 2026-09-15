@@ -69,30 +69,48 @@
 <body class="bg-kopi-bg text-slate-800 antialiased h-screen flex overflow-hidden selection:bg-brand-primary selection:text-white">
 
     <!-- Login Screen -->
-    <div id="login-overlay" class="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 transform transition-all">
-            <div class="text-center mb-8">
-                <div id="login-logo-container" class="bg-brand-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-primary shadow-sm border border-brand-primary/20 overflow-hidden">
+    <div id="login-overlay" class="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300 p-4">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 transform transition-all">
+            <div class="text-center mb-6">
+                <div id="login-logo-container" class="bg-brand-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-brand-primary shadow-sm border border-brand-primary/20 overflow-hidden">
                     <i id="login-default-icon" class="ph ph-coffee text-3xl font-bold"></i>
                     <img id="login-custom-img" src="" class="hidden w-full h-full object-cover">
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800">Login SIBIKOM</h2>
-                <p class="text-sm text-slate-500 mt-1">Sistem Manajemen Biji Kopi</p>
+                <p class="text-xs text-slate-500 mt-1">Sistem Informasi Biji Kopi Management</p>
             </div>
-            <form id="login-form" onsubmit="processLogin(event)" class="space-y-5">
+            <form id="login-form" onsubmit="processLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Username</label>
-                    <input type="text" id="login-username" required class="w-full px-4 py-3 text-sm rounded-lg border border-slate-300 outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-shadow" placeholder="Masukkan username...">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Username</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-300 outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-shadow" placeholder="Masukkan username...">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
-                    <input type="password" id="login-password" required class="w-full px-4 py-3 text-sm rounded-lg border border-slate-300 outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-shadow" placeholder="••••••••">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-300 outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-shadow" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-500 text-xs font-semibold text-center bg-red-50 border border-red-200 py-2.5 rounded-lg">Username atau Password salah!</div>
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-4">
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 mt-2">
                     <i class="ph ph-sign-in text-lg"></i> Masuk Aplikasi
                 </button>
             </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-100">
+                <p class="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wider text-center">Tipe Hak Akses Pengguna:</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="p-2 rounded-lg bg-purple-50 border border-purple-200 text-purple-900 text-center select-none">
+                        <div class="font-bold text-[11px] flex items-center justify-center gap-1"><i class="ph ph-shield-check"></i> Superadmin</div>
+                        <div class="text-[9px] text-purple-600 mt-0.5">Semua Akses</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 text-center select-none">
+                        <div class="font-bold text-[11px] flex items-center justify-center gap-1"><i class="ph ph-warehouse"></i> Gudang</div>
+                        <div class="text-[9px] text-sky-600 mt-0.5">BKM & Ceklist</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-center select-none">
+                        <div class="font-bold text-[11px] flex items-center justify-center gap-1"><i class="ph ph-fire"></i> UPBM</div>
+                        <div class="text-[9px] text-amber-600 mt-0.5">Roasting Kopi</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -128,6 +146,9 @@
             </div>
             
             <div id="nav-group-upbm" class="space-y-1.5">
+                <div class="pt-3 pb-1">
+                    <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Divisi UPBM / Roasting</p>
+                </div>
                 <button onclick="switchTab('produksi'); toggleMobileSidebar()" id="btn-produksi" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
                     <i class="ph ph-fire text-lg mr-3 group-hover:scale-110 transition-transform"></i> UPBM - Roasting
                 </button>
@@ -152,6 +173,7 @@
                         <button onclick="switchTab('gudang-pengeluaran'); toggleMobileSidebar()" id="btn-gudang-pengeluaran" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Pengeluaran</button>
                         <button onclick="switchTab('gudang-fifo'); toggleMobileSidebar()" id="btn-gudang-fifo" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cek Stok FIFO</button>
                         <button onclick="switchTab('gudang-cetak-rmw'); toggleMobileSidebar()" id="btn-gudang-cetak-rmw" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cetak Bukti (RMW)</button>
+                        <button onclick="switchTab('gudang-ceklist'); toggleMobileSidebar()" id="btn-gudang-ceklist" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Ceklist Warehouse</button>
                     </div>
                 </div>
             </div>
@@ -201,7 +223,7 @@
                             <button onclick="backupDataJSON()" class="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"><i class="ph ph-download-simple text-lg text-brand-primary"></i><span>Backup</span></button>
                             <input type="file" id="restore-file" accept=".json" class="hidden" onchange="restoreDataJSON(event)">
                             <button onclick="document.getElementById('restore-file').click()" class="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"><i class="ph ph-upload-simple text-lg text-purple-600"></i><span>Restore</span></button>
-                            <a href="https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/edit" target="_blank" class="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"><i class="ph ph-google-logo text-lg"></i><span>Sheets</span></a>
+                            <a id="link-main-dash-sheet" href="https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/edit" target="_blank" class="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"><i class="ph ph-google-logo text-lg"></i><span>Sheets</span></a>
                             <button onclick="syncMainDashboard()" id="btn-sync-main" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"><i class="ph ph-arrows-clockwise text-lg" id="icon-sync-main"></i><span>Segarkan</span></button>
                         </div>
                     </div>
@@ -747,6 +769,305 @@
                 </div>
             </section>
 
+            <!-- Section Data Ceklist Warehouse -->
+            <section id="sec-gudang-ceklist" class="bg-white p-6 sm:p-8 rounded-2xl shadow-card border border-slate-100 hidden opacity-0 transition-opacity duration-300 w-full max-w-[98%] 2xl:max-w-[1800px] mx-auto space-y-6">
+                <!-- Header Title & Action Buttons -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center text-slate-800 border-b border-slate-100 pb-5 gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-100"><i class="ph ph-clipboard-text text-2xl text-indigo-600"></i></div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xl font-bold tracking-tight">Data Ceklist Warehouse</h2>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync Google Sheets
+                                </span>
+                            </div>
+                            <p class="text-sm text-slate-500">Sinkronisasi inspeksi warehouse otomatis dari Google Sheets (Kolom A: Waktu, Kolom B: Nama Warehouse Inspektor, Kolom C: Tanggal Inspeksi, dll).</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="syncCeklistGoogleSheet(true)" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">
+                            <i id="icon-sync-ceklist" class="ph ph-arrows-clockwise text-lg"></i><span>Sinkronkan Sheet</span>
+                        </button>
+                        <button id="btn-config-sheet-ceklist" type="button" onclick="openModalConfigSheet()" class="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">
+                            <i class="ph ph-link text-lg text-indigo-600"></i><span>Link Sheet</span>
+                        </button>
+                        <button id="btn-appscript-ceklist" type="button" onclick="openModalAppsScriptCeklist()" class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm" title="Lihat & Salin Kode Google Apps Script">
+                            <i class="ph ph-code text-lg"></i><span>Script Google Sheet</span>
+                        </button>
+                        <button type="button" onclick="toggleFormCeklist()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">
+                            <i class="ph ph-plus-circle text-lg"></i><span id="btn-toggle-form-text">Input Inspeksi Baru</span>
+                        </button>
+                        <button type="button" onclick="exportCeklistCSV()" class="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">
+                            <i class="ph ph-file-csv text-lg text-emerald-600"></i><span>Export CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Google Sheet Auto-Update Status Bar -->
+                <div class="bg-gradient-to-r from-indigo-50/70 via-slate-50 to-emerald-50/50 border border-indigo-100/90 rounded-xl p-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 text-slate-700">
+                        <i class="ph ph-google-logo text-lg text-emerald-600 shrink-0"></i>
+                        <span class="font-bold text-slate-800">Sumber Data:</span>
+                        <span class="text-slate-600">Terhubung ke Google Sheet</span>
+                        <span class="text-slate-400">|</span>
+                        <span class="text-slate-500">Auto-Update: <strong class="text-emerald-700 font-semibold">Aktif (Setiap 60 Detik)</strong></span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-500">
+                        <span id="label-sync-status-ceklist">Terakhir Sinkron: <strong id="timestamp-last-sync-ceklist" class="text-slate-700">-</strong></span>
+                        <a id="link-gview-sheet" href="https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/edit" target="_blank" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
+                            <span>Buka Google Sheet</span> <i class="ph ph-arrow-square-out text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Data Inspeksi</p>
+                            <h3 id="stat-total-ceklist" class="text-2xl font-black text-slate-800 mt-0.5">0</h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Sinkron dari Google Sheet</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold"><i class="ph ph-clipboard-text text-xl"></i></div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Temuan Terbuka (Open)</p>
+                            <h3 id="stat-open-ceklist" class="text-2xl font-black text-amber-600 mt-0.5">0</h3>
+                            <p class="text-[11px] text-amber-600/80 mt-0.5">Perlu Tindakan Perbaikan</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 font-bold"><i class="ph ph-warning text-xl"></i></div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Dalam Penanganan</p>
+                            <h3 id="stat-progress-ceklist" class="text-2xl font-black text-blue-600 mt-0.5">0</h3>
+                            <p class="text-[11px] text-blue-600/80 mt-0.5">Status: In Progress</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold"><i class="ph ph-hourglass-high text-xl"></i></div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Selesai / Ditutup</p>
+                            <h3 id="stat-closed-ceklist" class="text-2xl font-black text-emerald-600 mt-0.5">0</h3>
+                            <p class="text-[11px] text-emerald-600/80 mt-0.5">Status: Closed</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold"><i class="ph ph-check-circle text-xl"></i></div>
+                    </div>
+                </div>
+
+                <!-- Form Input Ceklist Warehouse (Collapsible) -->
+                <div id="container-form-ceklist" class="hidden bg-slate-50/70 border border-indigo-100 rounded-2xl p-6 transition-all duration-300">
+                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-note-pencil text-xl text-indigo-600"></i>
+                            <h3 class="font-bold text-slate-800 text-base">Input Form Ceklist Warehouse (Sesuai Kolom Sheet)</h3>
+                        </div>
+                        <span class="text-xs text-slate-500 bg-white px-2.5 py-1 rounded-full border border-slate-200 font-medium">Standar Inspeksi Gudang SJA3</span>
+                    </div>
+
+                    <form id="form-ceklist-warehouse" onsubmit="saveDataCeklistWarehouse(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom B]</span> Nama Warehouse Inspektor *
+                                </label>
+                                <input type="text" id="ceklist-petugas" required placeholder="Contoh: Arga" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom C]</span> Tanggal Inspeksi *
+                                </label>
+                                <input type="date" id="ceklist-tgl" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom D]</span> Bagian
+                                </label>
+                                <input type="text" id="ceklist-bagian" placeholder="Contoh: GBB / UPBM / Logistik" value="GBB" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom E]</span> Area
+                                </label>
+                                <input type="text" id="ceklist-area" placeholder="Contoh: G. Krian / SJA 3" value="G. Krian" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom F]</span> Nomor Gudang
+                                </label>
+                                <input type="text" id="ceklist-nomor-gudang" placeholder="Contoh: Nomor 5" value="Nomor 5" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom G]</span> Kategori Audit
+                                </label>
+                                <select id="ceklist-kategori-audit" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                    <option value="5 R">5 R (Ringkas, Rapi, Resik, Rawat, Rajin)</option>
+                                    <option value="GMP">GMP (Good Manufacturing Practices)</option>
+                                    <option value="K3">Keselamatan Kerja (K3)</option>
+                                    <option value="Pest Control">Pest Control / Bebas Hama</option>
+                                    <option value="Sanitasi">Sanitasi & Kebersihan</option>
+                                    <option value="Kondisi Palet">Kondisi Palet & Fondasi</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom H]</span> Tingkat Keparahan
+                                </label>
+                                <select id="ceklist-keparahan" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                    <option value="Low">Low (Rendah)</option>
+                                    <option value="Medium">Medium (Sedang)</option>
+                                    <option value="High">High (Tinggi)</option>
+                                    <option value="Critical">Critical (Kritis)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom O]</span> Status
+                                </label>
+                                <select id="ceklist-status" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                    <option value="Open">Open (Belum Selesai)</option>
+                                    <option value="In Progress">In Progress (Sedang Dikerjakan)</option>
+                                    <option value="Closed">Closed (Selesai)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom K]</span> Diskripsi Temuan *
+                                </label>
+                                <textarea id="ceklist-deskripsi" required rows="2" placeholder="Tuliskan diskripsi temuan inspeksi warehouse..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom L]</span> Tindakan Perbaikan
+                                </label>
+                                <textarea id="ceklist-tindakan" rows="2" placeholder="Tindakan koreksi atau perbaikan yang direkomendasikan..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom M]</span> PIC (Penanggung Jawab)
+                                </label>
+                                <input type="text" id="ceklist-pic" placeholder="Contoh: Yolanda" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom N]</span> Target Selesai
+                                </label>
+                                <input type="date" id="ceklist-target-selesai" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom I]</span> Link Dokumentasi Before (Foto 1)
+                                </label>
+                                <input type="url" id="ceklist-foto-1" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <span class="text-indigo-600 font-bold">[Kolom J]</span> Link Dokumentasi After (Foto 2)
+                                </label>
+                                <input type="url" id="ceklist-foto-2" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-slate-200 gap-3">
+                            <div class="text-xs text-slate-500 flex items-center gap-1.5">
+                                <i class="ph ph-info text-base text-indigo-600"></i>
+                                <span>Kolom A (Waktu/Timestamp) di-generate otomatis saat data disimpan.</span>
+                            </div>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <button type="button" onclick="toggleFormCeklist()" class="flex-1 sm:flex-none px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 transition-colors">Batal</button>
+                                <button type="submit" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                                    <i class="ph ph-floppy-disk text-base"></i> Simpan Data
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <div class="relative flex-1">
+                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-ceklist" oninput="handleSearchCeklist(this.value)" placeholder="Cari berdasarkan Inspektor, Area, Bagian, Temuan, PIC..." class="w-full pl-9 pr-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none focus:border-indigo-500 bg-white shadow-sm">
+                    </div>
+                    <select id="filter-status-ceklist" onchange="handleFilterStatusCeklist(this.value)" class="px-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500 shadow-sm text-slate-700">
+                        <option value="all">Semua Status</option>
+                        <option value="Open">Status: Open</option>
+                        <option value="In Progress">Status: In Progress</option>
+                        <option value="Closed">Status: Closed</option>
+                    </select>
+                    <select id="filter-severity-ceklist" onchange="handleFilterSeverityCeklist(this.value)" class="px-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500 shadow-sm text-slate-700">
+                        <option value="all">Semua Keparahan</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+
+                <!-- Table with Google Sheets columns -->
+                <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-100/90 text-slate-700 uppercase font-semibold text-[11px] border-b border-slate-200">
+                            <tr>
+                                <th class="px-3 py-3 text-center w-10">No</th>
+                                <th class="px-3 py-3 whitespace-nowrap">
+                                    <div class="font-bold text-indigo-700">Waktu</div>
+                                    <div class="text-[10px] text-slate-400 font-normal">Kolom A (Timestamp)</div>
+                                </th>
+                                <th class="px-3 py-3 whitespace-nowrap">
+                                    <div class="font-bold text-slate-800">Nama Warehouse Inspektor</div>
+                                    <div class="text-[10px] text-slate-400 font-normal">Kolom B</div>
+                                </th>
+                                <th class="px-3 py-3 whitespace-nowrap">
+                                    <div class="font-bold text-slate-800">Tgl Inspeksi</div>
+                                    <div class="text-[10px] text-slate-400 font-normal">Kolom C</div>
+                                </th>
+                                <th class="px-3 py-3 whitespace-nowrap">Bagian & Area</th>
+                                <th class="px-3 py-3 text-center whitespace-nowrap">No Gudang</th>
+                                <th class="px-3 py-3 whitespace-nowrap">Kategori Audit</th>
+                                <th class="px-3 py-3 text-center whitespace-nowrap">Keparahan</th>
+                                <th class="px-4 py-3 min-w-[200px]">Diskripsi Temuan</th>
+                                <th class="px-4 py-3 min-w-[180px]">Tindakan Perbaikan</th>
+                                <th class="px-3 py-3 whitespace-nowrap">PIC & Target</th>
+                                <th class="px-3 py-3 text-center whitespace-nowrap">Dokumentasi Before</th>
+                                <th class="px-3 py-3 text-center whitespace-nowrap">Status</th>
+                                <th class="px-3 py-3 text-center whitespace-nowrap">Dokumentasi After</th>
+                                <th class="px-3 py-3 text-center w-20">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body-ceklist" class="divide-y divide-slate-200 bg-white">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+                    <p class="text-xs text-slate-500">Menampilkan <span id="page-info-ceklist" class="font-bold text-slate-700">0 - 0</span> dari <span id="total-info-ceklist" class="font-bold text-slate-700">0</span> baris data</p>
+                    <div class="flex gap-2">
+                        <button type="button" id="btn-prev-ceklist" onclick="prevPageCeklist()" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="ph ph-caret-left mr-1"></i> Sebelumnya
+                        </button>
+                        <button type="button" id="btn-next-ceklist" onclick="nextPageCeklist()" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                            Berikutnya <i class="ph ph-caret-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
         </div>
         
         <!-- Loading & Modals -->
@@ -770,6 +1091,405 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Detail Ceklist Warehouse -->
+        <div id="modal-detail-ceklist" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold"><i class="ph ph-clipboard-text text-lg"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">Detail Data Ceklist Warehouse</h3>
+                            <p class="text-[11px] text-slate-500">Hasil inspeksi lapangan sesuai Google Sheet</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeDetailCeklistModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors"><i class="ph ph-x"></i></button>
+                </div>
+                <div id="modal-detail-ceklist-content" class="p-6 overflow-y-auto space-y-4 text-xs">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <button type="button" id="btn-print-detail-ceklist" onclick="printDetailCeklist()" class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                        <i class="ph ph-printer"></i> Cetak Dokumen Ceklist
+                    </button>
+                    <button type="button" onclick="closeDetailCeklistModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold">Tutup</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Pengaturan Link Google Sheet Ceklist -->
+        <div id="modal-config-sheet-ceklist" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold"><i class="ph ph-google-logo text-lg"></i></div>
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base">Pengaturan Link Google Sheet Ceklist</h3>
+                    </div>
+                    <button type="button" onclick="closeModalConfigSheet()" class="text-slate-400 hover:text-slate-600 text-lg p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors"><i class="ph ph-x"></i></button>
+                </div>
+                <div class="p-6 space-y-4 text-xs">
+                    <p class="text-slate-600 leading-relaxed">
+                        Data ceklist diupdate secara berkala dari spreadsheet Google Sheet. Masukkan link Google Sheet Anda atau Sheet ID di bawah ini:
+                    </p>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">URL / Link Google Sheet Ceklist</label>
+                        <input type="text" id="input-config-sheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../edit" class="w-full px-3 py-2.5 text-xs rounded-lg border border-slate-300 outline-none focus:border-indigo-500 bg-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Nama Tab Sheet (Opsional)</label>
+                        <input type="text" id="input-config-sheet-name" placeholder="Contoh: Form Responses 1 atau DATA_CEKLIST_WAREHOUSE" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-indigo-500 bg-white">
+                        <p class="text-[11px] text-slate-400 mt-1">Kosongkan jika ingin menggunakan sheet pertama (default).</p>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-[11px] text-emerald-800 space-y-1">
+                        <div class="font-bold flex items-center gap-1"><i class="ph ph-check-circle"></i> Susunan Kolom Standar:</div>
+                        <div>Kolom A: Timestamp / Waktu | Kolom B: Nama Warehouse Inspektor | Kolom C: Tanggal Inspeksi | Kolom D: Bagian | Kolom E: Area | Kolom F: Nomor Gudang | Kolom G: Kategori Audit | Kolom H: Tingkat Keparahan | Kolom I-J: Foto | Kolom K: Diskripsi Temuan | Kolom L: Tindakan Perbaikan | Kolom M: PIC | Kolom N: Target Selesai | Kolom O: Status</div>
+                    </div>
+                </div>
+                <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <button type="button" onclick="resetDefaultConfigSheet()" class="text-slate-500 hover:text-slate-700 underline text-xs">Reset ke Default</button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeModalConfigSheet()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-100">Batal</button>
+                        <button type="button" onclick="saveConfigSheet()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1">
+                            <i class="ph ph-floppy-disk"></i> Simpan & Sinkronkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Panduan & Kode Google Apps Script Ceklist Warehouse -->
+        <div id="modal-appscript-ceklist" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold"><i class="ph ph-code text-lg"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">Google Apps Script - Data Ceklist Warehouse</h3>
+                            <p class="text-[11px] text-slate-500">Skrip sinkronisasi 16 Kolom Spreadsheet (Timestamp s/d Email Address)</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeModalAppsScriptCeklist()" class="text-slate-400 hover:text-slate-600 text-lg p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors"><i class="ph ph-x"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto space-y-4 text-xs">
+                    <!-- Petunjuk Instalasi Singkat -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                        <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                            <i class="ph ph-info text-indigo-600 text-base"></i> Langkah Pasang di Google Spreadsheet:
+                        </div>
+                        <ol class="list-decimal pl-5 space-y-1.5 text-slate-600 leading-relaxed text-[11px]">
+                            <li>Buka Spreadsheet target Google Sheet di browser.</li>
+                            <li>Klik menu atas: <strong>Ekstensi (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</li>
+                            <li>Hapus kode bawaan di file <code class="bg-white px-1 py-0.5 rounded border font-mono text-indigo-700">Code.gs</code>, lalu <strong>Paste (Tempel)</strong> kode di bawah ini.</li>
+                            <li>Klik tombol <strong>Deploy (Terapkan)</strong> di pojok kanan atas &rarr; pilih <strong>New deployment (Penerapan baru)</strong>.</li>
+                            <li>Pilih jenis <strong>Web app (Aplikasi web)</strong>:
+                                <ul class="list-disc pl-4 mt-0.5 text-slate-500">
+                                    <li>Execute as: <strong>Me (Saya)</strong></li>
+                                    <li>Who has access: <strong>Anyone (Siapa saja)</strong></li>
+                                </ul>
+                            </li>
+                            <li>Klik <strong>Deploy</strong>, izinkan akses (Authorize), lalu salin <strong>Web App URL</strong> yang dihasilkan.</li>
+                            <li>Paste URL tersebut di menu <strong>"Link Sheet"</strong> pada SIBIKOM untuk sinkronisasi otomatis!</li>
+                        </ol>
+                    </div>
+
+                    <!-- Header Columns Info -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-[11px] text-emerald-900">
+                        <div class="font-bold flex items-center gap-1.5 mb-1">
+                            <i class="ph ph-table text-emerald-700 text-base"></i> Urutan Kolom Terintegrasi (A - P):
+                        </div>
+                        <p class="leading-relaxed font-mono text-[10px] text-emerald-800">
+                            A: Timestamp | B: Nama Warehouse Inspektor | C: Tanggal Inspeksi | D: Bagian | E: Area | F: Nomor gudang | G: Kategori Audit | H: Tingkat Keparahan | I: Dokumentasi foto 1 | J: Dokumentasi foto 2 | K: Diskripsi Temuan | L: Tindakan Perbaikan | M: PIC | N: Target Selesai | O: Status | P: Email Address
+                        </p>
+                    </div>
+
+                    <!-- Code Snippet Area -->
+                    <div class="relative">
+                        <div class="flex items-center justify-between pb-1.5">
+                            <span class="font-bold text-slate-700 text-xs">File: <span class="font-mono text-indigo-600">Code.gs</span></span>
+                            <button type="button" id="btn-copy-appscript" onclick="copyAppsScriptCode()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors shadow-sm">
+                                <i class="ph ph-copy"></i> <span>Salin Kode Script</span>
+                            </button>
+                        </div>
+                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl text-[11px] font-mono overflow-x-auto max-h-72 border border-slate-800 selection:bg-indigo-500 selection:text-white" id="text-appscript-code">/**
+ * =========================================================================
+ * SIBIKOM - Google Apps Script untuk "Data Ceklist Warehouse"
+ * PT Santos Jaya Abadi 3 (SJA3) - Gudang & Supply Chain
+ * =========================================================================
+ */
+
+var TARGET_SHEET_NAME = "DATA_CEKLIST_WAREHOUSE";
+
+/**
+ * 1. doGet: Mengirimkan data inspeksi dalam format JSON ke aplikasi SIBIKOM
+ */
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = getCeklistSheet(ss, e);
+
+    if (!sheet) {
+      return responseJSON({
+        status: "error",
+        message: "Sheet tidak ditemukan. Silakan jalankan setupCeklistSheet() terlebih dahulu."
+      });
+    }
+
+    var data = readSheetData(sheet);
+
+    // Support callback JSONP jika dipanggil dengan ?callback=
+    var callback = e && e.parameter && e.parameter.callback;
+    if (callback) {
+      return ContentService.createTextOutput(callback + "(" + JSON.stringify({
+        status: "success",
+        total: data.length,
+        timestamp: new Date().toISOString(),
+        data: data
+      }) + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return responseJSON({
+      status: "success",
+      total: data.length,
+      timestamp: new Date().toISOString(),
+      data: data
+    });
+
+  } catch (err) {
+    return responseJSON({ status: "error", message: err.toString() });
+  }
+}
+
+/**
+ * 2. doPost: Menerima input / penambahan data inspeksi baru dari aplikasi SIBIKOM
+ */
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = getCeklistSheet(ss, e);
+    if (!sheet) {
+      sheet = setupCeklistSheet();
+    }
+
+    var p = e.parameter || {};
+    if (e.postData && e.postData.contents) {
+      try {
+        var jsonBody = JSON.parse(e.postData.contents);
+        for (var key in jsonBody) { p[key] = jsonBody[key]; }
+      } catch (ex) {}
+    }
+
+    var timestamp = p.timestamp || p.waktu || Utilities.formatDate(new Date(), "Asia/Jakarta", "M/d/yyyy HH:mm:ss");
+    var inspector = p.petugas || p.namaWarehouseInspektor || p.nama || "";
+    var tglInspeksi = p.tanggal || p.tanggalInspeksi || Utilities.formatDate(new Date(), "Asia/Jakarta", "M/d/yyyy");
+    var bagian = p.bagian || "GBB";
+    var area = p.area || "";
+    var nomorGudang = p.nomorGudang || p.nomor_gudang || "";
+    var kategoriAudit = p.kategoriAudit || p.kategori || "5 R";
+    var tingkatKeparahan = p.tingkatKeparahan || p.keparahan || "Low";
+    var foto1 = normalizeDriveUrl(p.foto1 || p.dokumentasiFoto1 || "");
+    var foto2 = normalizeDriveUrl(p.foto2 || p.dokumentasiFoto2 || "");
+    var deskripsi = p.deskripsi || p.diskripsiTemuan || "";
+    var tindakan = p.tindakan || p.tindakanPerbaikan || "";
+    var pic = p.pic || "";
+    var targetSelesai = p.targetSelesai || "";
+    var status = p.status || "Open";
+    var email = p.email || p.emailAddress || "";
+
+    var newRow = [
+      timestamp,        // A: Timestamp
+      inspector,        // B: Nama Warehouse Inspektor
+      tglInspeksi,      // C: Tanggal Inspeksi
+      bagian,           // D: Bagian 
+      area,             // E: Area
+      nomorGudang,      // F: Nomor gudang
+      kategoriAudit,    // G: Kategori Audit 
+      tingkatKeparahan, // H: Tingkat Keparahan
+      foto1,            // I: Dokumentasi foto 1
+      foto2,            // J: Dokumentasi foto 2
+      deskripsi,        // K: Diskripsi Temuan
+      tindakan,         // L: Tindakan Perbaikan
+      pic,              // M: PIC
+      targetSelesai,    // N: Target Selesai 
+      status,           // O: Status
+      email             // P: Email Address
+    ];
+
+    sheet.appendRow(newRow);
+
+    return responseJSON({
+      status: "success",
+      message: "Data Ceklist Warehouse berhasil dicatat ke Google Sheet.",
+      row: newRow
+    });
+
+  } catch (err) {
+    return responseJSON({ status: "error", message: err.toString() });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * 3. Membaca data baris dan memetakan menjadi JSON
+ */
+function readSheetData(sheet) {
+  var lastRow = sheet.getLastRow();
+  var lastCol = Math.max(sheet.getLastColumn(), 16);
+  if (lastRow < 2) return [];
+
+  var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  var result = [];
+
+  for (var i = 0; i < values.length; i++) {
+    var r = values[i];
+    var timestampStr = formatCellValue(r[0]);
+    var inspector = formatCellValue(r[1]);
+    var tglStr = formatCellValue(r[2]);
+
+    if (!inspector && !timestampStr && !tglStr) continue;
+
+    result.push({
+      id: "CW-" + (1001 + i),
+      waktu: timestampStr,
+      petugas: inspector,
+      namaWarehouseInspektor: inspector,
+      tanggal: tglStr,
+      tanggalInspeksi: tglStr,
+      bagian: formatCellValue(r[3]),
+      area: formatCellValue(r[4]),
+      nomorGudang: formatCellValue(r[5]),
+      kategoriAudit: formatCellValue(r[6]),
+      tingkatKeparahan: formatCellValue(r[7]),
+      foto1: normalizeDriveUrl(formatCellValue(r[8])),
+      foto2: normalizeDriveUrl(formatCellValue(r[9])),
+      deskripsi: formatCellValue(r[10]),
+      diskripsiTemuan: formatCellValue(r[10]),
+      tindakan: formatCellValue(r[11]),
+      tindakanPerbaikan: formatCellValue(r[11]),
+      pic: formatCellValue(r[12]),
+      targetSelesai: formatCellValue(r[13]),
+      status: formatCellValue(r[14]) || "Open",
+      email: formatCellValue(r[15])
+    });
+  }
+
+  return result;
+}
+
+/**
+ * 4. Mendapatkan Tab Sheet Ceklist yang Tepat
+ */
+function getCeklistSheet(ss, e) {
+  var requestedName = (e && e.parameter && e.parameter.sheet) ? e.parameter.sheet : TARGET_SHEET_NAME;
+  var sheet = ss.getSheetByName(requestedName);
+  if (sheet) return sheet;
+
+  // Deteksi otomatis jika sheet bernama lain (misal Form Responses 1)
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    var s = sheets[i];
+    if (s.getLastRow() >= 1) {
+      var headerRow = s.getRange(1, 1, 1, Math.min(s.getLastColumn(), 16)).getValues()[0];
+      var headerStr = headerRow.join(" ").toLowerCase();
+      if (headerStr.indexOf("inspektor") !== -1 || headerStr.indexOf("temuan") !== -1 || headerStr.indexOf("kategori audit") !== -1) {
+        return s;
+      }
+    }
+  }
+  return sheets[0];
+}
+
+/**
+ * 5. Inisialisasi Header Standar jika Sheet Kosong
+ */
+function setupCeklistSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(TARGET_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(TARGET_SHEET_NAME);
+  }
+
+  var headers = [
+    "Timestamp",
+    "Nama Warehouse Inspektor",
+    "Tanggal Inspeksi",
+    "Bagian ",
+    "Area",
+    "Nomor gudang",
+    "Kategori Audit ",
+    "Tingkat Keparahan",
+    "Dokumentasi foto 1",
+    "Dokumentasi foto 2",
+    "Diskripsi Temuan",
+    "Tindakan Perbaikan",
+    "PIC",
+    "Target Selesai ",
+    "Status",
+    "Email Address"
+  ];
+
+  var headerRange = sheet.getRange(1, 1, 1, headers.length);
+  headerRange.setValues([headers]);
+  headerRange.setFontWeight("bold");
+  headerRange.setBackground("#1e293b");
+  headerRange.setFontColor("#ffffff");
+  sheet.setFrozenRows(1);
+  return sheet;
+}
+
+/**
+ * 6. Format URL Google Drive
+ */
+function normalizeDriveUrl(url) {
+  if (!url || typeof url !== "string") return "";
+  url = url.trim();
+  var match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return "https://drive.google.com/open?id=" + match[1];
+  }
+  return url;
+}
+
+function formatCellValue(val) {
+  if (val === null || val === undefined) return "";
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, "Asia/Jakarta", "M/d/yyyy HH:mm:ss");
+  }
+  return String(val).trim();
+}
+
+function responseJSON(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * 7. Menu Cepat di Spreadsheet
+ */
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu("⚡ SIBIKOM Warehouse")
+    .addItem("🔍 Inisialisasi Header Standar", "setupCeklistSheet")
+    .addItem("🧪 Tes Data Ceklist", "testReadData")
+    .addToUi();
+}
+
+function testReadData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = getCeklistSheet(ss, null);
+  var data = readSheetData(sheet);
+  SpreadsheetApp.getUi().alert("Berhasil membaca " + data.length + " baris data inspeksi Ceklist Warehouse.");
+}</pre>
+                    </div>
+                </div>
+                <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-end">
+                    <button type="button" onclick="closeModalAppsScriptCeklist()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold">Tutup</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -778,14 +1498,31 @@
 
         // Fitur Login System
         const USERS_DB = {
+            'superadmin': { pass: 'superadmin123', role: 'SuperAdmin', name: 'Super Admin', defaultTab: 'main-dashboard' },
+            'SUPERADMIN': { pass: 'SUPER123', role: 'SuperAdmin', name: 'Super Admin', defaultTab: 'main-dashboard' },
+            'SuperAdmin-Skd': { pass: 'SUPER123', role: 'SuperAdmin', name: 'Super Admin', defaultTab: 'main-dashboard' },
+            'admin': { pass: 'admin123', role: 'SuperAdmin', name: 'Super Admin', defaultTab: 'main-dashboard' },
             'UPBM-Skd': { pass: 'UPBM123', role: 'UPBM', name: 'Admin UPBM', defaultTab: 'produksi' },
             'RMW-Skd': { pass: 'RMW123', role: 'Gudang', name: 'Admin Gudang', defaultTab: 'main-dashboard' }
         };
 
+        function findUser(username) {
+            if (!username) return null;
+            if (USERS_DB[username]) return { key: username, user: USERS_DB[username] };
+            const lower = username.trim().toLowerCase();
+            for (const k of Object.keys(USERS_DB)) {
+                if (k.toLowerCase() === lower) {
+                    return { key: k, user: USERS_DB[k] };
+                }
+            }
+            return null;
+        }
+
         function checkLoginState() {
             const savedUser = localStorage.getItem('sibikom_logged_user');
-            if (savedUser && USERS_DB[savedUser]) {
-                applyUserRole(USERS_DB[savedUser]);
+            const found = findUser(savedUser);
+            if (found) {
+                applyUserRole(found.user);
                 document.getElementById('login-overlay').classList.add('hidden');
             } else {
                 document.getElementById('login-overlay').classList.remove('hidden');
@@ -798,12 +1535,13 @@
             const p = document.getElementById('login-password').value.trim();
             const err = document.getElementById('login-error');
             
-            if (USERS_DB[u] && USERS_DB[u].pass === p) {
+            const found = findUser(u);
+            if (found && found.user.pass === p) {
                 err.classList.add('hidden');
-                localStorage.setItem('sibikom_logged_user', u);
+                localStorage.setItem('sibikom_logged_user', found.key);
                 document.getElementById('login-overlay').classList.add('hidden');
-                showToast(`Selamat datang, ${USERS_DB[u].name}!`, 'success');
-                applyUserRole(USERS_DB[u]);
+                showToast(`Selamat datang, ${found.user.name}!`, 'success');
+                applyUserRole(found.user);
             } else {
                 err.classList.remove('hidden');
                 document.getElementById('login-password').value = '';
@@ -821,20 +1559,52 @@
 
         function applyUserRole(userObj) {
             document.getElementById('user-display-name').innerText = userObj.name;
-            document.getElementById('user-display-role').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Hak Akses: ${userObj.role}`;
             
             const upbmNav = document.getElementById('nav-group-upbm');
             const gudangDashNav = document.getElementById('nav-group-gudang-dash');
             const gudangOpsNav = document.getElementById('nav-group-gudang-ops');
 
-            if (userObj.role === 'UPBM') {
-                if(upbmNav) upbmNav.classList.remove('hidden');
-                if(gudangDashNav) gudangDashNav.classList.add('hidden');
-                if(gudangOpsNav) gudangOpsNav.classList.add('hidden');
+            const isSuperAdmin = userObj.role === 'SuperAdmin';
+
+            // Google Sheets configuration elements
+            const mainDashSheetLink = document.getElementById('link-main-dash-sheet');
+            const configSheetBtn = document.getElementById('btn-config-sheet-ceklist');
+            const appScriptBtn = document.getElementById('btn-appscript-ceklist');
+            const gviewSheetLink = document.getElementById('link-gview-sheet');
+
+            if (mainDashSheetLink) {
+                if (!isSuperAdmin) mainDashSheetLink.classList.add('hidden');
+                else mainDashSheetLink.classList.remove('hidden');
+            }
+            if (configSheetBtn) {
+                if (!isSuperAdmin) configSheetBtn.classList.add('hidden');
+                else configSheetBtn.classList.remove('hidden');
+            }
+            if (appScriptBtn) {
+                if (!isSuperAdmin) appScriptBtn.classList.add('hidden');
+                else appScriptBtn.classList.remove('hidden');
+            }
+            if (gviewSheetLink) {
+                if (!isSuperAdmin) gviewSheetLink.classList.add('hidden');
+                else gviewSheetLink.classList.remove('hidden');
+            }
+
+            if (userObj.role === 'SuperAdmin') {
+                document.getElementById('user-display-role').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> Hak Akses: Super Admin (Gudang & UPBM)`;
+                // SuperAdmin memiliki akses ke kedua modul: Gudang & UPBM
+                if (upbmNav) upbmNav.classList.remove('hidden');
+                if (gudangDashNav) gudangDashNav.classList.remove('hidden');
+                if (gudangOpsNav) gudangOpsNav.classList.remove('hidden');
+            } else if (userObj.role === 'UPBM') {
+                document.getElementById('user-display-role').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Hak Akses: UPBM`;
+                if (upbmNav) upbmNav.classList.remove('hidden');
+                if (gudangDashNav) gudangDashNav.classList.add('hidden');
+                if (gudangOpsNav) gudangOpsNav.classList.add('hidden');
             } else if (userObj.role === 'Gudang') {
-                if(upbmNav) upbmNav.classList.add('hidden');
-                if(gudangDashNav) gudangDashNav.classList.remove('hidden');
-                if(gudangOpsNav) gudangOpsNav.classList.remove('hidden');
+                document.getElementById('user-display-role').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Hak Akses: Gudang`;
+                if (upbmNav) upbmNav.classList.add('hidden');
+                if (gudangDashNav) gudangDashNav.classList.remove('hidden');
+                if (gudangOpsNav) gudangOpsNav.classList.remove('hidden');
             }
             
             switchTab(userObj.defaultTab);
@@ -966,8 +1736,8 @@
 
         // Tab Switching Logic
         function switchTab(tabId) {
-            const tabs = ['main-dashboard', 'dashboard', 'gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-cetak-rmw', 'produksi'];
-            const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'produksi': 'Form Permintaan UPBM Roasting' };
+            const tabs = ['main-dashboard', 'dashboard', 'gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-cetak-rmw', 'gudang-ceklist', 'produksi'];
+            const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'gudang-ceklist': 'Data Ceklist Warehouse', 'produksi': 'Form Permintaan UPBM Roasting' };
             
             tabs.forEach(id => {
                 const section = document.getElementById(`sec-${id}`); const btn = document.getElementById(`btn-${id}`); const icon = btn ? btn.querySelector('i') : null;
@@ -990,6 +1760,7 @@
             else if (tabId === 'gudang-pengeluaran') { loadDataPengeluaranOtomatis(); fetchRiwayatPengeluaran(); }
             else if (tabId === 'gudang-fifo') { fetchFIFOData(); }
             else if (tabId === 'gudang-cetak-rmw') { loadDataDropdownRMW(); }
+            else if (tabId === 'gudang-ceklist') { loadDataCeklistWarehouse(); }
             else if (tabId === 'produksi') { fetchRiwayatPermintaan(); }
             else if (tabId === 'dashboard') { syncData(); }
         }
@@ -1905,10 +2676,968 @@
         document.getElementById('btn-confirm-delete').addEventListener('click', function() {
             if(!deleteConfig.id) return;
             const tId = deleteConfig.id; const tSh = deleteConfig.sheetName; const tCol = deleteConfig.columnName; closeConfirmModal();
+            if (tSh === 'LOCAL_CHECKLIST') {
+                allCeklistData = allCeklistData.filter(item => item.id !== tId);
+                let localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
+                localAdded = localAdded.filter(item => item.id !== tId);
+                localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
+                showToast(`Data Ceklist ID ${tId} berhasil dihapus!`, 'success');
+                applyFilterAndSortCeklist();
+                updateCeklistStats();
+                return;
+            }
             const ov = document.getElementById('loading-overlay'); ov.classList.remove('hidden'); ov.querySelector('p').innerText = "Menghapus Data...";
             const fd = new URLSearchParams(); fd.append('sheetName', tSh); fd.append('action', 'delete'); fd.append(tCol, tId); 
             fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => { ov.classList.add('hidden'); ov.querySelector('p').innerText = "Memproses Data..."; showToast(`Hapus ID ${tId} terkirim!`, 'success'); setTimeout(() => { if(tSh==='INPUT_PENERIMAAN_KOPI') fetchRiwayatPenerimaan(); if(tSh==='INPUT_TRANSAKSI_KELUAR') fetchRiwayatPengeluaran(); if(tSh==='FORM_PERMINTAAN_UPBM') fetchRiwayatPermintaan(); if(tSh==='INPUT_PO_SUPPLIER') fetchRiwayatPO(); syncMainDashboard(); }, 3000); }).catch(e => { ov.classList.add('hidden'); ov.querySelector('p').innerText = "Memproses Data..."; showToast(`Gagal menghapus.`, 'error'); });
         });
+
+        // ==========================================
+        // DATA CEKLIST WAREHOUSE LOGIC (GOOGLE SHEETS INTEGRATION)
+        // ==========================================
+        const DEFAULT_CEKLIST_SHEET_ID = "12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk";
+        let ceklistSheetId = localStorage.getItem('sibikom_ceklist_sheet_id') || DEFAULT_CEKLIST_SHEET_ID;
+        let ceklistSheetTab = localStorage.getItem('sibikom_ceklist_sheet_tab') || '';
+        let ceklistAutoSyncTimer = null;
+
+        let allCeklistData = [];
+        let filteredCeklistData = [];
+        let pageCeklist = 1;
+        const itemsPerPageCeklist = 10;
+        let searchCeklistQuery = '';
+        let filterStatusCeklistVal = 'all';
+        let filterSeverityCeklistVal = 'all';
+
+        // Sample / Fallback Seed Data according to actual Google Sheet columns (including user's attached row)
+        function getSeedCeklistData() {
+            return [
+                {
+                    id: "CW-1001",
+                    waktu: "9/14/2026 14:57:57", // Kolom A
+                    petugas: "Arga",              // Kolom B
+                    tanggal: "2026-09-14",        // Kolom C
+                    bagian: "GBB",                // Kolom D
+                    area: "G. Krian",             // Kolom E
+                    nomorGudang: "Nomor 5",       // Kolom F
+                    kategoriAudit: "5 R",         // Kolom G
+                    tingkatKeparahan: "Low",       // Kolom H
+                    foto1: "https://drive.google.com/open?id=1V2S6TNhQU44dBcY8Q_YxOADlSnbSfqpu", // Kolom I
+                    foto2: "",                    // Kolom J
+                    deskripsi: "Kunci",           // Kolom K
+                    tindakan: "Dipindah",         // Kolom L
+                    pic: "Yolanda",               // Kolom M
+                    targetSelesai: "2026-09-22",  // Kolom N
+                    status: "Open",               // Kolom O
+                    email: "sjaprocurement@gmail.com" // Kolom P
+                },
+                {
+                    id: "CW-1002",
+                    waktu: "9/15/2026 9:29:51",
+                    petugas: "Moch Sholichudin",
+                    tanggal: "2026-09-15",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 9",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1ljgjaE6KvHXKGvs6nO8hZSCY0c5e2HQM",
+                    foto2: "https://drive.google.com/open?id=1JI7UlEnMCh9okr7yISe8zqnjLUp4LS8d",
+                    deskripsi: "Sarang laba - laba dan trap geser dari lokasinya",
+                    tindakan: "Sarang laba-laba langsung di bersihkan dan trap sudah di rapikan",
+                    pic: "Sholichudin",
+                    targetSelesai: "2026-09-15",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1003",
+                    waktu: "9/13/2026 09:30:15",
+                    petugas: "Budi Setiawan",
+                    tanggal: "2026-09-13",
+                    bagian: "UPBM",
+                    area: "SJA 3",
+                    nomorGudang: "Gudang BKM-02",
+                    kategoriAudit: "Sanitasi",
+                    tingkatKeparahan: "Medium",
+                    foto1: "",
+                    foto2: "",
+                    deskripsi: "Ceceran serpihan kulit kopi di sekitar lorong rak 3",
+                    tindakan: "Sapu dan pel menggunakan blower dan vakum industri",
+                    pic: "Rian",
+                    targetSelesai: "2026-09-13",
+                    status: "Closed",
+                    email: "budi.warehouse@santosjayaabadi.com"
+                },
+                {
+                    id: "CW-1004",
+                    waktu: "9/12/2026 16:10:44",
+                    petugas: "Dimas Anggara",
+                    tanggal: "2026-09-12",
+                    bagian: "Logistik Gudang",
+                    area: "Loading Bay",
+                    nomorGudang: "Nomor 3",
+                    kategoriAudit: "Kondisi Palet",
+                    tingkatKeparahan: "High",
+                    foto1: "",
+                    foto2: "",
+                    deskripsi: "Palet kayu retak pada fondasi bawah penopang lot kopi 45 karung",
+                    tindakan: "Relokasi karung ke palet plastik baru standar food grade",
+                    pic: "Agus Santoso",
+                    targetSelesai: "2026-09-15",
+                    status: "In Progress",
+                    email: "dimas.wh@santosjayaabadi.com"
+                },
+                {
+                    id: "CW-1005",
+                    waktu: "9/11/2026 11:22:05",
+                    petugas: "Arga",
+                    tanggal: "2026-09-11",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 5",
+                    kategoriAudit: "Pest Control",
+                    tingkatKeparahan: "Low",
+                    foto1: "",
+                    foto2: "",
+                    deskripsi: "Pengecekan trap serangga berkala, kondisi umpan utuh dan bersih",
+                    tindakan: "Pencatatan kartu monitoring pest control rutin",
+                    pic: "Vendor Pest Control / Arga",
+                    targetSelesai: "2026-09-11",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                }
+            ];
+        }
+
+        // Parse Google Sheet GViz Response
+        function parseGoogleSheetCeklistRows(gvizData) {
+            if (!gvizData || !gvizData.table || !gvizData.table.rows) return [];
+            const rows = gvizData.table.rows;
+            const parsed = [];
+
+            rows.forEach((r, idx) => {
+                const c = r.c || [];
+                const waktuVal = c[0] ? (c[0].f || c[0].v || '') : '';
+                const inspectorVal = c[1] ? (c[1].f || c[1].v || '') : '';
+                const tglVal = c[2] ? (c[2].f || c[2].v || '') : '';
+
+                if (!inspectorVal && !waktuVal && !tglVal) return;
+
+                const getCellStr = (colIdx) => {
+                    if (!c[colIdx]) return '';
+                    return String(c[colIdx].f !== undefined && c[colIdx].f !== null ? c[colIdx].f : (c[colIdx].v !== undefined && c[colIdx].v !== null ? c[colIdx].v : '')).trim();
+                };
+
+                let cleanTgl = getCellStr(2);
+                if (cleanTgl.includes('Date(')) {
+                    const parts = cleanTgl.match(/Date\((\d+),(\d+),(\d+)/);
+                    if (parts) {
+                        const y = parts[1];
+                        const m = String(parseInt(parts[2], 10) + 1).padStart(2, '0');
+                        const d = String(parts[3]).padStart(2, '0');
+                        cleanTgl = `${y}-${m}-${d}`;
+                    }
+                }
+
+                parsed.push({
+                    id: `CW-${1000 + idx + 1}`,
+                    waktu: getCellStr(0) || new Date().toLocaleString('id-ID'), // Kolom A
+                    petugas: getCellStr(1) || '-',                             // Kolom B
+                    tanggal: cleanTgl || new Date().toISOString().slice(0, 10), // Kolom C
+                    bagian: getCellStr(3) || 'GBB',                            // Kolom D
+                    area: getCellStr(4) || '-',                                // Kolom E
+                    nomorGudang: getCellStr(5) || '-',                         // Kolom F
+                    kategoriAudit: getCellStr(6) || '5 R',                     // Kolom G
+                    tingkatKeparahan: getCellStr(7) || 'Low',                  // Kolom H
+                    foto1: getCellStr(8),                                      // Kolom I
+                    foto2: getCellStr(9),                                      // Kolom J
+                    deskripsi: getCellStr(10) || '-',                          // Kolom K
+                    tindakan: getCellStr(11) || '-',                           // Kolom L
+                    pic: getCellStr(12) || '-',                                // Kolom M
+                    targetSelesai: getCellStr(13) || '-',                      // Kolom N
+                    status: getCellStr(14) || 'Open',                          // Kolom O
+                    email: getCellStr(15) || ''                                // Kolom P
+                });
+            });
+
+            return parsed;
+        }
+
+        // Fetch Data Ceklist from Google Sheet or Apps Script Web App
+        async function fetchCeklistFromGoogleSheet() {
+            const target = ceklistSheetId || DEFAULT_CEKLIST_SHEET_ID;
+
+            // 1. Jika pengguna mengonfigurasi Web App URL Google Apps Script
+            if (target.includes('script.google.com/macros/s/')) {
+                let scriptUrl = target;
+                if (ceklistSheetTab) {
+                    scriptUrl += (scriptUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(ceklistSheetTab)}`;
+                }
+                const response = await fetch(scriptUrl);
+                if (!response.ok) throw new Error(`Apps Script HTTP ${response.status}`);
+                const result = await response.json();
+                if (result && result.data && Array.isArray(result.data)) {
+                    return result.data;
+                }
+            }
+
+            // 2. Default: Menggunakan GVIZ Google Spreadsheet API
+            let url = `https://docs.google.com/spreadsheets/d/${target}/gviz/tq?tqx=out:json`;
+            if (ceklistSheetTab) {
+                url += `&sheet=${encodeURIComponent(ceklistSheetTab)}`;
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const text = await response.text();
+            
+            const startIdx = text.indexOf('{');
+            const endIdx = text.lastIndexOf('}');
+            if (startIdx === -1 || endIdx === -1) throw new Error("Invalid GVIZ JSON format");
+            const jsonStr = text.substring(startIdx, endIdx + 1);
+            const data = JSON.parse(jsonStr);
+            return parseGoogleSheetCeklistRows(data);
+        }
+
+        // Synchronize Ceklist Google Sheet
+        async function syncCeklistGoogleSheet(isManual = false) {
+            const icon = document.getElementById('icon-sync-ceklist');
+            if (icon) icon.classList.add('animate-spin');
+
+            const statusLabel = document.getElementById('label-sync-status-ceklist');
+            if (statusLabel && isManual) {
+                statusLabel.innerHTML = 'Status: <span class="text-indigo-600 font-semibold">Menghubungkan ke Google Sheet...</span>';
+            }
+
+            try {
+                let sheetRows = [];
+                try {
+                    sheetRows = await fetchCeklistFromGoogleSheet();
+                } catch (fetchErr) {
+                    console.warn("GVIZ direct fetch failed or restricted, checking local or fallback:", fetchErr);
+                }
+
+                if (sheetRows && sheetRows.length > 0) {
+                    const localCreated = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
+                    allCeklistData = [...localCreated, ...sheetRows];
+                    localStorage.setItem('sibikom_checklist_warehouse_cached', JSON.stringify(sheetRows));
+                } else {
+                    const cached = localStorage.getItem('sibikom_checklist_warehouse_cached');
+                    const localCreated = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
+                    if (cached) {
+                        allCeklistData = [...localCreated, ...JSON.parse(cached)];
+                    } else {
+                        const seed = getSeedCeklistData();
+                        allCeklistData = [...localCreated, ...seed];
+                    }
+                }
+
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+                const timeEl = document.getElementById('timestamp-last-sync-ceklist');
+                if (timeEl) timeEl.innerText = timeStr;
+                if (statusLabel) {
+                    statusLabel.innerHTML = `Terakhir Sinkron: <strong id="timestamp-last-sync-ceklist" class="text-slate-700">${timeStr}</strong>`;
+                }
+
+                applyFilterAndSortCeklist();
+                updateCeklistStats();
+
+                if (isManual) {
+                    showToast(`Sinkronisasi Google Sheet berhasil! (${allCeklistData.length} data)`, 'success');
+                }
+            } catch (err) {
+                console.error("Sync Ceklist Error:", err);
+                if (isManual) {
+                    showToast("Koneksi Google Sheet gagal, menampilkan data tersimpan.", "error");
+                }
+            } finally {
+                if (icon) icon.classList.remove('animate-spin');
+            }
+        }
+
+        // Toggle Form
+        function toggleFormCeklist() {
+            const formContainer = document.getElementById('container-form-ceklist');
+            const btnText = document.getElementById('btn-toggle-form-text');
+            if (formContainer.classList.contains('hidden')) {
+                formContainer.classList.remove('hidden');
+                btnText.innerText = 'Tutup Form';
+                document.getElementById('ceklist-tgl').value = new Date().toISOString().slice(0, 10);
+                const user = localStorage.getItem('sibikom_logged_user') || '';
+                if (user && !document.getElementById('ceklist-petugas').value) {
+                    document.getElementById('ceklist-petugas').value = user;
+                }
+            } else {
+                formContainer.classList.add('hidden');
+                btnText.innerText = 'Input Inspeksi Baru';
+            }
+        }
+
+        // Load & Initialize Ceklist Section
+        function loadDataCeklistWarehouse() {
+            const linkGview = document.getElementById('link-gview-sheet');
+            if (linkGview) {
+                linkGview.href = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
+            }
+
+            syncCeklistGoogleSheet(false);
+
+            if (ceklistAutoSyncTimer) clearInterval(ceklistAutoSyncTimer);
+            ceklistAutoSyncTimer = setInterval(() => {
+                const sec = document.getElementById('sec-gudang-ceklist');
+                if (sec && !sec.classList.contains('hidden')) {
+                    syncCeklistGoogleSheet(false);
+                }
+            }, 60000);
+        }
+
+        // Update KPI Cards
+        function updateCeklistStats() {
+            const total = allCeklistData.length;
+            const openCount = allCeklistData.filter(d => String(d.status).toLowerCase() === 'open').length;
+            const progressCount = allCeklistData.filter(d => String(d.status).toLowerCase().includes('progress')).length;
+            const closedCount = allCeklistData.filter(d => String(d.status).toLowerCase() === 'closed').length;
+
+            const totalEl = document.getElementById('stat-total-ceklist');
+            const openEl = document.getElementById('stat-open-ceklist');
+            const progEl = document.getElementById('stat-progress-ceklist');
+            const closedEl = document.getElementById('stat-closed-ceklist');
+
+            if (totalEl) totalEl.innerText = total;
+            if (openEl) openEl.innerText = openCount;
+            if (progEl) progEl.innerText = progressCount;
+            if (closedEl) closedEl.innerText = closedCount;
+        }
+
+        // Search & Filter Handlers
+        function handleSearchCeklist(val) {
+            searchCeklistQuery = String(val).toLowerCase();
+            pageCeklist = 1;
+            applyFilterAndSortCeklist();
+        }
+
+        function handleFilterStatusCeklist(val) {
+            filterStatusCeklistVal = val;
+            pageCeklist = 1;
+            applyFilterAndSortCeklist();
+        }
+
+        function handleFilterSeverityCeklist(val) {
+            filterSeverityCeklistVal = val;
+            pageCeklist = 1;
+            applyFilterAndSortCeklist();
+        }
+
+        function applyFilterAndSortCeklist() {
+            filteredCeklistData = allCeklistData.filter(item => {
+                const matchSearch = !searchCeklistQuery ||
+                    String(item.id || '').toLowerCase().includes(searchCeklistQuery) ||
+                    String(item.petugas || '').toLowerCase().includes(searchCeklistQuery) ||
+                    String(item.area || '').toLowerCase().includes(searchCeklistQuery) ||
+                    String(item.bagian || '').toLowerCase().includes(searchCeklistQuery) ||
+                    String(item.nomorGudang || '').toLowerCase().includes(searchCeklistQuery) ||
+                    String(item.deskripsi || '').toLowerCase().includes(searchCeklistQuery) ||
+                    String(item.pic || '').toLowerCase().includes(searchCeklistQuery);
+                
+                const matchStatus = filterStatusCeklistVal === 'all' || 
+                    String(item.status).toLowerCase() === filterStatusCeklistVal.toLowerCase();
+
+                const matchSeverity = filterSeverityCeklistVal === 'all' ||
+                    String(item.tingkatKeparahan).toLowerCase() === filterSeverityCeklistVal.toLowerCase();
+
+                return matchSearch && matchStatus && matchSeverity;
+            });
+
+            renderTableCeklist();
+        }
+
+        // Render Table Rows with Kolom A, B, C, etc.
+        function renderTableCeklist() {
+            const tbody = document.getElementById('table-body-ceklist');
+            if (!tbody) return;
+
+            if (filteredCeklistData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" class="text-center py-10 text-slate-400">Tidak ada rekaman data ceklist warehouse yang sesuai.</td></tr>`;
+                document.getElementById('page-info-ceklist').innerText = '0 - 0';
+                document.getElementById('total-info-ceklist').innerText = '0';
+                document.getElementById('btn-prev-ceklist').disabled = true;
+                document.getElementById('btn-next-ceklist').disabled = true;
+                return;
+            }
+
+            const start = (pageCeklist - 1) * itemsPerPageCeklist;
+            const end = start + itemsPerPageCeklist;
+            const pageData = filteredCeklistData.slice(start, end);
+
+            let html = '';
+            pageData.forEach((item, idx) => {
+                const num = start + idx + 1;
+
+                // Status Badge
+                let badgeStatus = '';
+                const st = String(item.status || '').toLowerCase();
+                if (st === 'open') {
+                    badgeStatus = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"><i class="ph ph-warning mr-1"></i> Open</span>';
+                } else if (st.includes('progress')) {
+                    badgeStatus = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200"><i class="ph ph-hourglass mr-1"></i> In Progress</span>';
+                } else if (st === 'closed') {
+                    badgeStatus = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="ph ph-check-circle mr-1"></i> Closed</span>';
+                } else {
+                    badgeStatus = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">${item.status}</span>`;
+                }
+
+                // Keparahan Badge
+                let badgeSeverity = '';
+                const sev = String(item.tingkatKeparahan || '').toLowerCase();
+                if (sev === 'critical') {
+                    badgeSeverity = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 border border-red-200">Critical</span>';
+                } else if (sev === 'high') {
+                    badgeSeverity = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">High</span>';
+                } else if (sev === 'medium') {
+                    badgeSeverity = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Medium</span>';
+                } else {
+                    badgeSeverity = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">Low</span>';
+                }
+
+                // Photo Before link
+                let photoBeforeHtml = '<span class="text-slate-300">-</span>';
+                if (item.foto1) {
+                    photoBeforeHtml = `
+                        <a href="${item.foto1}" target="_blank" title="Buka Dokumentasi Before" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded border border-indigo-200 transition-colors text-[10px]">
+                            <i class="ph ph-image text-sm"></i> Foto
+                        </a>
+                    `;
+                }
+
+                // Photo After link
+                let photoAfterHtml = '<span class="text-slate-300">-</span>';
+                if (item.foto2) {
+                    photoAfterHtml = `
+                        <a href="${item.foto2}" target="_blank" title="Buka Dokumentasi After" class="inline-flex items-center gap-1 text-teal-600 hover:text-teal-800 font-semibold bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded border border-teal-200 transition-colors text-[10px]">
+                            <i class="ph ph-image text-sm"></i> Foto
+                        </a>
+                    `;
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-3 py-3 text-center text-slate-500 font-medium">${num}</td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-mono text-[11px] font-semibold text-indigo-700 bg-indigo-50/70 px-1.5 py-0.5 rounded border border-indigo-100">${item.waktu}</span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-bold text-slate-800 text-xs">${item.petugas}</div>
+                            ${item.email ? `<div class="text-[10px] text-slate-400 truncate max-w-[140px]">${item.email}</div>` : ''}
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap font-medium text-slate-700">
+                            ${formatSheetDate(item.tanggal)}
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-semibold text-slate-700">${item.bagian || '-'}</span>
+                            <span class="text-slate-400">/</span>
+                            <span class="text-slate-600">${item.area || '-'}</span>
+                        </td>
+                        <td class="px-3 py-3 text-center whitespace-nowrap font-medium text-slate-700">
+                            ${item.nomorGudang || '-'}
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-semibold text-slate-700 border border-slate-200">${item.kategoriAudit || '-'}</span>
+                        </td>
+                        <td class="px-3 py-3 text-center whitespace-nowrap">
+                            ${badgeSeverity}
+                        </td>
+                        <td class="px-4 py-3 text-slate-700 max-w-[220px]">
+                            <div class="font-medium text-xs text-slate-800 line-clamp-2" title="${item.deskripsi}">${item.deskripsi}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 max-w-[200px]">
+                            <div class="text-xs text-slate-600 line-clamp-2" title="${item.tindakan || '-'}">${item.tindakan || '-'}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-medium text-slate-800 text-xs">${item.pic || '-'}</div>
+                            ${item.targetSelesai ? `<div class="text-[10px] text-slate-400">Target: ${formatSheetDate(item.targetSelesai)}</div>` : ''}
+                        </td>
+                        <td class="px-3 py-3 text-center whitespace-nowrap">
+                            ${photoBeforeHtml}
+                        </td>
+                        <td class="px-3 py-3 text-center whitespace-nowrap">
+                            ${badgeStatus}
+                        </td>
+                        <td class="px-3 py-3 text-center whitespace-nowrap">
+                            ${photoAfterHtml}
+                        </td>
+                        <td class="px-3 py-3 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button type="button" onclick="showDetailCeklistWarehouse('${item.id}')" title="Lihat Detail Inspeksi" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors">
+                                    <i class="ph ph-eye text-base"></i>
+                                </button>
+                                <button type="button" onclick="deleteCeklistWarehouse('${item.id}')" title="Hapus Data Baris Ini" class="p-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">
+                                    <i class="ph ph-trash text-base"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+            const shownEnd = Math.min(end, filteredCeklistData.length);
+            document.getElementById('page-info-ceklist').innerText = `${start + 1} - ${shownEnd}`;
+            document.getElementById('total-info-ceklist').innerText = filteredCeklistData.length;
+            document.getElementById('btn-prev-ceklist').disabled = pageCeklist === 1;
+            document.getElementById('btn-next-ceklist').disabled = end >= filteredCeklistData.length;
+        }
+
+        function prevPageCeklist() {
+            if (pageCeklist > 1) {
+                pageCeklist--;
+                renderTableCeklist();
+            }
+        }
+
+        function nextPageCeklist() {
+            if ((pageCeklist * itemsPerPageCeklist) < filteredCeklistData.length) {
+                pageCeklist++;
+                renderTableCeklist();
+            }
+        }
+
+        function saveDataCeklistWarehouse(e) {
+            e.preventDefault();
+            const petugas = document.getElementById('ceklist-petugas').value.trim();
+            const tgl = document.getElementById('ceklist-tgl').value;
+            const bagian = document.getElementById('ceklist-bagian').value.trim() || 'GBB';
+            const area = document.getElementById('ceklist-area').value.trim() || '-';
+            const nomorGudang = document.getElementById('ceklist-nomor-gudang').value.trim() || '-';
+            const kategoriAudit = document.getElementById('ceklist-kategori-audit').value;
+            const tingkatKeparahan = document.getElementById('ceklist-keparahan').value;
+            const status = document.getElementById('ceklist-status').value;
+            const deskripsi = document.getElementById('ceklist-deskripsi').value.trim();
+            const tindakan = document.getElementById('ceklist-tindakan').value.trim();
+            const pic = document.getElementById('ceklist-pic').value.trim() || '-';
+            const targetSelesai = document.getElementById('ceklist-target-selesai').value;
+            const foto1 = document.getElementById('ceklist-foto-1').value.trim();
+            const foto2 = document.getElementById('ceklist-foto-2').value.trim();
+
+            if (!tgl || !petugas || !deskripsi) {
+                showToast("Harap lengkapi nama petugas inspeksi, tanggal, dan deskripsi.", "error");
+                return;
+            }
+
+            const now = new Date();
+            const nowWaktuStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            const id = 'CW-' + Date.now().toString().slice(-5);
+
+            const newRecord = {
+                id,
+                waktu: nowWaktuStr,           // Kolom A
+                petugas,                      // Kolom B
+                tanggal: tgl,                 // Kolom C
+                bagian,                       // Kolom D
+                area,                         // Kolom E
+                nomorGudang,                  // Kolom F
+                kategoriAudit,                // Kolom G
+                tingkatKeparahan,             // Kolom H
+                foto1,                        // Kolom I
+                foto2,                        // Kolom J
+                deskripsi,                    // Kolom K
+                tindakan,                     // Kolom L
+                pic,                          // Kolom M
+                targetSelesai,                // Kolom N
+                status,                       // Kolom O
+                email: localStorage.getItem('sibikom_logged_email') || ''
+            };
+
+            // Save to local added list
+            const localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
+            localAdded.unshift(newRecord);
+            localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
+
+            allCeklistData.unshift(newRecord);
+            showToast(`Data Ceklist ${id} (${petugas}) berhasil disimpan!`, 'success');
+
+            // Kirim ke Google Apps Script Web App jika URL tersedia
+            const postUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : WEB_APP_URL;
+            if (postUrl) {
+                try {
+                    const postParams = new URLSearchParams();
+                    postParams.append('sheetName', ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE');
+                    postParams.append('timestamp', nowWaktuStr);
+                    postParams.append('petugas', petugas);
+                    postParams.append('tanggal', tgl);
+                    postParams.append('bagian', bagian);
+                    postParams.append('area', area);
+                    postParams.append('nomorGudang', nomorGudang);
+                    postParams.append('kategoriAudit', kategoriAudit);
+                    postParams.append('tingkatKeparahan', tingkatKeparahan);
+                    postParams.append('foto1', foto1);
+                    postParams.append('foto2', foto2);
+                    postParams.append('deskripsi', deskripsi);
+                    postParams.append('tindakan', tindakan);
+                    postParams.append('pic', pic);
+                    postParams.append('targetSelesai', targetSelesai);
+                    postParams.append('status', status);
+                    postParams.append('email', newRecord.email);
+
+                    fetch(postUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: postParams
+                    }).then(() => {
+                        console.log("Data Ceklist Warehouse berhasil dikirim ke Google Apps Script");
+                    }).catch(err => {
+                        console.warn("Gagal mengirim ke Google Apps Script:", err);
+                    });
+                } catch(postErr) {
+                    console.warn("Apps Script dispatch error:", postErr);
+                }
+            }
+
+            document.getElementById('form-ceklist-warehouse').reset();
+            toggleFormCeklist();
+            applyFilterAndSortCeklist();
+            updateCeklistStats();
+        }
+
+        function deleteCeklistWarehouse(id) {
+            deleteConfig = { id: id, sheetName: 'LOCAL_CHECKLIST', columnName: 'ID' };
+            document.getElementById('delete-id-target').innerText = id;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        let currentActiveCeklistDetail = null;
+
+        function showDetailCeklistWarehouse(id) {
+            const record = allCeklistData.find(item => item.id === id);
+            if (!record) return;
+            currentActiveCeklistDetail = record;
+
+            // Status Badge
+            let badgeStatus = '';
+            const st = String(record.status || '').toLowerCase();
+            if (st === 'open') {
+                badgeStatus = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200"><i class="ph ph-warning mr-1 text-sm"></i> OPEN (TEMUAN BELUM SELESAI)</span>';
+            } else if (st.includes('progress')) {
+                badgeStatus = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200"><i class="ph ph-hourglass mr-1 text-sm"></i> IN PROGRESS</span>';
+            } else if (st === 'closed') {
+                badgeStatus = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="ph ph-check-circle mr-1 text-sm"></i> CLOSED (SELESAI)</span>';
+            } else {
+                badgeStatus = `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">${record.status}</span>`;
+            }
+
+            // Severity Badge
+            let badgeSeverity = '';
+            const sev = String(record.tingkatKeparahan || '').toLowerCase();
+            if (sev === 'critical') {
+                badgeSeverity = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-200">Critical</span>';
+            } else if (sev === 'high') {
+                badgeSeverity = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">High</span>';
+            } else if (sev === 'medium') {
+                badgeSeverity = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">Medium</span>';
+            } else {
+                badgeSeverity = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Low</span>';
+            }
+
+            // Photos HTML
+            let photosHtml = '';
+            if (record.foto1 || record.foto2) {
+                photosHtml = `
+                    <div class="bg-white border border-slate-200 rounded-xl p-4">
+                        <div class="font-bold text-slate-800 text-xs mb-3 flex items-center gap-1.5">
+                            <i class="ph ph-camera text-indigo-600 text-base"></i> Dokumentasi Foto Inspeksi
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            ${record.foto1 ? `
+                                <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 flex items-center justify-between">
+                                    <div class="truncate mr-2">
+                                        <div class="font-semibold text-xs text-slate-700">Dokumentasi Before (Kolom I)</div>
+                                        <div class="text-[11px] text-slate-400 truncate">${record.foto1}</div>
+                                    </div>
+                                    <a href="${record.foto1}" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shrink-0 flex items-center gap-1">
+                                        <i class="ph ph-arrow-square-out"></i> Buka Foto
+                                    </a>
+                                </div>
+                            ` : ''}
+                            ${record.foto2 ? `
+                                <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 flex items-center justify-between">
+                                    <div class="truncate mr-2">
+                                        <div class="font-semibold text-xs text-slate-700">Dokumentasi After (Kolom J)</div>
+                                        <div class="text-[11px] text-slate-400 truncate">${record.foto2}</div>
+                                    </div>
+                                    <a href="${record.foto2}" target="_blank" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shrink-0 flex items-center gap-1">
+                                        <i class="ph ph-arrow-square-out"></i> Buka Foto
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const contentHtml = `
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <div class="text-xs text-slate-400">ID & Waktu Terdaftar (Kolom A)</div>
+                        <div class="font-black text-slate-800 text-lg">${record.id} <span class="text-xs font-mono font-normal text-slate-500">(${record.waktu})</span></div>
+                    </div>
+                    <div>${badgeStatus}</div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white border border-slate-200 rounded-xl p-3.5">
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Nama Inspektor (Kolom B)</div>
+                        <div class="font-bold text-slate-800 text-xs mt-0.5">${record.petugas}</div>
+                        ${record.email ? `<div class="text-[10px] text-slate-400 truncate">${record.email}</div>` : ''}
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Tanggal Inspeksi (Kolom C)</div>
+                        <div class="font-semibold text-slate-800 text-xs mt-0.5">${formatSheetDate(record.tanggal)}</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Bagian / Area (Kolom D/E)</div>
+                        <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.bagian || '-'} / ${record.area || '-'}</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Nomor Gudang (Kolom F)</div>
+                        <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.nomorGudang || '-'}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white border border-slate-200 rounded-xl p-3.5">
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Kategori Audit (Kolom G)</div>
+                        <div class="font-bold text-slate-800 text-xs mt-0.5">${record.kategoriAudit || '-'}</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Tingkat Keparahan (Kolom H)</div>
+                        <div class="mt-1">${badgeSeverity}</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">PIC Temuan (Kolom M)</div>
+                        <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.pic || '-'}</div>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Target Selesai (Kolom N)</div>
+                        <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.targetSelesai ? formatSheetDate(record.targetSelesai) : '-'}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                        <div class="font-bold text-slate-700 text-xs mb-1.5 flex items-center gap-1.5"><i class="ph ph-note text-indigo-600 text-base"></i> Diskripsi Temuan (Kolom K)</div>
+                        <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-line">${record.deskripsi || '-'}</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                        <div class="font-bold text-slate-700 text-xs mb-1.5 flex items-center gap-1.5"><i class="ph ph-wrench text-indigo-600 text-base"></i> Tindakan Perbaikan (Kolom L)</div>
+                        <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-line">${record.tindakan || '-'}</p>
+                    </div>
+                </div>
+
+                ${photosHtml}
+            `;
+
+            document.getElementById('modal-detail-ceklist-content').innerHTML = contentHtml;
+            document.getElementById('modal-detail-ceklist').classList.remove('hidden');
+        }
+
+        function closeDetailCeklistModal() {
+            document.getElementById('modal-detail-ceklist').classList.add('hidden');
+            currentActiveCeklistDetail = null;
+        }
+
+        function printDetailCeklist() {
+            if (!currentActiveCeklistDetail) return;
+            const content = document.getElementById('modal-detail-ceklist-content').innerHTML;
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                window.print();
+                return;
+            }
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Laporan Inspeksi Ceklist Warehouse - ${currentActiveCeklistDetail.id}</title>
+                    <script src="https://cdn.tailwindcss.com"></` + `script>
+                    <style>body { font-family: sans-serif; padding: 24px; color: #1e293b; }</style>
+                </head>
+                <body>
+                    <div class="border-b-2 border-slate-800 pb-4 mb-6 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold">SIBIKOM - DATA CEKLIST WAREHOUSE</h2>
+                            <p class="text-sm text-slate-500">PT SANTOSA JAYA ABADI 3 (SJA3) - DEPT. SUPPLY CHAIN & GUDANG</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-slate-500">Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                    ${content}
+                    <div class="mt-12 pt-6 border-t border-slate-200 grid grid-cols-2 text-center text-xs">
+                        <div>
+                            <p>Warehouse Inspector</p>
+                            <div class="h-16"></div>
+                            <p class="font-bold underline">${currentActiveCeklistDetail.petugas}</p>
+                        </div>
+                        <div>
+                            <p>Supervisor / Kepala Gudang</p>
+                            <div class="h-16"></div>
+                            <p class="font-bold underline">( ....................................... )</p>
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </` + `script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function exportCeklistCSV() {
+            if (!allCeklistData || allCeklistData.length === 0) {
+                showToast("Tidak ada data ceklist warehouse untuk diekspor.", "error");
+                return;
+            }
+
+            const headers = [
+                "ID", "Waktu (Kolom A)", "Nama Warehouse Inspektor (Kolom B)", "Tanggal Inspeksi (Kolom C)",
+                "Bagian (Kolom D)", "Area (Kolom E)", "Nomor Gudang (Kolom F)", "Kategori Audit (Kolom G)",
+                "Tingkat Keparahan (Kolom H)", "Dokumentasi Foto 1 (Kolom I)", "Dokumentasi Foto 2 (Kolom J)",
+                "Diskripsi Temuan (Kolom K)", "Tindakan Perbaikan (Kolom L)", "PIC (Kolom M)",
+                "Target Selesai (Kolom N)", "Status (Kolom O)"
+            ];
+
+            const rows = allCeklistData.map(d => [
+                d.id || '',
+                `"${(d.waktu || '').replace(/"/g, '""')}"`,
+                `"${(d.petugas || '').replace(/"/g, '""')}"`,
+                `"${(d.tanggal || '').replace(/"/g, '""')}"`,
+                `"${(d.bagian || '').replace(/"/g, '""')}"`,
+                `"${(d.area || '').replace(/"/g, '""')}"`,
+                `"${(d.nomorGudang || '').replace(/"/g, '""')}"`,
+                `"${(d.kategoriAudit || '').replace(/"/g, '""')}"`,
+                `"${(d.tingkatKeparahan || '').replace(/"/g, '""')}"`,
+                `"${(d.foto1 || '').replace(/"/g, '""')}"`,
+                `"${(d.foto2 || '').replace(/"/g, '""')}"`,
+                `"${(d.deskripsi || '').replace(/"/g, '""')}"`,
+                `"${(d.tindakan || '').replace(/"/g, '""')}"`,
+                `"${(d.pic || '').replace(/"/g, '""')}"`,
+                `"${(d.targetSelesai || '').replace(/"/g, '""')}"`,
+                `"${(d.status || '').replace(/"/g, '""')}"`
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `SIBIKOM_Ceklist_Warehouse_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showToast("Export CSV Ceklist Warehouse berhasil diunduh!", "success");
+        }
+
+        function exportCeklistJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allCeklistData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "SIBIKOM_Ceklist_Warehouse_" + new Date().toISOString().slice(0, 10) + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast("Export Data Ceklist Warehouse berhasil diunduh!", "success");
+        }
+
+        // Modal Sheet Configuration Handlers
+        function openModalConfigSheet() {
+            const urlInput = document.getElementById('input-config-sheet-url');
+            const nameInput = document.getElementById('input-config-sheet-name');
+            if (urlInput) urlInput.value = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
+            if (nameInput) nameInput.value = ceklistSheetTab || '';
+            document.getElementById('modal-config-sheet-ceklist').classList.remove('hidden');
+        }
+
+        function closeModalConfigSheet() {
+            document.getElementById('modal-config-sheet-ceklist').classList.add('hidden');
+        }
+
+        function saveConfigSheet() {
+            const urlVal = document.getElementById('input-config-sheet-url').value.trim();
+            const tabVal = document.getElementById('input-config-sheet-name').value.trim();
+
+            let sheetId = urlVal;
+            if (urlVal.includes('script.google.com/macros/s/')) {
+                // User input Google Apps Script Web App URL
+                sheetId = urlVal;
+            } else {
+                const match = urlVal.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+                if (match && match[1]) {
+                    sheetId = match[1];
+                }
+            }
+
+            if (!sheetId) {
+                showToast("URL atau Sheet ID Google Sheet tidak valid.", "error");
+                return;
+            }
+
+            ceklistSheetId = sheetId;
+            ceklistSheetTab = tabVal;
+            localStorage.setItem('sibikom_ceklist_sheet_id', sheetId);
+            localStorage.setItem('sibikom_ceklist_sheet_tab', tabVal);
+
+            const linkGview = document.getElementById('link-gview-sheet');
+            if (linkGview) {
+                if (sheetId.includes('script.google.com')) {
+                    linkGview.href = sheetId;
+                } else {
+                    linkGview.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+                }
+            }
+
+            closeModalConfigSheet();
+            showToast("Konfigurasi Google Sheet berhasil diperbarui. Memulai sinkronisasi...", "info");
+            syncCeklistGoogleSheet(true);
+        }
+
+        function openModalAppsScriptCeklist() {
+            const modal = document.getElementById('modal-appscript-ceklist');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModalAppsScriptCeklist() {
+            const modal = document.getElementById('modal-appscript-ceklist');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function copyAppsScriptCode() {
+            const codeEl = document.getElementById('text-appscript-code');
+            if (!codeEl) return;
+            const codeText = codeEl.innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                showToast("Kode Google Apps Script berhasil disalin!", "success");
+                const btn = document.getElementById('btn-copy-appscript');
+                if (btn) {
+                    btn.innerHTML = '<i class="ph ph-check"></i> <span>Tersalin!</span>';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="ph ph-copy"></i> <span>Salin Kode Script</span>';
+                    }, 2500);
+                }
+            }).catch(err => {
+                console.error("Clipboard copy error:", err);
+                showToast("Gagal menyalin otomatis. Silakan pilih dan salin kode secara manual.", "info");
+            });
+        }
+
+        function resetDefaultConfigSheet() {
+            ceklistSheetId = DEFAULT_CEKLIST_SHEET_ID;
+            ceklistSheetTab = '';
+            localStorage.removeItem('sibikom_ceklist_sheet_id');
+            localStorage.removeItem('sibikom_ceklist_sheet_tab');
+            const urlInput = document.getElementById('input-config-sheet-url');
+            const nameInput = document.getElementById('input-config-sheet-name');
+            if (urlInput) urlInput.value = `https://docs.google.com/spreadsheets/d/${DEFAULT_CEKLIST_SHEET_ID}/edit`;
+            if (nameInput) nameInput.value = '';
+            showToast("Pengaturan telah di-reset ke Google Sheet default SIBIKOM.", "info");
+        }
 
         async function backupDataJSON() {
             const overlay = document.getElementById('loading-overlay'); const overlayText = overlay.querySelector('p'); overlayText.innerText = "Menyiapkan File Backup JSON..."; overlay.classList.remove('hidden');
