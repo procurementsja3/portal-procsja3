@@ -1494,7 +1494,7 @@ function testReadData() {
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6-ZoJW-LMgZEaq30BICkG285RxY_U3ly9t_H5MYy9I0s8Yh6WqOdqnH3qVmowYqqp/exec"; 
-        const GVIZ_URL_BASE = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/gviz/tq?tqx=out:json";
+        const GVIZ_URL_BASE = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/gviz/tq?tqx=out:json&headers=1";
 
         // Fitur Login System
         const USERS_DB = {
@@ -2881,7 +2881,7 @@ function testReadData() {
             }
 
             // 2. Default: Menggunakan GVIZ Google Spreadsheet API
-            let url = `https://docs.google.com/spreadsheets/d/${target}/gviz/tq?tqx=out:json`;
+            let url = `https://docs.google.com/spreadsheets/d/${target}/gviz/tq?tqx=out:json&headers=1`;
             if (ceklistSheetTab) {
                 url += `&sheet=${encodeURIComponent(ceklistSheetTab)}`;
             }

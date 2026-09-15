@@ -1494,7 +1494,7 @@ function testReadData() {
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6-ZoJW-LMgZEaq30BICkG285RxY_U3ly9t_H5MYy9I0s8Yh6WqOdqnH3qVmowYqqp/exec"; 
-        const GVIZ_URL_BASE = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/gviz/tq?tqx=out:json";
+        const GVIZ_URL_BASE = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/gviz/tq?tqx=out:json&headers=1";
 
         // Fitur Login System
         const USERS_DB = {
@@ -1573,20 +1573,20 @@ function testReadData() {
             const gviewSheetLink = document.getElementById('link-gview-sheet');
 
             if (mainDashSheetLink) {
-                if (!isSuperAdmin) mainDashSheetLink.classList.add('hidden');
-                else mainDashSheetLink.classList.remove('hidden');
+                if (!isSuperAdmin) mainDashSheetLink.style.display = 'none';
+                else mainDashSheetLink.style.display = '';
             }
             if (configSheetBtn) {
-                if (!isSuperAdmin) configSheetBtn.classList.add('hidden');
-                else configSheetBtn.classList.remove('hidden');
+                if (!isSuperAdmin) configSheetBtn.style.display = 'none';
+                else configSheetBtn.style.display = '';
             }
             if (appScriptBtn) {
-                if (!isSuperAdmin) appScriptBtn.classList.add('hidden');
-                else appScriptBtn.classList.remove('hidden');
+                if (!isSuperAdmin) appScriptBtn.style.display = 'none';
+                else appScriptBtn.style.display = '';
             }
             if (gviewSheetLink) {
-                if (!isSuperAdmin) gviewSheetLink.classList.add('hidden');
-                else gviewSheetLink.classList.remove('hidden');
+                if (!isSuperAdmin) gviewSheetLink.style.display = 'none';
+                else gviewSheetLink.style.display = '';
             }
 
             if (userObj.role === 'SuperAdmin') {
@@ -2881,7 +2881,7 @@ function testReadData() {
             }
 
             // 2. Default: Menggunakan GVIZ Google Spreadsheet API
-            let url = `https://docs.google.com/spreadsheets/d/${target}/gviz/tq?tqx=out:json`;
+            let url = `https://docs.google.com/spreadsheets/d/${target}/gviz/tq?tqx=out:json&headers=1`;
             if (ceklistSheetTab) {
                 url += `&sheet=${encodeURIComponent(ceklistSheetTab)}`;
             }
@@ -2977,7 +2977,11 @@ function testReadData() {
         function loadDataCeklistWarehouse() {
             const linkGview = document.getElementById('link-gview-sheet');
             if (linkGview) {
-                linkGview.href = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
+                if (ceklistSheetId.includes('script.google.com')) {
+                    linkGview.href = ceklistSheetId;
+                } else {
+                    linkGview.href = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
+                }
             }
 
             syncCeklistGoogleSheet(false);
@@ -3550,7 +3554,13 @@ function testReadData() {
         function openModalConfigSheet() {
             const urlInput = document.getElementById('input-config-sheet-url');
             const nameInput = document.getElementById('input-config-sheet-name');
-            if (urlInput) urlInput.value = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
+            if (urlInput) {
+                if (ceklistSheetId.includes('script.google.com')) {
+                    urlInput.value = ceklistSheetId;
+                } else {
+                    urlInput.value = `https://docs.google.com/spreadsheets/d/${ceklistSheetId}/edit`;
+                }
+            }
             if (nameInput) nameInput.value = ceklistSheetTab || '';
             document.getElementById('modal-config-sheet-ceklist').classList.remove('hidden');
         }
