@@ -229,7 +229,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-2xl shadow-card border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow">
                         <div class="absolute right-0 top-0 w-24 h-full bg-emerald-50/50 rounded-l-full transform translate-x-12 group-hover:translate-x-8 transition-transform"></div>
                         <i class="ph ph-trend-up absolute right-6 top-1/2 -translate-y-1/2 text-5xl text-emerald-100"></i>
@@ -247,6 +247,12 @@
                         <i class="ph ph-scales absolute right-6 top-1/2 -translate-y-1/2 text-5xl text-brand-primary/10"></i>
                         <p class="text-sm font-medium text-slate-500 mb-1">Stok Tersisa (Est.)</p>
                         <h4 class="text-3xl font-bold text-slate-800" id="dash-sisa">0 <span class="text-lg text-slate-400 font-normal">Kg</span></h4>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-card border border-red-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                        <div class="absolute right-0 top-0 w-24 h-full bg-red-50/50 rounded-l-full transform translate-x-12 group-hover:translate-x-8 transition-transform"></div>
+                        <i class="ph ph-warning-circle absolute right-6 top-1/2 -translate-y-1/2 text-5xl text-red-100"></i>
+                        <p class="text-sm font-medium text-slate-500 mb-1">Pelanggaran FIFO</p>
+                        <h4 class="text-3xl font-bold text-red-600" id="dash-fifo-violation">0 <span class="text-lg text-red-300 font-normal">Trx</span></h4>
                     </div>
                 </div>
 
@@ -706,7 +712,7 @@
                                 <tr>
                                     <th class="px-5 py-3 cursor-pointer hover:bg-slate-100 transition-colors" onclick="handleSortPengeluaran('TANGGAL_KELUAR')"><div class="flex items-center justify-between">Tgl Keluar <i class="ph ph-sort-ascending text-slate-400" id="sort-icon-pengeluaran-TANGGAL_KELUAR"></i></div></th>
                                     <th class="px-5 py-3 cursor-pointer hover:bg-slate-100 transition-colors" onclick="handleSortPengeluaran('ID_KELUAR')"><div class="flex items-center justify-between">ID Keluar <i class="ph ph-sort-ascending text-slate-400" id="sort-icon-pengeluaran-ID_KELUAR"></i></div></th>
-                                    <th class="px-5 py-3">ID Permintaan</th><th class="px-5 py-3">ID Lot (BKM)</th><th class="px-5 py-3">Tujuan</th><th class="px-5 py-3 text-right">KG KELUAR</th><th class="px-5 py-3 text-center">Aksi</th>
+                                    <th class="px-5 py-3">ID Permintaan</th><th class="px-5 py-3">ID Lot (BKM)</th><th class="px-5 py-3">Tujuan</th><th class="px-5 py-3">Status FIFO</th><th class="px-5 py-3 text-right">KG KELUAR</th><th class="px-5 py-3 text-center">Aksi</th>
                                 </tr>
                                 <tr class="bg-white border-b border-slate-200">
                                     <th class="px-3 py-2"><input type="text" id="flt-keluar-tgl" onkeyup="handleSearchPengeluaran('TANGGAL_KELUAR', this.value)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded outline-none focus:border-amber-500" placeholder="Filter..."></th>
@@ -714,7 +720,7 @@
                                     <th class="px-3 py-2"><input type="text" id="flt-keluar-req" onkeyup="handleSearchPengeluaran('ID_PERMINTAAN', this.value)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded outline-none focus:border-amber-500" placeholder="Filter..."></th>
                                     <th class="px-3 py-2"><input type="text" id="flt-keluar-lot" onkeyup="handleSearchPengeluaran('ID_LOT', this.value)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded outline-none focus:border-amber-500" placeholder="Filter..."></th>
                                     <th class="px-3 py-2"><input type="text" id="flt-keluar-tuj" onkeyup="handleSearchPengeluaran('TUJUAN', this.value)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded outline-none focus:border-amber-500" placeholder="Filter..."></th>
-                                    <th class="px-3 py-2"></th><th class="px-3 py-2"></th>
+                                    <th class="px-3 py-2"></th><th class="px-3 py-2"></th><th class="px-3 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody id="table-body-riwayat-pengeluaran" class="divide-y divide-slate-100 bg-white"><tr><td colspan="7" class="text-center py-10 text-slate-400">Memuat riwayat data...</td></tr></tbody>
@@ -1802,12 +1808,21 @@ function testReadData() {
                 fMasuk = globalDataMasuk.filter(r => (formatSheetDate(findValue(r, 'TANGGAL_MASUK')) || "").startsWith(prefix));
                 fKeluar = globalDataKeluar.filter(r => (formatSheetDate(findValue(r, 'TANGGAL_KELUAR')) || "").startsWith(prefix));
             }
-            let tMasuk = 0, tKeluar = 0;
+            let tMasuk = 0, tKeluar = 0, tPelanggaran = 0;
             fMasuk.forEach(row => tMasuk += parseNilaiAngka(findValue(row, 'BERAT NETTO (Kg)') || findValue(row, 'BERAT_NETTO') || (row._raw&&row._raw.length>=14?row._raw[13]:"0")));
-            fKeluar.forEach(row => tKeluar += parseNilaiAngka(findValue(row, 'KG_KELUAR') || findValue(row, 'KG KELUAR')));
+            fKeluar.forEach(row => {
+                tKeluar += parseNilaiAngka(findValue(row, 'KG_KELUAR') || findValue(row, 'KG KELUAR'));
+                let stFifo = String(findValue(row, 'STATUS_FIFO') || "").toUpperCase();
+                if (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN')) {
+                    tPelanggaran++;
+                }
+            });
             document.getElementById('dash-masuk').innerHTML = `${formatAngkaId(tMasuk)} <span class="text-sm sm:text-lg text-slate-400 font-normal">Kg</span>`;
             document.getElementById('dash-keluar').innerHTML = `${formatAngkaId(tKeluar)} <span class="text-sm sm:text-lg text-slate-400 font-normal">Kg</span>`;
             document.getElementById('dash-sisa').innerHTML = `${formatAngkaId(tMasuk - tKeluar)} <span class="text-sm sm:text-lg text-slate-400 font-normal">Kg</span>`;
+            if (document.getElementById('dash-fifo-violation')) {
+                document.getElementById('dash-fifo-violation').innerHTML = `${formatAngkaId(tPelanggaran)} <span class="text-sm sm:text-lg text-red-300 font-normal">Trx</span>`;
+            }
             dashDataFiltered = [...fMasuk].reverse(); applyDashTableSearch(); 
             dashKeluarDataFiltered = [...fKeluar].reverse(); applyDashKeluarTableSearch();
             updateDashboardChart(fMasuk, fKeluar, valTahun, valBulan);
@@ -2366,6 +2381,30 @@ function testReadData() {
             con.appendChild(nr); lotOutCount++; if(lotOutCount>=20) document.getElementById('btn-add-lot-out').classList.add('hidden'); savePengeluaranFormState();
         }
 
+        function evaluateFifoStatus(idMasukTerpilih, jenisKopiTerpilih) {
+            let lotInfo = dataFifoLengkap.find(d => findValue(d, 'ID_MASUK') === idMasukTerpilih);
+            if (!lotInfo || !jenisKopiTerpilih) return "Sesuai FIFO";
+            let tglMasukTerpilihStr = formatSheetDate(findValue(lotInfo, 'TANGGAL_MASUK'));
+            if (!tglMasukTerpilihStr) return "Sesuai FIFO";
+            let dateTerpilih = new Date(tglMasukTerpilihStr);
+            if(isNaN(dateTerpilih.getTime())) return "Sesuai FIFO";
+
+            for (let d of dataFifoLengkap) {
+                let stok = parseNilaiAngka(findValue(d, 'SISA_STOK_KG') || findValue(d, 'SISA_STOK'));
+                let jk = String(findValue(d, 'JENIS_KOPI') || "").trim();
+                if (stok > 0 && jk.toLowerCase() === jenisKopiTerpilih.toLowerCase()) {
+                    let tglMasukLainStr = formatSheetDate(findValue(d, 'TANGGAL_MASUK'));
+                    if (tglMasukLainStr) {
+                        let dateLain = new Date(tglMasukLainStr);
+                        if (!isNaN(dateLain.getTime()) && dateLain < dateTerpilih) {
+                            return "TIDAK FIFO";
+                        }
+                    }
+                }
+            }
+            return "Sesuai FIFO";
+        }
+
         async function submitPengeluaranBerurutan(e) {
             e.preventDefault(); const frm=e.target; const req=frm.querySelectorAll('[required]'); for(let i of req) { if(i.value.trim()===""){ showToast(`Isi semua kolom wajib!`, 'error'); i.focus(); return; } }
             const ov=document.getElementById('loading-overlay'); const ovT=ov.querySelector('p'); ov.classList.remove('hidden');
@@ -2374,7 +2413,13 @@ function testReadData() {
             for(let i=0; i<rws.length; i++){
                 ovT.innerText=`Mengirim Lot ${i+1}/${rws.length}...`; const r=rws[i]; const fd=new FormData();
                 fd.append('sheetName','INPUT_TRANSAKSI_KELUAR'); fd.append('TANGGAL_KELUAR',tK); fd.append('JAM_KELUAR',jK); fd.append('SHIFT_KELUAR',sK); fd.append('ID_KELUAR',rws.length>1?`${iKb}-${String(i+1).padStart(2,'0')}`:iKb); fd.append('ID_PERMINTAAN',iP); fd.append('TUJUAN',tu);
-                fd.append('ID_LOT',r.querySelector('.out-id-lot').value.trim()); fd.append('ID_LOKASI',r.querySelector('.out-id-lokasi').value.trim()); fd.append('NO_PALET',r.querySelector('.out-no-palet').value.trim()); fd.append('JENIS_KOPI',r.querySelector('.out-jenis-kopi').value.trim()); fd.append('KARUNG_KELUAR',r.querySelector('.out-karung').value.trim());
+                
+                let idLotVal = r.querySelector('.out-id-lot').value.trim();
+                let jenisKopiVal = r.querySelector('.out-jenis-kopi').value.trim();
+                let statusFifo = evaluateFifoStatus(idLotVal, jenisKopiVal);
+                
+                fd.append('ID_LOT',idLotVal); fd.append('ID_LOKASI',r.querySelector('.out-id-lokasi').value.trim()); fd.append('NO_PALET',r.querySelector('.out-no-palet').value.trim()); fd.append('JENIS_KOPI',jenisKopiVal); fd.append('KARUNG_KELUAR',r.querySelector('.out-karung').value.trim());
+                fd.append('STATUS_FIFO', statusFifo);
                 let rwK = r.querySelector('.out-kg-keluar').value.replace(/\./g, ''); fd.append('KG_KELUAR', rwK); fd.append('KG KELUAR', rwK);
                 try{ await fetch(WEB_APP_URL, {method:'POST',mode:'no-cors',body:new URLSearchParams(fd)}); sc++; }catch(err){console.error(err);}
                 // Wait briefly between requests to ensure Google Apps Script processes them in order
@@ -2405,9 +2450,15 @@ function testReadData() {
         }
         function renderRiwKel() {
             const tb = document.getElementById('table-body-riwayat-pengeluaran');
-            if(!fKel || fKel.length===0){ tb.innerHTML=`<tr><td colspan="7" class="text-center py-10 text-slate-400">Tidak ada data.</td></tr>`; document.getElementById('page-info-pengeluaran').innerText="0 - 0"; return;}
+            if(!fKel || fKel.length===0){ tb.innerHTML=`<tr><td colspan="8" class="text-center py-10 text-slate-400">Tidak ada data.</td></tr>`; document.getElementById('page-info-pengeluaran').innerText="0 - 0"; return;}
             let s=(pKel-1)*10; let e=s+10; let ht="";
-            fKel.slice(s,e).forEach(r => { let ik=findValue(r,'ID_KELUAR'); let kg=formatAngkaId(parseNilaiAngka(findValue(r,'KG_KELUAR')||findValue(r,'KG KELUAR'))); ht += `<tr class="hover:bg-amber-50/50 transition-colors"><td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td><td class="px-5 py-3 font-medium text-amber-700">${ik||"-"}</td><td class="px-5 py-3">${findValue(r,'ID_PERMINTAAN')||"-"}</td><td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'ID_LOT')||"-"}</td><td class="px-5 py-3">${findValue(r,'TUJUAN')||"-"}</td><td class="px-5 py-3 text-right font-bold text-slate-700">${kg}</td><td class="px-5 py-3 text-center"><button type="button" onclick="deleteDataPengeluaran('${ik}')" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors"><i class="ph ph-trash"></i></button></td></tr>`; });
+            fKel.slice(s,e).forEach(r => { 
+                let ik=findValue(r,'ID_KELUAR'); 
+                let kg=formatAngkaId(parseNilaiAngka(findValue(r,'KG_KELUAR')||findValue(r,'KG KELUAR'))); 
+                let stFifo = String(findValue(r,'STATUS_FIFO') || "").toUpperCase();
+                let badgeFifo = (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN')) ? '<span class="px-2 py-1 bg-red-100 text-red-700 font-bold rounded text-[10px]">PELANGGARAN</span>' : (stFifo ? '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px]">SESUAI</span>' : '-');
+                ht += `<tr class="hover:bg-amber-50/50 transition-colors"><td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td><td class="px-5 py-3 font-medium text-amber-700">${ik||"-"}</td><td class="px-5 py-3">${findValue(r,'ID_PERMINTAAN')||"-"}</td><td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'ID_LOT')||"-"}</td><td class="px-5 py-3">${findValue(r,'TUJUAN')||"-"}</td><td class="px-5 py-3">${badgeFifo}</td><td class="px-5 py-3 text-right font-bold text-slate-700">${kg}</td><td class="px-5 py-3 text-center"><button type="button" onclick="deleteDataPengeluaran('${ik}')" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors"><i class="ph ph-trash"></i></button></td></tr>`; 
+            });
             tb.innerHTML = ht; document.getElementById('page-info-pengeluaran').innerText=`${s+1} - ${e>fKel.length?fKel.length:e}`; document.getElementById('total-info-pengeluaran').innerText=fKel.length; document.getElementById('btn-prev-pengeluaran').disabled=pKel===1; document.getElementById('btn-next-pengeluaran').disabled=e>=fKel.length;
         }
         function prevPagePengeluaran() { if(pKel>1) {pKel--; renderRiwKel();} } function nextPagePengeluaran() { if((pKel*10)<fKel.length) {pKel++; renderRiwKel();} }
