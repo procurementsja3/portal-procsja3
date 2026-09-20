@@ -24,14 +24,14 @@ app.get('/sibikom', (req, res) => {
   res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
 
-// Primary landing page (SIBIKOM)
+// Primary landing page (Portal Procurement)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'sibikom.html'));
+  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
 });
 
-// Fallback to sibikom.html
+// Fallback to procurementsja3.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'sibikom.html'));
+  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
