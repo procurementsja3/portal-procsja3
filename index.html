@@ -41,7 +41,7 @@
           FolderSearch, Edit, AlertTriangle, Download, Upload, Search, ChevronLeft, 
           ChevronRight, PieChart as PieChartIcon, FileClock, ShoppingCart, 
           LogOut, ChevronDown, ChevronUp, Droplet, Layers, Truck, Activity, Files, BookOpen,
-          Eye, ClipboardList, Mountain, Printer, ArrowUpDown, ArrowDown, ArrowUp, Archive, RefreshCw, ExternalLink, Image as ImageIcon, Wrench, Coffee, Filter, Copy, Check, SlidersHorizontal
+          Eye, ClipboardList, Mountain, Printer, ArrowUpDown, ArrowDown, ArrowUp, Archive, RefreshCw, ExternalLink, Image as ImageIcon, Wrench, Coffee, Filter, Copy, Check, SlidersHorizontal, Clock
         } from 'https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0';
         
         // Menggunakan Firebase resmi dari Gstatic untuk mencegah error registrasi modul
@@ -1151,15 +1151,25 @@
           const [showSuggestions, setShowSuggestions] = useState(false);
           const [toastMessage, setToastMessage] = useState('');
 
-          // Detect latest active month in data
+          // Detect latest active month in data - Khusus PO 4M
           const latestMonthInData = useMemo(() => {
             if (!sheetData || sheetData.length === 0) return 8;
             let maxM = 1;
             sheetData.forEach(item => {
+              const poCode = String(item.source || '').toUpperCase().trim();
+              if (poCode !== '4M') return;
+              if (selectedYear !== 'all') {
+                const itemYear = String(item.year || item.tahun || '2026');
+                if (itemYear !== selectedYear) return;
+              }
               if (item.monthNum > maxM && item.monthNum <= 12) maxM = item.monthNum;
             });
             return maxM || 8;
-          }, [sheetData]);
+          }, [sheetData, selectedYear]);
+
+          // Periode 3 Bulan Terakhir Pembelian (Maksimal 3 bulan ke belakang dari bulan terakhir data)
+          const last3MonthsStart = useMemo(() => Math.max(1, latestMonthInData - 2), [latestMonthInData]);
+          const last3MonthsEnd = latestMonthInData;
 
           // Extract all unique sparepart names (Kolom F) for autocomplete suggestions - Khusus PO 4M
           const allUniqueItemNames = useMemo(() => {
@@ -1390,10 +1400,14 @@
           }, [filteredData, currentPage, pageSize]);
 
           // Quick preset period selector handler
-          const handleApplyPresetPeriod = (start, end) => {
+          const handleApplyPresetPeriod = (start, end, label = '') => {
             setStartMonth(start);
             setEndMonth(end);
             setCurrentPage(1);
+            if (label) {
+              setToastMessage(`Filter periode diaktifkan: ${label}`);
+              setTimeout(() => setToastMessage(''), 2500);
+            }
           };
 
           // Export CSV function
@@ -1781,9 +1795,27 @@
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleApplyPresetPeriod(1, latestMonthInData)}
+                      id="btn-preset-3-bulan-terakhir"
+                      onClick={() => handleApplyPresetPeriod(
+                        last3MonthsStart, 
+                        last3MonthsEnd, 
+                        `3 Bulan Terakhir (${MONTH_LIST[last3MonthsStart - 1].name} - ${MONTH_LIST[last3MonthsEnd - 1].name})`
+                      )}
+                      className={`px-2.5 py-1 text-[11px] font-extrabold rounded-lg transition-all flex items-center gap-1.5 shadow-xs ${
+                        startMonth === last3MonthsStart && endMonth === last3MonthsEnd
+                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
+                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200/90 hover:bg-indigo-100 hover:border-indigo-300'
+                      }`}
+                      title={`Pilih 3 bulan terakhir pembelian: Bulan ${last3MonthsStart} (${MONTH_LIST[last3MonthsStart - 1].name}) s/d Bulan ${last3MonthsEnd} (${MONTH_LIST[last3MonthsEnd - 1].name})`}
+                    >
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      3 Bulan Terakhir ({MONTH_LIST[last3MonthsStart - 1].short} - {MONTH_LIST[last3MonthsEnd - 1].short})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPresetPeriod(1, latestMonthInData, `Bulan 1 s/d ${MONTH_LIST[latestMonthInData - 1].name}`)}
                       className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                        startMonth === 1 && endMonth === latestMonthInData
+                        startMonth === 1 && endMonth === latestMonthInData && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
                           ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
@@ -1792,9 +1824,9 @@
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleApplyPresetPeriod(1, 3)}
+                      onClick={() => handleApplyPresetPeriod(1, 3, 'Q1 (Jan - Mar)')}
                       className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                        startMonth === 1 && endMonth === 3
+                        startMonth === 1 && endMonth === 3 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
                           ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
@@ -1803,9 +1835,9 @@
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleApplyPresetPeriod(4, 6)}
+                      onClick={() => handleApplyPresetPeriod(4, 6, 'Q2 (Apr - Jun)')}
                       className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                        startMonth === 4 && endMonth === 6
+                        startMonth === 4 && endMonth === 6 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
                           ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
@@ -1814,9 +1846,9 @@
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleApplyPresetPeriod(7, 9)}
+                      onClick={() => handleApplyPresetPeriod(7, 9, 'Q3 (Jul - Sep)')}
                       className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                        startMonth === 7 && endMonth === 9
+                        startMonth === 7 && endMonth === 9 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
                           ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
@@ -1825,9 +1857,9 @@
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleApplyPresetPeriod(1, 6)}
+                      onClick={() => handleApplyPresetPeriod(1, 6, 'Semester 1 (Jan - Jun)')}
                       className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                        startMonth === 1 && endMonth === 6
+                        startMonth === 1 && endMonth === 6 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
                           ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
@@ -1836,9 +1868,9 @@
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleApplyPresetPeriod(1, 12)}
+                      onClick={() => handleApplyPresetPeriod(1, 12, 'Setahun Penuh (Jan - Des)')}
                       className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                        startMonth === 1 && endMonth === 12
+                        startMonth === 1 && endMonth === 12 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
                           ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
