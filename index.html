@@ -2785,10 +2785,28 @@
           const [data, setData] = useState([]);
           const [activeTab, setActiveTab] = useState('dashboard'); 
           const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+          const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+            try {
+              const saved = localStorage.getItem('sja_sidebar_state');
+              return saved !== null ? saved === 'true' : true;
+            } catch (e) {
+              return true;
+            }
+          });
           const [user, setUser] = useState(null);
           const [isSaving, setIsSaving] = useState(false);
           const [isLoadingData, setIsLoadingData] = useState(true);
           const [projectToEdit, setProjectToEdit] = useState(null);
+
+          const handleToggleSidebar = () => {
+            setIsSidebarOpen(prev => {
+              const next = !prev;
+              try {
+                localStorage.setItem('sja_sidebar_state', String(next));
+              } catch (e) {}
+              return next;
+            });
+          };
           
           const [isKomparasiOpen, setIsKomparasiOpen] = useState(true);
           const [isMonitoringOpen, setIsMonitoringOpen] = useState(false);
@@ -3183,22 +3201,92 @@
           return (
             <div className="flex h-screen overflow-hidden bg-[#f8fafc] font-sans text-slate-800">
               <input type="file" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" accept=".png, .jpg, .jpeg" />
-              <aside className="hidden md:flex flex-col w-64 bg-[#0f172a] border-r border-[#1e293b] z-20 shadow-2xl relative">
-                <div className="flex items-center justify-center h-20 border-b border-[#1e293b] px-6 bg-[#0f172a]"><div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-white/10 p-1 relative group overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-5 h-5 text-slate-300" />}{userRole === 'admin' && (<div onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity" title="Upload/Ganti Logo"><Edit className="w-4 h-4 text-white" /></div>)}</div><div className="flex flex-col justify-center"><span className="text-white font-extrabold text-sm tracking-tight">Portal Procurement</span><span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5">SJA Sukodono</span></div></div>
-                <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1.5 pb-24 scrollbar-thin scrollbar-thumb-slate-700">
-                  <div className="mb-2"><button onClick={() => setIsKomparasiOpen(!isKomparasiOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}><div className="flex items-center text-left"><TrendingDown className="w-4 h-4 mr-3 opacity-80" /> Analisis Harga</div>{isKomparasiOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-50" /> : <ChevronDown className="w-3.5 h-3.5 opacity-50" />}</button>{isKomparasiOpen && (<div className="mt-1 space-y-1"><button onClick={() => { setActiveTab('dashboard'); setProjectToEdit(null); }} className={subNavItemClass(activeTab === 'dashboard')}><LayoutDashboard className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Summary</button><button onClick={() => setActiveTab('input')} className={subNavItemClass(activeTab === 'input')}><Database className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Input Penawaran</button></div>)}</div>
-                  <button onClick={() => setActiveTab('update-pembelian')} className={navItemClass(activeTab === 'update-pembelian')}><ShoppingCart className={`w-4 h-4 mr-3 ${activeTab === 'update-pembelian' ? 'opacity-100' : 'opacity-80'}`} /> Data Pembelian Live</button>
-                  {userRole === 'admin' && (
-                    <div className="pt-2 border-t border-[#1e293b] mt-2 space-y-1.5">
-                      <span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-2">Tools & Sistem Terkait</span>
-                      <a href="/sibikom" className={navItemClass(false)}><Coffee className="w-4 h-4 mr-3 opacity-80 text-amber-400" /> SIBIKOM (Biji Kopi)</a>
-                      <button onClick={() => window.open('https://gemini.google.com/share/5c6cfda5125a', '_blank')} className={navItemClass(false)}><ClipboardList className="w-4 h-4 mr-3 opacity-80" /> Kontrak Vendor</button>
-                      <div><button onClick={() => setIsMonitoringOpen(!isMonitoringOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}><div className="flex items-center text-left"><Activity className="w-4 h-4 mr-3 opacity-80" /> Monitoring Data</div>{isMonitoringOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-50" /> : <ChevronDown className="w-3.5 h-3.5 opacity-50" />}</button>{isMonitoringOpen && (<div className="mt-1 space-y-1"><button onClick={() => window.open('https://procurementsja3.github.io/sistem-pengajuan/', '_blank')} className={subNavItemClass(false)}><ClipboardList className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Pengajuan Stock / Persediaan</button><button onClick={() => window.open('https://gemini.google.com/share/feffa9cb0342', '_blank')} className={subNavItemClass(false)}><Droplet className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Solar</button><button onClick={() => window.open('https://gemini.google.com/share/2d8ea2848468', '_blank')} className={subNavItemClass(false)}><Package className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Pallet Kayu</button><button onClick={() => window.open('https://gemini.google.com/share/cc921c59e922', '_blank')} className={subNavItemClass(false)}><Truck className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Kedatangan Barang</button></div>)}</div>
-                      <div className="pt-2 border-t border-[#1e293b] mt-2"><span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-2">Arsip & Panduan</span><button onClick={() => setIsDokumenOpen(!isDokumenOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}><div className="flex items-center text-left"><Files className="w-4 h-4 mr-3 opacity-80" /> Dokumen Legal</div>{isDokumenOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-50" /> : <ChevronDown className="w-3.5 h-3.5 opacity-50" />}</button>{isDokumenOpen && (<div className="mt-1 space-y-1"><button onClick={() => setActiveTab('sop-wi')} className={subNavItemClass(activeTab === 'sop-wi')}><BookOpen className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> SOP & Instruksi Kerja</button><button onClick={() => setActiveTab('form')} className={subNavItemClass(activeTab === 'form')}><FileText className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Form Standar</button><button onClick={() => setActiveTab('seleksi-supplier')} className={subNavItemClass(activeTab === 'seleksi-supplier')}><Users className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Seleksi Supplier</button><button onClick={() => setActiveTab('evaluasi-supplier')} className={subNavItemClass(activeTab === 'evaluasi-supplier')}><CheckCircle2 className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Evaluasi Supplier</button><button onClick={() => setActiveTab('backup-restore-dokumen')} className={subNavItemClass(activeTab === 'backup-restore-dokumen')}><Database className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Backup & Restore</button></div>)}</div>
+              {/* Sidebar Desktop dengan sistem Toggle In / Out */}
+              <aside className={`hidden md:flex flex-col bg-[#0f172a] border-r border-[#1e293b] z-20 shadow-2xl relative transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 border-r-0 pointer-events-none'}`}>
+                <div className="w-64 flex flex-col h-full relative">
+                  <div className="flex items-center justify-between h-20 border-b border-[#1e293b] px-4 bg-[#0f172a]">
+                    <div className="flex items-center overflow-hidden min-w-0">
+                      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-white/10 p-1 relative group overflow-hidden shrink-0">
+                        {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-5 h-5 text-slate-300" />}
+                        {userRole === 'admin' && (
+                          <div onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity" title="Upload/Ganti Logo">
+                            <Edit className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col justify-center min-w-0">
+                        <span className="text-white font-extrabold text-sm tracking-tight truncate">Portal Procurement</span>
+                        <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5 truncate">SJA Sukodono</span>
+                      </div>
                     </div>
-                  )}
-                </nav>
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-[#0f172a] border-t border-[#1e293b]"><button onClick={handleLogout} className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-500/10 hover:text-rose-400 text-slate-300 transition-colors border border-[#1e293b] hover:border-rose-500/20 text-xs font-bold tracking-wide"><LogOut className="w-4 h-4 mr-2" /> Akhiri Sesi</button></div>
+                    <button
+                      type="button"
+                      id="btn-toggle-sidebar-collapse"
+                      onClick={handleToggleSidebar}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-700 ml-1 shrink-0"
+                      title="Ciutkan Sidebar (Toggle Out)"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1.5 pb-24 scrollbar-thin scrollbar-thumb-slate-700">
+                    <div className="mb-2">
+                      <button onClick={() => setIsKomparasiOpen(!isKomparasiOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}>
+                        <div className="flex items-center text-left"><TrendingDown className="w-4 h-4 mr-3 opacity-80" /> Analisis Harga</div>
+                        {isKomparasiOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-50" /> : <ChevronDown className="w-3.5 h-3.5 opacity-50" />}
+                      </button>
+                      {isKomparasiOpen && (
+                        <div className="mt-1 space-y-1">
+                          <button onClick={() => { setActiveTab('dashboard'); setProjectToEdit(null); }} className={subNavItemClass(activeTab === 'dashboard')}><LayoutDashboard className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Summary</button>
+                          <button onClick={() => setActiveTab('input')} className={subNavItemClass(activeTab === 'input')}><Database className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Input Penawaran</button>
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={() => setActiveTab('update-pembelian')} className={navItemClass(activeTab === 'update-pembelian')}><ShoppingCart className={`w-4 h-4 mr-3 ${activeTab === 'update-pembelian' ? 'opacity-100' : 'opacity-80'}`} /> Data Pembelian Live</button>
+                    {userRole === 'admin' && (
+                      <div className="pt-2 border-t border-[#1e293b] mt-2 space-y-1.5">
+                        <span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-2">Tools & Sistem Terkait</span>
+                        <a href="/sibikom" className={navItemClass(false)}><Coffee className="w-4 h-4 mr-3 opacity-80 text-amber-400" /> SIBIKOM (Biji Kopi)</a>
+                        <button onClick={() => window.open('https://gemini.google.com/share/5c6cfda5125a', '_blank')} className={navItemClass(false)}><ClipboardList className="w-4 h-4 mr-3 opacity-80" /> Kontrak Vendor</button>
+                        <div>
+                          <button onClick={() => setIsMonitoringOpen(!isMonitoringOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}>
+                            <div className="flex items-center text-left"><Activity className="w-4 h-4 mr-3 opacity-80" /> Monitoring Data</div>
+                            {isMonitoringOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-50" /> : <ChevronDown className="w-3.5 h-3.5 opacity-50" />}
+                          </button>
+                          {isMonitoringOpen && (
+                            <div className="mt-1 space-y-1">
+                              <button onClick={() => window.open('https://procurementsja3.github.io/sistem-pengajuan/', '_blank')} className={subNavItemClass(false)}><ClipboardList className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Pengajuan Stock / Persediaan</button>
+                              <button onClick={() => window.open('https://gemini.google.com/share/feffa9cb0342', '_blank')} className={subNavItemClass(false)}><Droplet className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Solar</button>
+                              <button onClick={() => window.open('https://gemini.google.com/share/2d8ea2848468', '_blank')} className={subNavItemClass(false)}><Package className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Pallet Kayu</button>
+                              <button onClick={() => window.open('https://gemini.google.com/share/cc921c59e922', '_blank')} className={subNavItemClass(false)}><Truck className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Kedatangan Barang</button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="pt-2 border-t border-[#1e293b] mt-2">
+                          <span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-2">Arsip & Panduan</span>
+                          <button onClick={() => setIsDokumenOpen(!isDokumenOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}>
+                            <div className="flex items-center text-left"><Files className="w-4 h-4 mr-3 opacity-80" /> Dokumen Legal</div>
+                            {isDokumenOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-50" /> : <ChevronDown className="w-3.5 h-3.5 opacity-50" />}
+                          </button>
+                          {isDokumenOpen && (
+                            <div className="mt-1 space-y-1">
+                              <button onClick={() => setActiveTab('sop-wi')} className={subNavItemClass(activeTab === 'sop-wi')}><BookOpen className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> SOP & Instruksi Kerja</button>
+                              <button onClick={() => setActiveTab('form')} className={subNavItemClass(activeTab === 'form')}><FileText className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Form Standar</button>
+                              <button onClick={() => setActiveTab('seleksi-supplier')} className={subNavItemClass(activeTab === 'seleksi-supplier')}><Users className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Seleksi Supplier</button>
+                              <button onClick={() => setActiveTab('evaluasi-supplier')} className={subNavItemClass(activeTab === 'evaluasi-supplier')}><CheckCircle2 className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Evaluasi Supplier</button>
+                              <button onClick={() => setActiveTab('backup-restore-dokumen')} className={subNavItemClass(activeTab === 'backup-restore-dokumen')}><Database className="w-3.5 h-3.5 mr-2.5 opacity-70 group-hover:opacity-100" /> Backup & Restore</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </nav>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-[#0f172a] border-t border-[#1e293b]">
+                    <button onClick={handleLogout} className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-500/10 hover:text-rose-400 text-slate-300 transition-colors border border-[#1e293b] hover:border-rose-500/20 text-xs font-bold tracking-wide">
+                      <LogOut className="w-4 h-4 mr-2" /> Akhiri Sesi
+                    </button>
+                  </div>
+                </div>
               </aside>
 
               <header className="md:hidden flex items-center justify-between px-5 py-4 bg-[#0f172a] border-b border-[#1e293b] z-10 shadow-sm text-white"><div className="flex items-center"><div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div><span className="text-white font-extrabold text-sm tracking-tight">Portal SJA</span></div><button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-300 p-1.5 border border-slate-700 rounded-lg hover:bg-slate-800"><Menu className="w-5 h-5" /></button></header>
@@ -3222,6 +3310,59 @@
               )}
 
               <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc]">
+                {/* Desktop Top Header Bar dengan tombol Toggle In / Out */}
+                <header className="hidden md:flex items-center justify-between px-6 py-2.5 bg-white border-b border-slate-200/80 z-10 shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      id="btn-toggle-sidebar-top"
+                      onClick={handleToggleSidebar}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-2xs group cursor-pointer ${
+                        isSidebarOpen 
+                          ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300' 
+                          : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 hover:border-indigo-300 ring-2 ring-indigo-500/20'
+                      }`}
+                      title={isSidebarOpen ? "Ciutkan Sidebar (Toggle Out)" : "Tampilkan Sidebar (Toggle In)"}
+                    >
+                      {isSidebarOpen ? (
+                        <>
+                          <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:text-slate-800 transition-transform group-hover:-translate-x-0.5" />
+                          <span>Ciutkan Menu</span>
+                        </>
+                      ) : (
+                        <>
+                          <Menu className="w-4 h-4 text-indigo-600" />
+                          <span className="font-extrabold text-indigo-700">Buka Menu Sidebar</span>
+                        </>
+                      )}
+                    </button>
+
+                    <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="font-semibold text-slate-400">Portal</span>
+                      <span className="text-slate-300">/</span>
+                      <span className="font-bold text-slate-700">
+                        {activeTab === 'dashboard' ? 'Analisis Harga & Summary' :
+                         activeTab === 'input' ? 'Input Penawaran Vendor' :
+                         activeTab === 'update-pembelian' ? 'Data Pembelian Live' :
+                         activeTab === 'sop-wi' ? 'SOP & Instruksi Kerja' :
+                         activeTab === 'form' ? 'Form Standar' :
+                         activeTab === 'seleksi-supplier' ? 'Seleksi Supplier' :
+                         activeTab === 'evaluasi-supplier' ? 'Evaluasi Supplier' :
+                         activeTab === 'backup-restore-dokumen' ? 'Backup & Restore Dokumen' : activeTab}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200/80">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      {userRole === 'admin' ? 'Administrator Portal' : 'User Tamu'}
+                    </span>
+                  </div>
+                </header>
+
                 <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:px-10 relative scrollbar-thin scrollbar-thumb-slate-200">
                   {activeTab === 'dashboard' ? <DashboardView data={data} isLoading={isLoadingData} onEdit={handleEditProject} onDelete={handleDeleteProject} sheetData={sheetData} persistentFilters={persistentFilters} setPersistentFilters={setPersistentFilters} /> : 
                    activeTab === 'input' ? <InputDataView onAddData={handleAddData} isSaving={isSaving} data={data} editData={projectToEdit} onCancelEdit={() => { setProjectToEdit(null); setActiveTab('dashboard'); }} userRole={userRole} /> : 
