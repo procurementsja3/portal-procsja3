@@ -1413,7 +1413,7 @@
           // Export CSV function
           const handleExportCSV = () => {
             if (activeSubTab === 'summary') {
-              let csv = 'No,Nama Barang (Kolom F),Total QTY Dibeli,QTY Datang,Total Pembelian (IDR),Frekuensi PO,Rata-rata Harga Satuan,Supplier Terakhir,Tgl Terakhir,No PO Terakhir\n';
+              let csv = 'No,Nama Barang,Total QTY Dibeli,QTY Datang,Total Pembelian (IDR),Frekuensi PO,Rata-rata Harga Satuan,Supplier Terakhir,Tgl Terakhir,No PO Terakhir\n';
               groupedSummary.forEach((item, idx) => {
                 const cleanName = `"${item.name.replace(/"/g, '""')}"`;
                 const cleanSupp = `"${(item.lastSupplier || '').replace(/"/g, '""')}"`;
@@ -1421,7 +1421,7 @@
               });
               downloadCSV(csv, `resume_sparepart_po_4m_periode_bln_${startMonth}_ke_${endMonth}_${selectedYear}.csv`);
             } else {
-              let csv = 'No PO,Tanggal PO,SPP,Supplier,Nama Barang (Kolom F),QTY,QTY Datang,Harga Satuan,Harga Total,Status,Keterangan\n';
+              let csv = 'No PO,Tanggal PO,SPP,Supplier,Nama Barang,QTY,QTY Datang,Harga Satuan,Harga Total,Status,Keterangan\n';
               filteredData.forEach(item => {
                 csv += `"${item.poNumber}","${item.tgl}","${item.spp}","${(item.supplier || '').replace(/"/g, '""')}","${(item.namaBarang || '').replace(/"/g, '""')}",${item.qty},${item.qtyDatang},"${item.hargaSatuan || item.hargaSatuanNum}",${item.total},"${item.statusPo}","${(item.keterangan || '').replace(/"/g, '""')}"\n`;
               });
@@ -1502,7 +1502,7 @@
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-1 font-medium">
-                      Pencarian nama item barang (Kolom F) <strong className="text-indigo-700 font-bold">khusus Kode PO 4M</strong> & sistem resume akumulasi Qty periode tarik data dari bulan 1 ke bulan selanjutnya.
+                      Pencarian nama item barang <strong className="text-indigo-700 font-bold">khusus Kode PO 4M</strong> & sistem resume akumulasi Qty periode tarik data dari bulan 1 ke bulan selanjutnya.
                     </p>
                   </div>
                 </div>
@@ -1571,7 +1571,7 @@
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
                     <span className="flex items-center">
                       <Search className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
-                      Pencarian Nama Barang / Sparepart (Kolom F Google Sheet)
+                      Pencarian Nama Barang / Sparepart
                     </span>
                     <span className="text-slate-400 font-normal lowercase">
                       {allUniqueItemNames.length} jenis item tersinkronisasi
@@ -1611,7 +1611,7 @@
                   {showSuggestions && autocompleteSuggestions.length > 0 && (
                     <div className="absolute z-30 left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200 py-2 overflow-hidden animate-in fade-in duration-150">
                       <div className="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-                        Rekomendasi Nama Barang Sesuai Kolom F:
+                        Rekomendasi Nama Barang:
                       </div>
                       {autocompleteSuggestions.map((item, idx) => (
                         <button
@@ -2129,7 +2129,7 @@
                           <thead className="bg-slate-50 text-[10px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                             <tr>
                               <th className="px-3.5 py-3 w-12 text-center">No</th>
-                              <th className="px-4 py-3">Nama Barang (Kolom F)</th>
+                              <th className="px-4 py-3">Nama Barang</th>
                               <th className="px-4 py-3 text-right">Total Qty</th>
                               <th className="px-4 py-3 text-right">Qty Datang</th>
                               <th className="px-4 py-3 text-center">Frekuensi</th>
@@ -2256,7 +2256,7 @@
                             <tr>
                               <th className="px-4 py-3">No PO & Tgl</th>
                               <th className="px-4 py-3">SPP</th>
-                              <th className="px-4 py-3">Nama Barang (Kolom F)</th>
+                              <th className="px-4 py-3">Nama Barang</th>
                               <th className="px-4 py-3 text-right">Qty</th>
                               <th className="px-4 py-3 text-right">Qty Datang</th>
                               <th className="px-4 py-3">Supplier</th>
