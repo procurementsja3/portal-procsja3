@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Procurement - SJA</title>
-    <meta name="description" content="Portal Procurement SJA &amp; Sistem Biji Kopi">
+    <meta name="description" content="Portal Procurement SJA - Sistem Manajemen Pembelian">
     <meta property="og:title" content="Portal Procurement - SJA">
-    <meta property="og:description" content="Portal Procurement SJA &amp; Sistem Biji Kopi">
+    <meta property="og:description" content="Portal Procurement SJA - Sistem Manajemen Pembelian">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Babel for transpiling JSX -->
@@ -1143,13 +1143,21 @@
           const [startMonth, setStartMonth] = useState(1);
           const [endMonth, setEndMonth] = useState(12);
           const [selectedStatus, setSelectedStatus] = useState('all'); // all, CLOSE, OPEN, BATAL
-          const [activeSubTab, setActiveSubTab] = useState('summary'); // 'summary' | 'detail'
+          const [activeSubTab, setActiveSubTab] = useState('summary'); // 'summary' (Sesuai Foto) | 'detail'
+          const [showMatrixManual, setShowMatrixManual] = useState(false);
           const [currentPage, setCurrentPage] = useState(1);
           const [pageSize, setPageSize] = useState(15);
           const [summarySortBy, setSummarySortBy] = useState('qtyDesc'); // qtyDesc, qtyAsc, spendDesc, trxDesc, nameAsc
+          const [matrixSearch, setMatrixSearch] = useState('');
+          const [matrixSortBy, setMatrixSortBy] = useState('qtyDesc'); // qtyDesc, qtyAsc, nameAsc, spendDesc, latestMonthDesc
+          const [matrixCurrentPage, setMatrixCurrentPage] = useState(1);
+          const [matrixPageSize, setMatrixPageSize] = useState(15);
           const [focusedItem, setFocusedItem] = useState(null);
           const [showSuggestions, setShowSuggestions] = useState(false);
           const [toastMessage, setToastMessage] = useState('');
+
+          const hasSearch = Boolean((searchQuery && searchQuery.trim().length > 0) || focusedItem);
+          const shouldShowMatrix = hasSearch || showMatrixManual;
 
           // Detect latest active month in data - Khusus PO 4M
           const latestMonthInData = useMemo(() => {
@@ -1339,10 +1347,15 @@
               if (!map[name]) {
                 map[name] = {
                   name: name,
+                  category: item.category || 'Sparepart',
+                  unit: item.unit || item.satuan || 'Unit',
                   totalQty: 0,
                   totalQtyDatang: 0,
                   totalSpend: 0,
                   trxCount: 0,
+                  monthlyQty: {},
+                  monthlySpend: {},
+                  monthlyTrx: {},
                   suppliers: new Set(),
                   unitPrices: [],
                   lastDate: '',
@@ -1351,10 +1364,22 @@
                   currency: item.currency || 'IDR'
                 };
               }
-              map[name].totalQty += (Number(item.qty) || 0);
-              map[name].totalQtyDatang += (Number(item.qtyDatang) || 0);
-              map[name].totalSpend += (Number(item.total) || 0);
+              const q = Number(item.qty) || 0;
+              const qd = Number(item.qtyDatang) || 0;
+              const tot = Number(item.total) || 0;
+              const m = Number(item.monthNum) || 0;
+
+              map[name].totalQty += q;
+              map[name].totalQtyDatang += qd;
+              map[name].totalSpend += tot;
               map[name].trxCount += 1;
+              if (m > 0) {
+                map[name].monthlyQty[m] = (map[name].monthlyQty[m] || 0) + q;
+                map[name].monthlySpend[m] = (map[name].monthlySpend[m] || 0) + tot;
+                map[name].monthlyTrx[m] = (map[name].monthlyTrx[m] || 0) + 1;
+              }
+              if (item.category && item.category !== '4M') map[name].category = item.category;
+              if (item.unit || item.satuan) map[name].unit = item.unit || item.satuan;
               if (item.supplier) {
                 map[name].suppliers.add(item.supplier);
                 map[name].lastSupplier = item.supplier;
@@ -1385,6 +1410,74 @@
             return list;
           }, [filteredData, summarySortBy]);
 
+          // Periode Bulan untuk Tabel Matriks Pemakaian Bulanan (minM s/d maxM)
+          const matrixPeriodMonths = useMemo(() => {
+            const minM = Math.min(startMonth, endMonth);
+            const maxM = Math.max(startMonth, endMonth);
+            const list = [];
+            for (let m = minM; m <= maxM; m++) {
+              list.push(MONTH_LIST[m - 1]);
+            }
+            return list;
+          }, [startMonth, endMonth]);
+
+          // Filter Pencarian Khusus Tabel Matriks Sparepart
+          const matrixFilteredItems = useMemo(() => {
+            let list = [...groupedSummary];
+            const q = matrixSearch.trim().toLowerCase();
+            if (q) {
+              const words = q.split(/\s+/).filter(Boolean);
+              list = list.filter(item => {
+                const nameStr = (item.name || '').toLowerCase();
+                const suppStr = (item.lastSupplier || '').toLowerCase();
+                const catStr = (item.category || '').toLowerCase();
+                return words.every(w => nameStr.includes(w) || suppStr.includes(w) || catStr.includes(w));
+              });
+            }
+
+            if (matrixSortBy === 'qtyDesc') {
+              list.sort((a, b) => b.totalQty - a.totalQty);
+            } else if (matrixSortBy === 'qtyAsc') {
+              list.sort((a, b) => a.totalQty - b.totalQty);
+            } else if (matrixSortBy === 'nameAsc') {
+              list.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (matrixSortBy === 'spendDesc') {
+              list.sort((a, b) => b.totalSpend - a.totalSpend);
+            } else if (matrixSortBy === 'latestMonthDesc') {
+              const lastM = matrixPeriodMonths[matrixPeriodMonths.length - 1]?.num || 12;
+              list.sort((a, b) => (b.monthlyQty[lastM] || 0) - (a.monthlyQty[lastM] || 0));
+            }
+            return list;
+          }, [groupedSummary, matrixSearch, matrixSortBy, matrixPeriodMonths]);
+
+          // Akumulasi Total Qty per Bulan di Tabel Matriks (Selaras dengan Grafik Bar)
+          const matrixMonthlyTotals = useMemo(() => {
+            const totals = {};
+            matrixPeriodMonths.forEach(m => {
+              totals[m.num] = 0;
+            });
+            let grandQty = 0;
+            let grandSpend = 0;
+
+            matrixFilteredItems.forEach(item => {
+              matrixPeriodMonths.forEach(m => {
+                const q = item.monthlyQty[m.num] || 0;
+                totals[m.num] += q;
+              });
+              grandQty += (item.totalQty || 0);
+              grandSpend += (item.totalSpend || 0);
+            });
+
+            return { totals, grandQty, grandSpend };
+          }, [matrixFilteredItems, matrixPeriodMonths]);
+
+          // Pagination untuk Matriks
+          const totalMatrixPages = Math.max(1, Math.ceil(matrixFilteredItems.length / matrixPageSize));
+          const paginatedMatrix = useMemo(() => {
+            const start = (matrixCurrentPage - 1) * matrixPageSize;
+            return matrixFilteredItems.slice(start, start + matrixPageSize);
+          }, [matrixFilteredItems, matrixCurrentPage, matrixPageSize]);
+
           // Pagination
           const totalSummaryPages = Math.max(1, Math.ceil(groupedSummary.length / pageSize));
           const totalDetailPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
@@ -1404,15 +1497,57 @@
             setStartMonth(start);
             setEndMonth(end);
             setCurrentPage(1);
+            setMatrixCurrentPage(1);
             if (label) {
               setToastMessage(`Filter periode diaktifkan: ${label}`);
               setTimeout(() => setToastMessage(''), 2500);
             }
           };
 
+          // Salin Matriks Bulanan ke Clipboard (Format TSV untuk Excel / Spreadsheet)
+          const handleCopyMatrixTSV = () => {
+            let tsv = `No\tNama Sparepart / Item (Kolom F)\t` + matrixPeriodMonths.map(m => `Bln ${m.num} (${m.short})`).join('\t') + `\tTotal Qty\tRata-rata/Bln\tTotal Pembelian (IDR)\n`;
+            
+            matrixFilteredItems.forEach((item, idx) => {
+              const mCells = matrixPeriodMonths.map(m => item.monthlyQty[m.num] || 0).join('\t');
+              const avg = matrixPeriodMonths.length > 0 ? (item.totalQty / matrixPeriodMonths.length).toFixed(1) : 0;
+              tsv += `${idx + 1}\t${item.name}\t${mCells}\t${item.totalQty}\t${avg}\t${item.totalSpend}\n`;
+            });
+
+            const totalCells = matrixPeriodMonths.map(m => matrixMonthlyTotals.totals[m.num] || 0).join('\t');
+            const grandAvg = matrixPeriodMonths.length > 0 ? (matrixMonthlyTotals.grandQty / matrixPeriodMonths.length).toFixed(1) : 0;
+            tsv += `TOTAL\tSemua Sparepart (${matrixFilteredItems.length} Item)\t${totalCells}\t${matrixMonthlyTotals.grandQty}\t${grandAvg}\t${matrixMonthlyTotals.grandSpend}\n`;
+
+            navigator.clipboard.writeText(tsv).then(() => {
+              setToastMessage('Tabel Matriks Bulanan berhasil disalin! Anda bisa langsung Paste (Ctrl+V) ke Excel atau Google Sheets.');
+              setTimeout(() => setToastMessage(''), 4000);
+            }).catch(() => {
+              setToastMessage('Gagal menyalin ke clipboard');
+              setTimeout(() => setToastMessage(''), 2500);
+            });
+          };
+
+          // Export Matrix CSV
+          const handleExportMatrixCSV = () => {
+            let csv = 'No,Nama Sparepart,' + matrixPeriodMonths.map(m => `"Bulan ${m.num} - ${m.name}"`).join(',') + ',Total Qty,Rata-rata/Bulan,Total Nilai Pembelian (IDR)\n';
+            matrixFilteredItems.forEach((item, idx) => {
+              const cleanName = `"${item.name.replace(/"/g, '""')}"`;
+              const mCells = matrixPeriodMonths.map(m => item.monthlyQty[m.num] || 0).join(',');
+              const avg = matrixPeriodMonths.length > 0 ? (item.totalQty / matrixPeriodMonths.length).toFixed(1) : 0;
+              csv += `${idx + 1},${cleanName},${mCells},${item.totalQty},${avg},${item.totalSpend}\n`;
+            });
+            const totalCells = matrixPeriodMonths.map(m => matrixMonthlyTotals.totals[m.num] || 0).join(',');
+            const grandAvg = matrixPeriodMonths.length > 0 ? (matrixMonthlyTotals.grandQty / matrixPeriodMonths.length).toFixed(1) : 0;
+            csv += `TOTAL,"Semua Sparepart (${matrixFilteredItems.length} Item)",${totalCells},${matrixMonthlyTotals.grandQty},${grandAvg},${matrixMonthlyTotals.grandSpend}\n`;
+
+            downloadCSV(csv, `matriks_pemakaian_sparepart_bulanan_${selectedYear}_bln_${startMonth}_ke_${endMonth}.csv`);
+          };
+
           // Export CSV function
           const handleExportCSV = () => {
-            if (activeSubTab === 'summary') {
+            if (activeSubTab === 'monthlyMatrix') {
+              handleExportMatrixCSV();
+            } else if (activeSubTab === 'summary') {
               let csv = 'No,Nama Barang,Total QTY Dibeli,QTY Datang,Total Pembelian (IDR),Frekuensi PO,Rata-rata Harga Satuan,Supplier Terakhir,Tgl Terakhir,No PO Terakhir\n';
               groupedSummary.forEach((item, idx) => {
                 const cleanName = `"${item.name.replace(/"/g, '""')}"`;
@@ -2055,7 +2190,7 @@
                 </div>
               </div>
 
-              {/* Sub-tab Navigation: Resume per Item vs Detail Transaksi */}
+              {/* Sub-tab Navigation: Resume per Nama Barang (Sesuai Foto) vs Detail Transaksi */}
               <div className="mt-7">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                   <div className="flex space-x-2">
@@ -2068,7 +2203,7 @@
                       }}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center ${
                         activeSubTab === 'summary'
-                          ? 'bg-indigo-600 text-white shadow-sm'
+                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
@@ -2084,7 +2219,7 @@
                       }}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center ${
                         activeSubTab === 'detail'
-                          ? 'bg-indigo-600 text-white shadow-sm'
+                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
@@ -2093,36 +2228,221 @@
                     </button>
                   </div>
 
-                  {/* Sort Controls */}
-                  {activeSubTab === 'summary' ? (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[11px] font-bold text-slate-500">Urutkan:</span>
-                      <select
-                        id="select-sparepart-sort"
-                        value={summarySortBy}
-                        onChange={(e) => {
-                          setSummarySortBy(e.target.value);
-                          setCurrentPage(1);
-                        }}
-                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500"
-                      >
-                        <option value="qtyDesc">Qty Terbanyak ↓</option>
-                        <option value="qtyAsc">Qty Paling Sedikit ↑</option>
-                        <option value="spendDesc">Nilai Pembelian Terbesar ↓</option>
-                        <option value="trxDesc">Paling Sering Dipesan (Frekuensi) ↓</option>
-                        <option value="nameAsc">Nama Barang (A - Z)</option>
-                      </select>
-                    </div>
-                  ) : (
-                    <div className="text-xs font-semibold text-slate-500">
-                      Menampilkan baris PO yang sesuai dengan filter
-                    </div>
-                  )}
+                  {/* Controls: Matriks Bulanan Toggle & Sort */}
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                    {activeSubTab === 'summary' ? (
+                      <>
+                        <button
+                          type="button"
+                          id="btn-toggle-matrix"
+                          onClick={() => setShowMatrixManual(prev => !prev)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center border ${
+                            shouldShowMatrix
+                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                          }`}
+                          title="Buka tabel rincian pemakaian bulanan (periode & Qty per bulan)"
+                        >
+                          <Calendar className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                          {shouldShowMatrix ? 'Matriks Bulanan Aktif' : 'Tampilkan Matriks Bulanan'}
+                        </button>
+
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[11px] font-bold text-slate-500">Urutkan:</span>
+                          <select
+                            id="select-sparepart-sort"
+                            value={summarySortBy}
+                            onChange={(e) => {
+                              setSummarySortBy(e.target.value);
+                              setCurrentPage(1);
+                            }}
+                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="qtyDesc">Qty Terbanyak ↓</option>
+                            <option value="qtyAsc">Qty Paling Sedikit ↑</option>
+                            <option value="spendDesc">Nilai Pembelian Terbesar ↓</option>
+                            <option value="trxDesc">Paling Sering Dipesan (Frekuensi) ↓</option>
+                            <option value="nameAsc">Nama Barang (A - Z)</option>
+                          </select>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xs font-semibold text-slate-500">
+                        Menampilkan baris PO yang sesuai dengan filter
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* TAB 1: RESUME PER NAMA BARANG (GROUPED) */}
+                {/* TAB 1: RESUME PER NAMA BARANG (GROUPED - SESUAI FOTO) */}
                 {activeSubTab === 'summary' && (
                   <div className="mt-4">
+                    {/* TABEL PEMAKAIAN BULANAN (SESUAI GRAFIK BAR) - HANYA TAMPIL SAAT DILAKUKAN PENCARIAN ATAU DITOGGLE */}
+                    {shouldShowMatrix && groupedSummary.length > 0 && (
+                      <div className="mb-6 bg-white border border-indigo-200 rounded-2xl p-4 shadow-sm animate-in fade-in duration-200">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+                          <div>
+                            <div className="flex items-center space-x-2 flex-wrap">
+                              <span className="p-1.5 bg-indigo-50 text-indigo-700 rounded-lg">
+                                <Calendar className="w-4 h-4" />
+                              </span>
+                              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                                Tabel Pemakaian Sparepart per Bulan (Sesuai Grafik Bar)
+                              </h4>
+                              {hasSearch && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                  Hasil Pencarian: "{searchQuery || focusedItem}"
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-1">
+                              Menampilkan data periode bulan ({matrixPeriodMonths[0]?.short || "Jan"} s/d {matrixPeriodMonths[matrixPeriodMonths.length - 1]?.short || "Des"}) dan Qty pembelian di masing-masing bulan untuk pencarian sparepart, selaras dengan grafik bar di atas.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center space-x-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={handleCopyMatrixTSV}
+                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
+                              title="Salin tabel pemakaian bulanan untuk langsung di-paste ke Excel / Spreadsheet"
+                            >
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />
+                              Salin (Excel)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleExportMatrixCSV}
+                              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
+                              title="Download format CSV"
+                            >
+                              <Download className="w-3.5 h-3.5 mr-1.5" />
+                              Download CSV
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Tabel Matriks Qty per Bulan */}
+                        <div className="mt-3 overflow-x-auto border border-slate-200 rounded-xl bg-white max-h-[380px] overflow-y-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200 sticky top-0 z-10 shadow-xs">
+                              <tr>
+                                <th className="px-3 py-2.5 w-10 text-center bg-slate-50">No</th>
+                                <th className="px-3 py-2.5 min-w-[200px] bg-slate-50">Nama Sparepart / Item</th>
+                                {matrixPeriodMonths.map(m => (
+                                  <th key={m.num} className="px-2 py-2 text-center min-w-[60px] bg-slate-100/80 border-l border-slate-200/60">
+                                    <div className="text-[11px] font-black text-slate-800">{m.short}</div>
+                                    <div className="text-[9px] font-bold text-slate-400">Bln {m.num}</div>
+                                  </th>
+                                ))}
+                                <th className="px-3 py-2.5 text-right min-w-[85px] bg-indigo-50 text-indigo-900 border-l border-indigo-100">
+                                  Total Qty
+                                </th>
+                                <th className="px-3 py-2.5 text-right min-w-[75px] bg-slate-50 border-l border-slate-200/60">
+                                  Rata-rata/Bln
+                                </th>
+                                <th className="px-3 py-2.5 text-right min-w-[110px] bg-slate-50 border-l border-slate-200/60">
+                                  Total Nilai (Rp)
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 bg-white">
+                              {groupedSummary.slice(0, 30).map((item, idx) => {
+                                const avgPerMonth = matrixPeriodMonths.length > 0 ? (item.totalQty / matrixPeriodMonths.length).toFixed(1) : 0;
+                                return (
+                                  <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
+                                    <td className="px-3 py-2 text-center text-slate-400 font-bold">
+                                      {idx + 1}
+                                    </td>
+                                    <td className="px-3 py-2 font-bold text-slate-800">
+                                      <div className="leading-snug text-xs font-extrabold text-slate-900">{item.name}</div>
+                                      <div className="text-[10px] font-medium text-slate-400 mt-0.5">
+                                        {item.lastSupplier ? `Supplier: ${item.lastSupplier}` : item.category}
+                                      </div>
+                                    </td>
+                                    {matrixPeriodMonths.map(m => {
+                                      const qty = item.monthlyQty[m.num] || 0;
+                                      return (
+                                        <td key={m.num} className="px-2 py-2 text-center border-l border-slate-100">
+                                          {qty > 0 ? (
+                                            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                                              {qty.toLocaleString("id-ID")}
+                                            </span>
+                                          ) : (
+                                            <span className="text-slate-300 font-medium">-</span>
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+                                    <td className="px-3 py-2 text-right font-black text-indigo-900 bg-indigo-50/30 border-l border-indigo-100">
+                                      <span className="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs font-black">
+                                        {item.totalQty.toLocaleString("id-ID")}
+                                      </span>
+                                    </td>
+                                    <td className="px-3 py-2 text-right text-xs font-bold text-slate-600 border-l border-slate-100">
+                                      {avgPerMonth}
+                                    </td>
+                                    <td className="px-3 py-2 text-right text-xs font-extrabold text-slate-900 border-l border-slate-100">
+                                      {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : "-"}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                            {/* TOTAL PER BULAN (FOOTER) - SELARAS DENGAN GRAFIK BAR */}
+                            <tfoot className="border-t-2 border-slate-300 bg-slate-900 text-white font-extrabold sticky bottom-0 z-10">
+                              <tr>
+                                <td colSpan={2} className="px-3 py-2.5 text-left">
+                                  <div className="flex items-center space-x-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-100">
+                                      TOTAL QTY PER BULAN ({groupedSummary.length} ITEM)
+                                    </span>
+                                  </div>
+                                  <div className="text-[9px] text-slate-400 font-medium">
+                                    Akumulasi pemakaian bulanan selaras dengan grafik bar di atas
+                                  </div>
+                                </td>
+                                {matrixPeriodMonths.map(m => {
+                                  const mTotal = matrixMonthlyTotals.totals[m.num] || 0;
+                                  return (
+                                    <td key={m.num} className="px-2 py-2.5 text-center border-l border-slate-800">
+                                      <span className="font-black text-xs text-amber-300">
+                                        {mTotal.toLocaleString("id-ID")}
+                                      </span>
+                                    </td>
+                                  );
+                                })}
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800">
+                                  <span className="font-black text-xs text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-700/60">
+                                    {matrixMonthlyTotals.grandQty.toLocaleString("id-ID")}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-slate-300 text-xs font-bold">
+                                  {matrixPeriodMonths.length > 0 ? (matrixMonthlyTotals.grandQty / matrixPeriodMonths.length).toFixed(1) : 0}
+                                </td>
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-white text-xs font-black">
+                                  {matrixMonthlyTotals.grandSpend > 0 ? formatCurrency(matrixMonthlyTotals.grandSpend) : "-"}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subheading penanda tabel foto jika matriks sedang aktif */}
+                    {shouldShowMatrix && groupedSummary.length > 0 && (
+                      <div className="flex items-center justify-between mb-2.5 px-0.5">
+                        <div className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider flex items-center">
+                          <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                          Resume Detail per Nama Barang (Sesuai Foto)
+                        </div>
+                        <div className="text-xs text-slate-400 font-semibold">
+                          Menampilkan {groupedSummary.length} item data
+                        </div>
+                      </div>
+                    )}
                     {paginatedSummary.length > 0 ? (
                       <div className="overflow-x-auto border border-slate-200 rounded-xl">
                         <table className="w-full text-xs text-left">
@@ -3186,7 +3506,10 @@
                     <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-white/10 p-2 overflow-hidden">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-10 h-10 text-slate-300" />}</div>
                     <h1 className="text-2xl font-extrabold text-white mb-2 tracking-tight">Portal Procurement</h1><p className="text-sm font-medium text-slate-400 mb-8">Sistem Manajemen Pembelian</p>
                     {!showAdminForm ? (
-                        <div className="space-y-3"><button onClick={() => setShowAdminForm(true)} className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] border border-blue-500 active:scale-[0.98] text-sm"><ShieldCheck className="w-4 h-4 mr-2" /> Login Admin SJA</button><button onClick={() => {setIsAuthenticated(true); setUserRole('guest');}} className="w-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-300 py-3 px-4 rounded-xl font-bold transition-all border border-white/10 active:scale-[0.98] text-sm"><Users className="w-4 h-4 mr-2 opacity-70" /> Akses Tamu / Viewer</button></div>
+                        <div className="space-y-3">
+                          <button onClick={() => setShowAdminForm(true)} className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] border border-blue-500 active:scale-[0.98] text-sm"><ShieldCheck className="w-4 h-4 mr-2" /> Login Admin SJA</button>
+                          <button onClick={() => {setIsAuthenticated(true); setUserRole('guest');}} className="w-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-300 py-3 px-4 rounded-xl font-bold transition-all border border-white/10 active:scale-[0.98] text-sm"><Users className="w-4 h-4 mr-2 opacity-70" /> Akses Tamu / Viewer</button>
+                        </div>
                     ) : (
                         <form onSubmit={handleAdminLogin} className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">{loginError && <div className="p-3 bg-rose-500/10 text-rose-400 text-xs font-bold rounded-xl border border-rose-500/20 flex items-center justify-center mb-2"><AlertTriangle className="w-4 h-4 mr-1.5" /> {loginError}</div>}<div className="text-left"><label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Username</label><input type="text" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username internal" className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:border-blue-500 outline-none text-sm text-white placeholder-slate-600 transition-colors"/></div><div className="text-left mb-2"><label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Password</label><input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:border-blue-500 outline-none text-sm text-white placeholder-slate-600 transition-colors"/></div><div className="flex space-x-3 pt-4"><button type="button" onClick={() => { setShowAdminForm(false); setLoginError(''); setUsername(''); setPassword(''); }} className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-700 font-bold transition-colors text-sm">Batal</button><button type="submit" className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] text-sm">Otorisasi</button></div></form>
                     )}
@@ -3246,7 +3569,6 @@
                     {userRole === 'admin' && (
                       <div className="pt-2 border-t border-[#1e293b] mt-2 space-y-1.5">
                         <span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-2">Tools & Sistem Terkait</span>
-                        <a href="/sibikom" className={navItemClass(false)}><Coffee className="w-4 h-4 mr-3 opacity-80 text-amber-400" /> SIBIKOM (Biji Kopi)</a>
                         <button onClick={() => window.open('https://gemini.google.com/share/5c6cfda5125a', '_blank')} className={navItemClass(false)}><ClipboardList className="w-4 h-4 mr-3 opacity-80" /> Kontrak Vendor</button>
                         <div>
                           <button onClick={() => setIsMonitoringOpen(!isMonitoringOpen)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-[13px] font-bold tracking-wide hover:bg-[#1e293b] text-slate-300`}>
@@ -3298,7 +3620,6 @@
                       <button onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'dashboard')}><LayoutDashboard className="w-4 h-4 mr-3" /> Dashboard Harga</button>
                       <button onClick={() => { setActiveTab('input'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'input')}><Database className="w-4 h-4 mr-3" /> Input Penawaran</button>
                       <button onClick={() => { setActiveTab('update-pembelian'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'update-pembelian')}><ShoppingCart className="w-4 h-4 mr-3" /> Dashboard G-Sheet</button>
-                      <a href="/sibikom" onClick={() => setIsMobileMenuOpen(false)} className={navItemClass(false)}><Coffee className="w-4 h-4 mr-3 text-amber-400" /> SIBIKOM (Biji Kopi)</a>
                       <button onClick={() => { window.open('https://procurementsja3.github.io/sistem-pengajuan/', '_blank'); }} className={navItemClass(false)}><ClipboardList className="w-4 h-4 mr-3" /> Pengajuan Persediaan</button>
                       {userRole === 'admin' && (
                         <><span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-4">Lainnya</span><button onClick={() => { setActiveTab('sop-wi'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'sop-wi')}><BookOpen className="w-4 h-4 mr-3" /> SOP & Instruksi Kerja</button><button onClick={() => { setActiveTab('form'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'form')}><FileText className="w-4 h-4 mr-3" /> Form Standar</button><button onClick={() => { setActiveTab('seleksi-supplier'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'seleksi-supplier')}><Users className="w-4 h-4 mr-3" /> Seleksi Supplier</button><button onClick={() => { setActiveTab('evaluasi-supplier'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'evaluasi-supplier')}><CheckCircle2 className="w-4 h-4 mr-3" /> Evaluasi Supplier</button><button onClick={() => { setActiveTab('backup-restore-dokumen'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'backup-restore-dokumen')}><Database className="w-4 h-4 mr-3" /> Backup & Restore Dokumen</button></>

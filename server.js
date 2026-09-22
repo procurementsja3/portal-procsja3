@@ -11,27 +11,32 @@ const PORT = 3000;
 // Serve static assets
 app.use(express.static(__dirname));
 
+// Primary landing page (Portal Procurement)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Direct routes for conveniences
-app.get('/procurementsja3', (req, res) => {
-  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+app.get('/portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/procurement', (req, res) => {
-  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/procurementsja3', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Standalone SIBIKOM route
 app.get('/sibikom', (req, res) => {
   res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
 
-// Primary landing page (Portal Procurement)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
-});
-
-// Fallback to procurementsja3.html
+// Fallback to Portal Procurement
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
