@@ -817,6 +817,357 @@
           );
         };
 
+        const Isometric3DCategoryDonut = ({ data = [], formatCurrency, colors = COLORS }) => {
+          const [hoveredIdx, setHoveredIdx] = useState(null);
+
+          const grandTotal = useMemo(() => data.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0), [data]);
+
+          if (!data || data.length === 0 || grandTotal <= 0) {
+            return (
+              <div className="flex flex-col items-center justify-center h-80 text-slate-400 font-medium text-sm">
+                <PieChartIcon className="w-10 h-10 mb-2 opacity-30 text-slate-300 dark:text-slate-600" />
+                Tidak ada data distribusi kategori
+              </div>
+            );
+          }
+
+          // Top 6 categories + group minor remainder into "Kategori Lainnya" for clean 3D geometry
+          const processedSlices = useMemo(() => {
+            const TOP_LIMIT = 6;
+            let list = [];
+            if (data.length <= TOP_LIMIT) {
+              list = data.map((d, i) => ({ ...d, originalIndex: i }));
+            } else {
+              const top = data.slice(0, TOP_LIMIT).map((d, i) => ({ ...d, originalIndex: i }));
+              const othersValue = data.slice(TOP_LIMIT).reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+              if (othersValue > 0) {
+                top.push({ name: 'Kategori Lainnya', value: othersValue, originalIndex: TOP_LIMIT });
+              }
+              list = top;
+            }
+
+            let startAngle = -Math.PI / 2; // start from top (12 o'clock)
+            return list.map((item, idx) => {
+              const fraction = item.value / grandTotal;
+              const percent = Number((fraction * 100).toFixed(1));
+              const angleSpan = Math.max(0.06, fraction * 2 * Math.PI);
+              const a1 = startAngle;
+              const a2 = startAngle + angleSpan;
+              startAngle = a2;
+              const amid = (a1 + a2) / 2;
+              const color = colors[idx % colors.length];
+
+              return {
+                ...item,
+                index: idx,
+                fraction,
+                percent,
+                a1,
+                a2,
+                amid,
+                color
+              };
+            });
+          }, [data, grandTotal, colors]);
+
+          // Dimensions for 3D Isometric View
+          const cx = 205;
+          const cy = 135;
+          const rx = 130;
+          const ry = 60; // isometric tilt squish
+          const irx = 65; // inner hole rx
+          const iry = 30; // inner hole ry
+          const depth = 25; // 3D extrusion depth
+
+          // Pedestal Base plinth
+          const baseRx = 175;
+          const baseRy = 82;
+          const baseCy = cy + 28;
+          const baseDepth = 14;
+
+          const hoveredItem = hoveredIdx !== null ? processedSlices.find(s => s.index === hoveredIdx) : null;
+
+          // Painter's algorithm sort for 3D rendering order (back to front by sin(amid))
+          const sortedSlices = useMemo(() => {
+            return [...processedSlices].sort((a, b) => {
+              if (a.index === hoveredIdx) return 1;
+              if (b.index === hoveredIdx) return -1;
+              return Math.sin(a.amid) - Math.sin(b.amid);
+            });
+          }, [processedSlices, hoveredIdx]);
+
+          return (
+            <div className="flex flex-col xl:flex-row items-center justify-between gap-6 w-full py-2">
+              {/* 3D Isometric Canvas */}
+              <div className="relative w-full xl:w-[58%] flex items-center justify-center select-none min-h-[300px]">
+                <svg
+                  viewBox="0 0 410 300"
+                  className="w-full max-w-[430px] h-auto overflow-visible filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_12px_30px_rgba(0,0,0,0.45)]"
+                >
+                  <defs>
+                    <filter id="iso-soft-shadow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feDropShadow dx="0" dy="16" stdDeviation="12" floodColor="#0f172a" floodOpacity="0.35" />
+                    </filter>
+                    <filter id="slice-hover-glow" x="-40%" y="-40%" width="180%" height="180%">
+                      <feDropShadow dx="0" dy="14" stdDeviation="10" floodColor="#0f172a" floodOpacity="0.4" />
+                    </filter>
+
+                    {/* Pedestal Gradients */}
+                    <linearGradient id="cat-pedestal-top" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f8fafc" />
+                      <stop offset="100%" stopColor="#e2e8f0" />
+                    </linearGradient>
+                    <linearGradient id="cat-pedestal-wall" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#cbd5e1" />
+                      <stop offset="100%" stopColor="#94a3b8" />
+                    </linearGradient>
+
+                    {/* Per-slice gradients for 3D faces */}
+                    {processedSlices.map(slice => (
+                      <React.Fragment key={`cat-grad-${slice.index}`}>
+                        <radialGradient id={`cat-slice-top-${slice.index}`} cx="35%" cy="30%" r="75%">
+                          <stop offset="0%" stopColor={slice.color} stopOpacity="1" />
+                          <stop offset="100%" stopColor={slice.color} stopOpacity="0.88" />
+                        </radialGradient>
+                        <linearGradient id={`cat-slice-wall-${slice.index}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor={slice.color} stopOpacity="0.95" />
+                          <stop offset="100%" stopColor="#0f172a" stopOpacity="0.65" />
+                        </linearGradient>
+                        <linearGradient id={`cat-slice-inner-${slice.index}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#0f172a" stopOpacity="0.45" />
+                          <stop offset="100%" stopColor={slice.color} stopOpacity="0.75" />
+                        </linearGradient>
+                      </React.Fragment>
+                    ))}
+                  </defs>
+
+                  {/* 1. 3D Isometric Pedestal Plinth (Ground Base) */}
+                  <g className="pedestal-base">
+                    <path
+                      d={`M ${cx - baseRx} ${baseCy} A ${baseRx} ${baseRy} 0 0 0 ${cx + baseRx} ${baseCy} L ${cx + baseRx} ${baseCy + baseDepth} A ${baseRx} ${baseRy} 0 0 1 ${cx - baseRx} ${baseCy + baseDepth} Z`}
+                      fill="url(#cat-pedestal-wall)"
+                    />
+                    <ellipse
+                      cx={cx}
+                      cy={baseCy}
+                      rx={baseRx}
+                      ry={baseRy}
+                      fill="url(#cat-pedestal-top)"
+                      stroke="#cbd5e1"
+                      strokeWidth="1.5"
+                    />
+                    <ellipse
+                      cx={cx}
+                      cy={baseCy}
+                      rx={baseRx - 15}
+                      ry={baseRy - 7}
+                      fill="none"
+                      stroke="#94a3b8"
+                      strokeWidth="1"
+                      strokeDasharray="4 4"
+                      opacity="0.45"
+                    />
+                  </g>
+
+                  {/* 2. 3D Donut Slices */}
+                  <g className="donut-slices">
+                    {sortedSlices.map(slice => {
+                      const isHovered = hoveredIdx === slice.index;
+                      const explodeDist = isHovered ? 16 : 0;
+                      const dx = Math.cos(slice.amid) * explodeDist;
+                      const dy = Math.sin(slice.amid) * explodeDist * (ry / rx) - (isHovered ? 6 : 0);
+
+                      const scx = cx + dx;
+                      const scy = cy + dy;
+
+                      const span = slice.a2 - slice.a1;
+                      const largeArc = span > Math.PI ? 1 : 0;
+
+                      // Outer points
+                      const p1x = scx + rx * Math.cos(slice.a1);
+                      const p1y = scy + ry * Math.sin(slice.a1);
+                      const p2x = scx + rx * Math.cos(slice.a2);
+                      const p2y = scy + ry * Math.sin(slice.a2);
+
+                      // Inner points
+                      const ip1x = scx + irx * Math.cos(slice.a1);
+                      const ip1y = scy + iry * Math.sin(slice.a1);
+                      const ip2x = scx + irx * Math.cos(slice.a2);
+                      const ip2y = scy + iry * Math.sin(slice.a2);
+
+                      // Top face path
+                      const topPath = `M ${p1x} ${p1y} A ${rx} ${ry} 0 ${largeArc} 1 ${p2x} ${p2y} L ${ip2x} ${ip2y} A ${irx} ${iry} 0 ${largeArc} 0 ${ip1x} ${ip1y} Z`;
+
+                      // Outer cylinder wall
+                      const outerWallPath = `M ${p1x} ${p1y} A ${rx} ${ry} 0 ${largeArc} 1 ${p2x} ${p2y} L ${p2x} ${p2y + depth} A ${rx} ${ry} 0 ${largeArc} 0 ${p1x} ${p1y + depth} Z`;
+
+                      // Inner cylinder wall
+                      const innerWallPath = `M ${ip1x} ${ip1y} A ${irx} ${iry} 0 ${largeArc} 1 ${ip2x} ${ip2y} L ${ip2x} ${ip2y + depth} A ${irx} ${iry} 0 ${largeArc} 0 ${ip1x} ${ip1y + depth} Z`;
+
+                      // Radial cut walls
+                      const startCutPath = `M ${ip1x} ${ip1y} L ${p1x} ${p1y} L ${p1x} ${p1y + depth} L ${ip1x} ${ip1y + depth} Z`;
+                      const endCutPath = `M ${ip2x} ${ip2y} L ${p2x} ${p2y} L ${p2x} ${p2y + depth} L ${ip2x} ${ip2y + depth} Z`;
+
+                      // Percentage label position on slice top
+                      const labelR = irx + (rx - irx) * 0.52;
+                      const labelRy = iry + (ry - iry) * 0.52;
+                      const lx = scx + labelR * Math.cos(slice.amid);
+                      const ly = scy + labelRy * Math.sin(slice.amid);
+
+                      return (
+                        <g
+                          key={`cat-slice-g-${slice.index}`}
+                          className="cursor-pointer transition-all duration-200"
+                          onMouseEnter={() => setHoveredIdx(slice.index)}
+                          onMouseLeave={() => setHoveredIdx(null)}
+                          filter={isHovered ? "url(#slice-hover-glow)" : undefined}
+                          opacity={hoveredIdx !== null && !isHovered ? 0.65 : 1}
+                        >
+                          {/* Inner wall */}
+                          <path
+                            d={innerWallPath}
+                            fill={`url(#cat-slice-inner-${slice.index})`}
+                            stroke={slice.color}
+                            strokeWidth="0.5"
+                            strokeOpacity="0.4"
+                          />
+
+                          {/* Outer wall */}
+                          <path
+                            d={outerWallPath}
+                            fill={`url(#cat-slice-wall-${slice.index})`}
+                            stroke="rgba(0,0,0,0.15)"
+                            strokeWidth="0.5"
+                          />
+
+                          {/* Radial cuts */}
+                          <path
+                            d={startCutPath}
+                            fill={slice.color}
+                            filter="brightness(0.75)"
+                            stroke="rgba(0,0,0,0.2)"
+                            strokeWidth="0.5"
+                          />
+                          <path
+                            d={endCutPath}
+                            fill={slice.color}
+                            filter="brightness(0.85)"
+                            stroke="rgba(0,0,0,0.2)"
+                            strokeWidth="0.5"
+                          />
+
+                          {/* Top face */}
+                          <path
+                            d={topPath}
+                            fill={`url(#cat-slice-top-${slice.index})`}
+                            stroke="#ffffff"
+                            strokeWidth={isHovered ? "2" : "1"}
+                            strokeOpacity={isHovered ? "0.9" : "0.5"}
+                          />
+
+                          {/* Percentage Badge on Top Face (if >= 4%) */}
+                          {slice.percent >= 4 && (
+                            <g transform={`translate(${lx}, ${ly})`}>
+                              <circle
+                                r={isHovered ? "14" : "12"}
+                                fill="rgba(15, 23, 42, 0.85)"
+                                stroke="#ffffff"
+                                strokeWidth="1"
+                                className="transition-all"
+                              />
+                              <text
+                                y="3.5"
+                                textAnchor="middle"
+                                fill="#ffffff"
+                                fontSize={isHovered ? "10" : "9"}
+                                fontWeight="800"
+                                fontFamily="monospace"
+                              >
+                                {slice.percent}%
+                              </text>
+                            </g>
+                          )}
+                        </g>
+                      );
+                    })}
+                  </g>
+
+                  {/* 3. Center Hole Core Status */}
+                  <g pointerEvents="none">
+                    <circle cx={cx} cy={cy + 8} r="26" fill="rgba(15, 23, 42, 0.04)" />
+                  </g>
+                </svg>
+
+                {/* Floating Center Badge overlay */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[62%] pointer-events-none text-center flex flex-col items-center justify-center p-2 rounded-xl backdrop-blur-xs select-none">
+                  {hoveredItem ? (
+                    <div className="animate-in zoom-in-95 duration-150">
+                      <div className="inline-block w-2.5 h-2.5 rounded-full mb-0.5" style={{ backgroundColor: hoveredItem.color }}></div>
+                      <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 max-w-[130px] truncate leading-tight">{hoveredItem.name}</div>
+                      <div className="text-sm font-black font-mono text-slate-900 dark:text-white tracking-tight leading-tight">{hoveredItem.percent}%</div>
+                      <div className="text-[9px] font-bold font-mono text-blue-600 dark:text-sky-300 mt-0.5">{formatCurrency(hoveredItem.value)}</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 leading-none">TOTAL BEBAN</div>
+                      <div className="text-sm font-black font-mono text-slate-800 dark:text-white tracking-tight mt-1 leading-none">{formatCurrency(grandTotal)}</div>
+                      <div className="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{processedSlices.length} Kategori</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Interactive Side Breakdown Legend */}
+              <div className="w-full xl:w-[42%] flex flex-col justify-center space-y-2 select-none">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <span>Kelompok Kategori</span>
+                  <span>Alokasi & Nilai</span>
+                </div>
+                <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1 scrollbar-thin">
+                  {processedSlices.map(slice => {
+                    const isHovered = hoveredIdx === slice.index;
+                    return (
+                      <div
+                        key={`cat-legend-${slice.index}`}
+                        onMouseEnter={() => setHoveredIdx(slice.index)}
+                        onMouseLeave={() => setHoveredIdx(null)}
+                        className={`p-2 rounded-xl transition-all cursor-pointer border ${
+                          isHovered
+                            ? 'bg-slate-50 dark:bg-slate-800 border-blue-400/60 dark:border-sky-500/50 shadow-xs scale-[1.02]'
+                            : 'bg-white/60 dark:bg-slate-900/40 border-slate-100 dark:border-slate-800/80 hover:bg-slate-50/80 dark:hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs" style={{ backgroundColor: slice.color }}></span>
+                            <span className={`font-semibold truncate text-[11.5px] ${isHovered ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-700 dark:text-slate-300'}`}>
+                              {slice.name}
+                            </span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="font-mono font-bold text-slate-900 dark:text-white text-xs">{slice.percent}%</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-1 text-[10.5px]">
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mr-3">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${slice.percent}%`, backgroundColor: slice.color }}
+                            ></div>
+                          </div>
+                          <span className="font-mono font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap text-[10px]">
+                            {formatCurrency(slice.value)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
         const DashboardView = ({ data, isLoading, onEdit, onDelete, sheetData, persistentFilters, setPersistentFilters }) => {
           const [projectToDelete, setProjectToDelete] = useState(null);
           const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
@@ -3482,6 +3833,7 @@
 
         const UpdatePembelianView = ({ sheetData, isLoading, errorMsg, availableMonths, availableYears, fetchSheetData, persistentFilters, setPersistentFilters }) => {
           const [showLateModal, setShowLateModal] = useState(false);
+          const [categoryChartMode, setCategoryChartMode] = useState('3d'); // '3d' | '2d'
 
           const selectedYear = persistentFilters.year; const selectedMonth = persistentFilters.month; const selectedPoCode = persistentFilters.poCode;
           const setSelectedYear = (val) => setPersistentFilters(prev => ({ ...prev, year: val })); const setSelectedMonth = (val) => setPersistentFilters(prev => ({ ...prev, month: val })); const setSelectedPoCode = (val) => setPersistentFilters(prev => ({ ...prev, poCode: val }));
@@ -3586,17 +3938,60 @@
                   </div>
 
                   <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 flex flex-col">
-                    <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">Distribusi Pengeluaran Kategori</h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div>
+                        <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5 text-blue-600" />
+                          Distribusi Pengeluaran Kategori
+                        </h2>
+                        <p className="text-xs text-slate-400 mt-0.5">Visualisasi komposisi anggaran belanja per kelompok beban</p>
+                      </div>
+
+                      {/* Tombol Pilihan Mode 3D Isometric / 2D Donut */}
+                      <div className="flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs self-start sm:self-auto select-none">
+                        <button
+                          type="button"
+                          onClick={() => setCategoryChartMode('3d')}
+                          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            categoryChartMode === '3d'
+                              ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                          }`}
+                          title="Tampilkan Model Grafik 3D Isometric"
+                        >
+                          <Layers className="w-3.5 h-3.5" />
+                          <span>3D Isometric</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCategoryChartMode('2d')}
+                          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            categoryChartMode === '2d'
+                              ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                          }`}
+                          title="Tampilkan Model Grafik 2D Donut Klasik"
+                        >
+                          <PieChartIcon className="w-3.5 h-3.5" />
+                          <span>2D Donut</span>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex-1 w-full min-h-[350px]">
                       {summaryData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <defs><filter id="3d-pie-effect" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="2" dy="8" stdDeviation="5" floodColor="#0f172a" floodOpacity="0.4" /><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blurHighlight" /><feOffset dx="-3" dy="-3" result="offsetHighlight" /><feComposite in="SourceGraphic" in2="offsetHighlight" operator="arithmetic" k2="-1" k3="1" result="highlightDiff" /><feFlood floodColor="#ffffff" floodOpacity="0.5" /><feComposite in2="highlightDiff" operator="in" result="highlight" /><feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blurShadow" /><feOffset dx="3" dy="3" result="offsetShadow" /><feComposite in="SourceGraphic" in2="offsetShadow" operator="arithmetic" k2="-1" k3="1" result="shadowDiff" /><feFlood floodColor="#000000" floodOpacity="0.3" /><feComposite in2="shadowDiff" operator="in" result="innerShadow" /><feMerge><feMergeNode in="SourceGraphic" /><feMergeNode in="innerShadow" /><feMergeNode in="highlight" /></feMerge></filter></defs>
-                            <Pie data={summaryData} cx="45%" cy="50%" innerRadius={85} outerRadius={150} paddingAngle={2} dataKey="value" stroke="none" labelLine={false} label={renderCustomizedLabel}>{summaryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} filter="url(#3d-pie-effect)"/>)}</Pie>
-                            <RechartsTooltip formatter={(value) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '10px' }} />
-                            <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '11px', fontWeight: 600, color: '#475569' }} iconType="circle" />
-                          </PieChart>
-                        </ResponsiveContainer>
+                        categoryChartMode === '3d' ? (
+                          <Isometric3DCategoryDonut data={summaryData} formatCurrency={formatCurrency} colors={COLORS} />
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <defs><filter id="3d-pie-effect" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="2" dy="8" stdDeviation="5" floodColor="#0f172a" floodOpacity="0.4" /><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blurHighlight" /><feOffset dx="-3" dy="-3" result="offsetHighlight" /><feComposite in="SourceGraphic" in2="offsetHighlight" operator="arithmetic" k2="-1" k3="1" result="highlightDiff" /><feFlood floodColor="#ffffff" floodOpacity="0.5" /><feComposite in2="highlightDiff" operator="in" result="highlight" /><feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blurShadow" /><feOffset dx="3" dy="3" result="offsetShadow" /><feComposite in="SourceGraphic" in2="offsetShadow" operator="arithmetic" k2="-1" k3="1" result="shadowDiff" /><feFlood floodColor="#000000" floodOpacity="0.3" /><feComposite in2="shadowDiff" operator="in" result="innerShadow" /><feMerge><feMergeNode in="SourceGraphic" /><feMergeNode in="innerShadow" /><feMergeNode in="highlight" /></feMerge></filter></defs>
+                              <Pie data={summaryData} cx="45%" cy="50%" innerRadius={85} outerRadius={150} paddingAngle={2} dataKey="value" stroke="none" labelLine={false} label={renderCustomizedLabel}>{summaryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} filter="url(#3d-pie-effect)"/>)}</Pie>
+                              <RechartsTooltip formatter={(value) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '10px' }} />
+                              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '11px', fontWeight: 600, color: '#475569' }} iconType="circle" />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        )
                       ) : <div className="flex h-full items-center justify-center text-slate-400 font-medium text-sm">Tidak ada data distribusi</div>}
                     </div>
                   </div>
