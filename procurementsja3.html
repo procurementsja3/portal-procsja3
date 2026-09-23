@@ -10,24 +10,54 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
     <!-- Babel for transpiling JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { margin: 0; padding: 0; background-color: #0f172a; }
-        /* Custom scrollbar for tailwind scrollbar-thin class */
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+        body { 
+          margin: 0; 
+          padding: 0; 
+          background-color: #0b1120;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        /* Refined luxury scrollbar */
+        .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.7); }
     </style>
 </head>
 <body>
     <div id="root">
-        <!-- Tampilan Loading Awal -->
-        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif; background-color: #0f172a;">
-            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-            <p style="font-weight: bold; letter-spacing: 1px;">Memuat Sistem Procurement...</p>
+        <!-- Tampilan Loading Awal Executive -->
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120;">
+            <div style="position: relative; width: 56px; height: 56px; margin-bottom: 24px;">
+                <div style="position: absolute; inset: 0; border: 2px solid rgba(255, 255, 255, 0.08); border-radius: 16px;"></div>
+                <div style="position: absolute; inset: 0; border: 2px solid transparent; border-top-color: #3b82f6; border-radius: 16px; animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;"></div>
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; letter-spacing: 1px; color: #94a3b8;">SJA</div>
+            </div>
+            <p style="font-weight: 700; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #f1f5f9; margin: 0 0 6px 0;">PORTAL PROCUREMENT</p>
+            <p style="font-size: 11px; color: #64748b; letter-spacing: 0.5px; margin: 0;">Sistem Manajemen Pengadaan & Analisis Data</p>
             <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
         </div>
     </div>
@@ -350,31 +380,62 @@
 
           return (
             <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-5 rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
-                <div><h1 className="text-2xl font-bold text-slate-800 tracking-tight">Summary Dashboard</h1><p className="text-sm text-slate-500 font-medium mt-0.5">Analisis Komparasi Harga & Saving Cost</p></div>
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                  <select value={poCodeFilter} onChange={(e) => setPoCodeFilter(e.target.value)} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">Semua Kode PO</option><option value="4M">PO Kode 4M</option><option value="4T">PO Kode 4T</option></select>
-                  <select value={selectedYear} onChange={(e) => { setSelectedYear(e.target.value); setSelectedMonth('all'); }} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">Semua Tahun</option>{availableYears.map(y => <option key={y} value={y}>{y}</option>)}</select>
-                  <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} disabled={selectedYear === 'all'} className="w-full sm:w-auto pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer hover:bg-slate-100 disabled:opacity-50 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">{selectedYear === 'all' ? 'Pilih Tahun Dahulu' : 'Semua Bulan'}</option>{availableMonths.map(m => <option key={m} value={m}>{formatMonthDisplay(m)}</option>)}</select>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-6 rounded-xl border border-slate-200/80 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)]">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Executive Procurement Dashboard</h1>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Analisis Komparasi Harga, Realisasi Efisiensi & Monitoring Belanja</p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+                  <select value={poCodeFilter} onChange={(e) => setPoCodeFilter(e.target.value)} className="w-full sm:w-auto pl-3.5 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">Semua Kode PO</option><option value="4M">PO Kode 4M</option><option value="4T">PO Kode 4T</option></select>
+                  <select value={selectedYear} onChange={(e) => { setSelectedYear(e.target.value); setSelectedMonth('all'); }} className="w-full sm:w-auto pl-3.5 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">Semua Tahun</option>{availableYears.map(y => <option key={y} value={y}>{y}</option>)}</select>
+                  <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} disabled={selectedYear === 'all'} className="w-full sm:w-auto pl-3.5 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer hover:bg-slate-100 disabled:opacity-50 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">{selectedYear === 'all' ? 'Pilih Tahun Dahulu' : 'Semua Bulan'}</option>{availableMonths.map(m => <option key={m} value={m}>{formatMonthDisplay(m)}</option>)}</select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-blue-200 transition-colors flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><DollarSign className="w-24 h-24 text-blue-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full"><div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><DollarSign className="w-4 h-4 mr-1.5" /> Total Pengeluaran</div><div className="text-2xl lg:text-3xl font-extrabold text-slate-800 tracking-tight">{formatCurrency(mirroredTotalSpend)}</div><div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Sumber: Google Sheets (Live)</div></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-slate-500 text-xs font-semibold mb-2">
+                    <span className="flex items-center"><DollarSign className="w-4 h-4 mr-1.5 text-slate-500" /> Total Pengeluaran</span>
+                    <span className="text-[10px] text-slate-400 font-mono">PO 4M / 4T</span>
+                  </div>
+                  <div className="text-2xl font-bold font-mono tabular-nums text-slate-900 tracking-tight mt-1">{formatCurrency(mirroredTotalSpend)}</div>
+                  <div className="mt-3 text-[11px] font-medium text-slate-500 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
+                    Sumber: Google Sheets Live
+                  </div>
                 </div>
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-slate-300 transition-colors flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Layers className="w-24 h-24 text-slate-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full"><div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Layers className="w-4 h-4 mr-1.5" /> Harga Baseline</div><div className="text-2xl lg:text-3xl font-extrabold text-slate-700 tracking-tight">{data.length > 0 ? formatCurrency(baselinePriceCalc) : '-'}</div><div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Estimasi Tanpa Negosiasi</div></div>
+                <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-slate-500 text-xs font-semibold mb-2">
+                    <span className="flex items-center"><Layers className="w-4 h-4 mr-1.5 text-slate-500" /> Harga Baseline</span>
+                    <span className="text-[10px] text-slate-400 font-mono">ESTIMASI</span>
+                  </div>
+                  <div className="text-2xl font-bold font-mono tabular-nums text-slate-700 tracking-tight mt-1">{data.length > 0 ? formatCurrency(baselinePriceCalc) : '—'}</div>
+                  <div className="mt-3 text-[11px] font-medium text-slate-500 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                    Estimasi Tanpa Negosiasi
+                  </div>
                 </div>
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-emerald-200 transition-colors flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingDown className="w-24 h-24 text-emerald-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full"><div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><TrendingDown className="w-4 h-4 mr-1.5" /> Total Saving Cost</div><div className="text-2xl lg:text-3xl font-extrabold text-emerald-600 tracking-tight">{data.length > 0 ? formatCurrency(totalSavingCost) : '-'}</div><div className="mt-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">Penghematan Aktual</div></div>
+                <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-slate-500 text-xs font-semibold mb-2">
+                    <span className="flex items-center"><TrendingDown className="w-4 h-4 mr-1.5 text-emerald-600" /> Total Saving Cost</span>
+                    <span className="text-[10px] text-emerald-600 font-mono">AKTUAL</span>
+                  </div>
+                  <div className="text-2xl font-bold font-mono tabular-nums text-emerald-600 tracking-tight mt-1">{data.length > 0 ? formatCurrency(totalSavingCost) : '—'}</div>
+                  <div className="mt-3 text-[11px] font-medium text-emerald-700 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                    Penghematan Anggaran
+                  </div>
                 </div>
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 relative overflow-hidden group hover:border-purple-200 transition-colors flex flex-col justify-between sm:col-span-2 md:col-span-3 lg:col-span-1">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Trophy className="w-24 h-24 text-purple-600" /></div>
-                  <div className="relative z-10 flex flex-col justify-between h-full"><div className="flex items-center text-slate-500 text-sm font-semibold mb-2"><Trophy className="w-4 h-4 mr-1.5" /> Persentase Saving</div><div className="text-3xl lg:text-4xl font-extrabold text-purple-600 tracking-tight">{data.length > 0 ? overallSavingPercentage + '%' : '-'}</div><div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-wide">Persentase Saving = (Total Saving / Baseline) * 100%</div></div>
+                <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between sm:col-span-2 md:col-span-3 lg:col-span-1">
+                  <div className="flex items-center justify-between text-slate-500 text-xs font-semibold mb-2">
+                    <span className="flex items-center"><Trophy className="w-4 h-4 mr-1.5 text-amber-500" /> Efisiensi Saving</span>
+                    <span className="text-[10px] text-slate-400 font-mono">RASIO</span>
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-slate-900 tracking-tight mt-1">{data.length > 0 ? overallSavingPercentage + '%' : '—'}</div>
+                  <div className="mt-3 text-[11px] font-medium text-slate-500 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                    (Total Saving / Baseline) × 100%
+                  </div>
                 </div>
               </div>
 
@@ -1620,28 +1681,22 @@
           };
 
           return (
-            <div id="section-pencarian-sparepart" className="bg-white rounded-2xl p-6 sm:p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-200/80 mt-8 transition-all">
+            <div id="section-pencarian-sparepart" className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] mt-8 transition-all">
               {/* Header Title Bar */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
                 <div className="flex items-start sm:items-center">
-                  <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mr-3.5 shadow-sm shrink-0">
-                    <Wrench className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center mr-3.5 shadow-xs shrink-0">
+                    <Wrench className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h2 className="text-lg font-extrabold text-slate-800 tracking-tight">Data Pemakaian Sparepart & Resume Pembelian</h2>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                        <FileText className="w-3 h-3 text-indigo-600" />
-                        Khusus Kode PO 4M
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Live G-Sheet
-                      </span>
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Data Pemakaian Sparepart & Resume Pembelian</h2>
+                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
+                      <span className="font-semibold text-slate-700">Khusus Kode PO 4M</span>
+                      <span aria-hidden="true" className="text-slate-300">·</span>
+                      <span className="inline-flex items-center text-emerald-700 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>Live Google Sheets</span>
+                      <span aria-hidden="true" className="text-slate-300">·</span>
+                      <span>Sistem Akumulasi Periode Tarik Data</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">
-                      Pencarian nama item barang <strong className="text-indigo-700 font-bold">khusus Kode PO 4M</strong> & sistem resume akumulasi Qty periode tarik data dari bulan 1 ke bulan selanjutnya.
-                    </p>
                   </div>
                 </div>
 
@@ -1651,27 +1706,27 @@
                     id="btn-copy-sparepart-summary"
                     onClick={handleCopySummary}
                     title="Salin ringkasan ke clipboard"
-                    className="inline-flex items-center px-3 py-2 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors shadow-sm"
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors shadow-2xs"
                   >
-                    <Copy className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+                    <Copy className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
                     Salin Resume
                   </button>
                   <button
                     id="btn-export-sparepart-csv"
                     onClick={handleExportCSV}
                     title="Ekspor hasil pencarian ke format Excel/CSV"
-                    className="inline-flex items-center px-3.5 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-colors shadow-sm"
+                    className="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs"
                   >
-                    <Download className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                    <Download className="w-3.5 h-3.5 mr-1.5 text-slate-300" />
                     Ekspor CSV
                   </button>
                   <button
                     id="btn-reset-sparepart-filters"
                     onClick={handleResetFilters}
                     title="Reset semua filter pencarian"
-                    className="inline-flex items-center p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+                    className="inline-flex items-center p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -1686,35 +1741,35 @@
 
               {/* Focus Banner (if inspecting specific item) */}
               {focusedItem && (
-                <div className="mt-4 p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl flex items-center justify-between flex-wrap gap-2 animate-in fade-in">
+                <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between flex-wrap gap-2 animate-in fade-in">
                   <div className="flex items-center">
-                    <Package className="w-4 h-4 mr-2 text-blue-600" />
-                    <span className="text-xs text-blue-900 font-semibold">
-                      Menampilkan riwayat pembelian khusus untuk: <strong className="font-extrabold text-blue-700 underline">{focusedItem}</strong>
+                    <Package className="w-4 h-4 mr-2 text-slate-700" />
+                    <span className="text-xs text-slate-700">
+                      Riwayat pembelian spesifik untuk: <strong className="font-semibold text-slate-900 font-mono">{focusedItem}</strong>
                     </span>
                   </div>
                   <button
                     onClick={() => setFocusedItem(null)}
-                    className="text-xs font-bold px-3 py-1 bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
+                    className="text-xs font-semibold px-2.5 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
                   >
-                    Hapus Fokus & Lihat Semua Item
+                    Reset Fokus
                   </button>
                 </div>
               )}
 
               {/* Search & Period Filter Control Card */}
-              <div className="mt-5 p-5 bg-slate-50/70 border border-slate-200/70 rounded-2xl space-y-4">
+              <div className="mt-5 p-5 bg-slate-50/60 border border-slate-200/80 rounded-xl space-y-4">
                 {/* Search Bar - Kolom F (Nama Barang) */}
                 <div className="relative">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
-                    <span className="flex items-center">
-                      <Search className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-slate-800 flex items-center">
+                      <Search className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                       Pencarian Nama Barang / Sparepart
+                    </label>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      {allUniqueItemNames.length} item terdaftar
                     </span>
-                    <span className="text-slate-400 font-normal lowercase">
-                      {allUniqueItemNames.length} jenis item tersinkronisasi
-                    </span>
-                  </label>
+                  </div>
                   <div className="relative">
                     <input
                       id="input-search-sparepart-name"
@@ -1728,9 +1783,9 @@
                       }}
                       onFocus={() => setShowSuggestions(true)}
                       placeholder="Ketik nama sparepart / item (cth: BEARING, VALVE, GASKET, FILTER, SEAL, O-RING, V-BELT, PNEUMATIC, BAUT)..."
-                      className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+                      className="w-full pl-9 pr-9 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-colors shadow-2xs"
                     />
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
                     {searchQuery && (
                       <button
                         onClick={() => {
@@ -1738,18 +1793,18 @@
                           setShowSuggestions(false);
                           setCurrentPage(1);
                         }}
-                        className="absolute right-3 top-3 p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md"
+                        className="absolute right-2.5 top-2.5 p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
 
                   {/* Autocomplete Dropdown suggestions */}
                   {showSuggestions && autocompleteSuggestions.length > 0 && (
-                    <div className="absolute z-30 left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200 py-2 overflow-hidden animate-in fade-in duration-150">
-                      <div className="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-                        Rekomendasi Nama Barang:
+                    <div className="absolute z-30 left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-slate-200 py-1.5 overflow-hidden animate-in fade-in duration-100">
+                      <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
+                        Saran Hasil Pencarian:
                       </div>
                       {autocompleteSuggestions.map((item, idx) => (
                         <button
@@ -1760,10 +1815,10 @@
                             setShowSuggestions(false);
                             setCurrentPage(1);
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center justify-between transition-colors"
+                          className="w-full text-left px-3.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center justify-between transition-colors"
                         >
                           <span className="truncate">{item}</span>
-                          <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full shrink-0 ml-2">
+                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
                             Pilih
                           </span>
                         </button>
@@ -1774,9 +1829,9 @@
 
                 {/* Quick Sparepart Category Chips */}
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center">
-                    <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
-                    Kategori Cepat Sparepart:
+                  <div className="text-[11px] font-semibold text-slate-500 mb-2 flex items-center">
+                    <SlidersHorizontal className="w-3 h-3 mr-1.5 text-slate-400" />
+                    Kategori Cepat:
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {QUICK_SPAREPART_KEYWORDS.map(kw => {
@@ -1798,10 +1853,10 @@
                             setCurrentPage(1);
                             setShowSuggestions(false);
                           }}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                             isSelected
-                              ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
-                              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-800'
+                              ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900'
                           }`}
                         >
                           {kw}
@@ -1812,16 +1867,16 @@
                 </div>
 
                 {/* Sistem Periode Tarik Data (Dari Bulan 1 ke Bulan Selanjutnya) */}
-                <div className="pt-3 border-t border-slate-200/80">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2.5 flex items-center">
-                    <Calendar className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                <div className="pt-3 border-t border-slate-200">
+                  <div className="text-xs font-bold text-slate-800 mb-2.5 flex items-center">
+                    <Calendar className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                     Sistem Periode Tarik Data (Rentang Bulan & Tahun)
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
                     {/* Pilih Tahun */}
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                         Tahun:
                       </label>
                       <select
@@ -1831,7 +1886,7 @@
                           setSelectedYear(e.target.value);
                           setCurrentPage(1);
                         }}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900"
                       >
                         <option value="all">Semua Tahun</option>
                         {availableYears.map(y => (
@@ -1842,7 +1897,7 @@
 
                     {/* Tarik Dari Bulan */}
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                         Dari Bulan (Awal):
                       </label>
                       <select
@@ -1854,7 +1909,7 @@
                           if (val > endMonth) setEndMonth(val);
                           setCurrentPage(1);
                         }}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900"
                       >
                         {MONTH_LIST.map(m => (
                           <option key={m.num} value={m.num}>
@@ -1866,7 +1921,7 @@
 
                     {/* Sampai Bulan */}
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                         Sampai Bulan (Akhir):
                       </label>
                       <select
@@ -1878,7 +1933,7 @@
                           if (val < startMonth) setStartMonth(val);
                           setCurrentPage(1);
                         }}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900"
                       >
                         {MONTH_LIST.map(m => (
                           <option key={m.num} value={m.num}>
@@ -1890,23 +1945,23 @@
 
                     {/* Sumber PO - Dibatasi Khusus PO 4M */}
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                         Sumber PO:
                       </label>
-                      <div className="w-full px-3 py-2 bg-indigo-50/80 border border-indigo-200/80 rounded-xl text-xs font-bold text-indigo-800 flex items-center justify-between shadow-xs">
+                      <div className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 flex items-center justify-between">
                         <span className="flex items-center">
-                          <span className="w-2 h-2 rounded-full bg-indigo-600 mr-1.5"></span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
                           Khusus PO 4M
                         </span>
-                        <span className="text-[9px] bg-indigo-200/80 text-indigo-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wider">
-                          Terkunci
+                        <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">
+                          Fixed
                         </span>
                       </div>
                     </div>
 
                     {/* Status PO */}
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                         Status PO:
                       </label>
                       <select
@@ -1916,7 +1971,7 @@
                           setSelectedStatus(e.target.value);
                           setCurrentPage(1);
                         }}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900"
                       >
                         <option value="all">Semua Status</option>
                         <option value="CLOSE">CLOSE</option>
@@ -1928,8 +1983,8 @@
 
                   {/* Preset Cepat Periode */}
                   <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">
-                      Preset Cepat:
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-1">
+                      Preset Periode:
                     </span>
                     <button
                       type="button"
@@ -1939,33 +1994,33 @@
                         last3MonthsEnd, 
                         `3 Bulan Terakhir (${MONTH_LIST[last3MonthsStart - 1].name} - ${MONTH_LIST[last3MonthsEnd - 1].name})`
                       )}
-                      className={`px-2.5 py-1 text-[11px] font-extrabold rounded-lg transition-all flex items-center gap-1.5 shadow-xs ${
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
                         startMonth === last3MonthsStart && endMonth === last3MonthsEnd
-                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
-                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200/90 hover:bg-indigo-100 hover:border-indigo-300'
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                       }`}
                       title={`Pilih 3 bulan terakhir pembelian: Bulan ${last3MonthsStart} (${MONTH_LIST[last3MonthsStart - 1].name}) s/d Bulan ${last3MonthsEnd} (${MONTH_LIST[last3MonthsEnd - 1].name})`}
                     >
-                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      <Clock className="w-3 h-3 shrink-0 text-slate-400" />
                       3 Bulan Terakhir ({MONTH_LIST[last3MonthsStart - 1].short} - {MONTH_LIST[last3MonthsEnd - 1].short})
                     </button>
                     <button
                       type="button"
                       onClick={() => handleApplyPresetPeriod(1, latestMonthInData, `Bulan 1 s/d ${MONTH_LIST[latestMonthInData - 1].name}`)}
-                      className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
+                      className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
                         startMonth === 1 && endMonth === latestMonthInData && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                          ? 'bg-slate-900 text-white font-semibold'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
-                      Bln 1 s/d Berjalan (Jan - {MONTH_LIST[latestMonthInData - 1].short})
+                      Bln 1 - {MONTH_LIST[latestMonthInData - 1].short} (Berjalan)
                     </button>
                     <button
                       type="button"
                       onClick={() => handleApplyPresetPeriod(1, 3, 'Q1 (Jan - Mar)')}
-                      className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
+                      className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
                         startMonth === 1 && endMonth === 3 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                          ? 'bg-slate-900 text-white font-semibold'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -1974,9 +2029,9 @@
                     <button
                       type="button"
                       onClick={() => handleApplyPresetPeriod(4, 6, 'Q2 (Apr - Jun)')}
-                      className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
+                      className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
                         startMonth === 4 && endMonth === 6 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                          ? 'bg-slate-900 text-white font-semibold'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -1985,9 +2040,9 @@
                     <button
                       type="button"
                       onClick={() => handleApplyPresetPeriod(7, 9, 'Q3 (Jul - Sep)')}
-                      className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
+                      className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
                         startMonth === 7 && endMonth === 9 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                          ? 'bg-slate-900 text-white font-semibold'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -1996,9 +2051,9 @@
                     <button
                       type="button"
                       onClick={() => handleApplyPresetPeriod(1, 6, 'Semester 1 (Jan - Jun)')}
-                      className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
+                      className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
                         startMonth === 1 && endMonth === 6 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                          ? 'bg-slate-900 text-white font-semibold'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -2007,9 +2062,9 @@
                     <button
                       type="button"
                       onClick={() => handleApplyPresetPeriod(1, 12, 'Setahun Penuh (Jan - Des)')}
-                      className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-colors ${
+                      className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
                         startMonth === 1 && endMonth === 12 && !(startMonth === last3MonthsStart && endMonth === last3MonthsEnd)
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                          ? 'bg-slate-900 text-white font-semibold'
                           : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -2022,110 +2077,111 @@
               {/* Resume / Ringkasan Metrik Kartu */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mt-6">
                 {/* 1. Total Qty Pembelian */}
-                <div className="bg-gradient-to-br from-indigo-50/80 to-blue-50/40 p-4 rounded-xl border border-indigo-100 shadow-sm">
-                  <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider flex items-center">
-                    <Package className="w-3.5 h-3.5 mr-1" />
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                    <Package className="w-3.5 h-3.5 mr-1 text-slate-400" />
                     Total Qty Dibeli
                   </div>
-                  <div className="text-xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                  <div className="text-xl font-bold font-mono tabular-nums text-slate-900 mt-1.5 tracking-tight">
                     {stats.totalQty.toLocaleString('id-ID')}
                   </div>
-                  <div className="text-[11px] font-bold text-indigo-700 mt-1 flex items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5"></span>
+                  <div className="text-[11px] font-medium text-slate-500 mt-1 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
                     Unit / Pcs Periode
                   </div>
                 </div>
 
                 {/* 2. Realisasi Qty Datang */}
-                <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/40 p-4 rounded-xl border border-emerald-100 shadow-sm">
-                  <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider flex items-center">
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
                     Qty Datang
                   </div>
-                  <div className="text-xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                  <div className="text-xl font-bold font-mono tabular-nums text-slate-900 mt-1.5 tracking-tight">
                     {stats.totalQtyDatang.toLocaleString('id-ID')}
                   </div>
-                  <div className="text-[11px] font-bold text-emerald-700 mt-1">
+                  <div className="text-[11px] font-medium text-emerald-700 mt-1 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
                     {stats.fulfillmentRate}% Realisasi Datang
                   </div>
                 </div>
 
                 {/* 3. Frekuensi Transaksi PO */}
-                <div className="bg-gradient-to-br from-amber-50/80 to-yellow-50/40 p-4 rounded-xl border border-amber-100 shadow-sm">
-                  <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider flex items-center">
-                    <FileText className="w-3.5 h-3.5 mr-1" />
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                    <FileText className="w-3.5 h-3.5 mr-1 text-slate-400" />
                     Frekuensi PO
                   </div>
-                  <div className="text-xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                  <div className="text-xl font-bold font-mono tabular-nums text-slate-900 mt-1.5 tracking-tight">
                     {stats.totalTrx}
                   </div>
-                  <div className="text-[11px] font-semibold text-amber-700 mt-1">
+                  <div className="text-[11px] font-medium text-slate-500 mt-1">
                     Transaksi PO Diterbitkan
                   </div>
                 </div>
 
                 {/* 4. Total Nilai Pembelian (Rp) */}
-                <div className="bg-gradient-to-br from-blue-50/80 to-slate-50/40 p-4 rounded-xl border border-blue-100 shadow-sm">
-                  <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider flex items-center">
-                    <DollarSign className="w-3.5 h-3.5 mr-1" />
-                    Total Nilai Pembelian
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                    <DollarSign className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                    Nilai Pembelian
                   </div>
-                  <div className="text-sm sm:text-base font-extrabold text-slate-900 mt-2 truncate" title={formatCurrency(stats.totalSpend)}>
+                  <div className="text-sm sm:text-base font-bold font-mono tabular-nums text-slate-900 mt-2 truncate" title={formatCurrency(stats.totalSpend)}>
                     {formatCurrency(stats.totalSpend)}
                   </div>
-                  <div className="text-[11px] font-semibold text-blue-700 mt-1">
+                  <div className="text-[11px] font-medium text-slate-500 mt-1">
                     Akumulasi Periode
                   </div>
                 </div>
 
                 {/* 5. Varian Jenis Sparepart */}
-                <div className="bg-gradient-to-br from-purple-50/80 to-fuchsia-50/40 p-4 rounded-xl border border-purple-100 shadow-sm">
-                  <div className="text-[10px] font-bold text-purple-600 uppercase tracking-wider flex items-center">
-                    <Layers className="w-3.5 h-3.5 mr-1" />
-                    Varian Item Unik
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                    <Layers className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                    Item Unik
                   </div>
-                  <div className="text-xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                  <div className="text-xl font-bold font-mono tabular-nums text-slate-900 mt-1.5 tracking-tight">
                     {stats.uniqueCount}
                   </div>
-                  <div className="text-[11px] font-semibold text-purple-700 mt-1">
+                  <div className="text-[11px] font-medium text-slate-500 mt-1">
                     Model / Tipe Barang
                   </div>
                 </div>
 
                 {/* 6. Supplier Utama */}
-                <div className="bg-gradient-to-br from-rose-50/80 to-orange-50/40 p-4 rounded-xl border border-rose-100 shadow-sm">
-                  <div className="text-[10px] font-bold text-rose-600 uppercase tracking-wider flex items-center">
-                    <Users className="w-3.5 h-3.5 mr-1" />
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors">
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                    <Users className="w-3.5 h-3.5 mr-1 text-slate-400" />
                     Supplier Terbanyak
                   </div>
-                  <div className="text-xs sm:text-sm font-extrabold text-slate-900 mt-2 truncate" title={stats.topSupplier}>
+                  <div className="text-xs sm:text-sm font-bold text-slate-900 mt-2 truncate" title={stats.topSupplier}>
                     {stats.topSupplier}
                   </div>
-                  <div className="text-[11px] font-semibold text-rose-700 mt-1 truncate">
-                    {stats.topSupplierQty.toLocaleString('id-ID')} Unit Dipasok
+                  <div className="text-[11px] font-mono tabular-nums font-medium text-slate-500 mt-1 truncate">
+                    {stats.topSupplierQty.toLocaleString('id-ID')} unit dipasok
                   </div>
                 </div>
               </div>
 
               {/* Grafik Tren Akumulasi Pembelian Bulanan (Monthly Trend) */}
-              <div className="bg-slate-50/60 rounded-2xl p-5 border border-slate-200/70 mt-6">
+              <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs mt-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                   <div>
-                    <h3 className="text-sm font-extrabold text-slate-800 flex items-center">
-                      <TrendingDown className="w-4 h-4 mr-1.5 text-indigo-600 rotate-180" />
-                      Resume Tren Pembelian per Bulan (Periode Bulan {startMonth} s/d Bulan {endMonth})
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center">
+                      <TrendingDown className="w-4 h-4 mr-1.5 text-slate-500 rotate-180" />
+                      Tren Pembelian Bulanan (Periode Bulan {startMonth} s/d Bulan {endMonth})
                     </h3>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Menampilkan perbandingan volume unit (Qty) dan nilai pengeluaran per bulan pada periode terpilih.
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Perbandingan volume unit (Qty) dan nilai pengeluaran per bulan pada periode terpilih.
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-bold">
-                    <span className="flex items-center text-indigo-600">
-                      <span className="w-3 h-3 rounded-sm bg-indigo-600 mr-1.5"></span>
+                  <div className="flex items-center gap-4 text-xs font-medium">
+                    <span className="flex items-center text-slate-700">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-blue-600 mr-1.5"></span>
                       Qty Pembelian (Unit)
                     </span>
-                    <span className="flex items-center text-emerald-600">
-                      <span className="w-3 h-1 bg-emerald-500 mr-1.5"></span>
+                    <span className="flex items-center text-emerald-700">
+                      <span className="w-3 h-0.5 bg-emerald-600 mr-1.5"></span>
                       Nilai Belanja (Rp)
                     </span>
                   </div>
@@ -2135,12 +2191,12 @@
                   {monthlyTrendData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={monthlyTrendData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                         <XAxis 
                           dataKey="monthName" 
                           axisLine={false} 
                           tickLine={false} 
-                          tick={{ fill: '#64748b', fontSize: 11, fontWeight: 'bold' }} 
+                          tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }} 
                         />
                         <YAxis 
                           yAxisId="left" 
@@ -2154,8 +2210,8 @@
                           orientation="right" 
                           axisLine={false} 
                           tickLine={false} 
-                          tickFormatter={(val) => val >= 1000000 ? `${(val / 1000000).toFixed(0)}jt` : val} 
-                          tick={{ fill: '#10b981', fontSize: 11 }} 
+                          tickFormatter={(val) => val >= 1000000 ? `${(val / 1000000).toFixed(0)}M` : val} 
+                          tick={{ fill: '#059669', fontSize: 11 }} 
                         />
                         <RechartsTooltip
                           formatter={(value, name) => {
@@ -2164,29 +2220,29 @@
                             return [value, name];
                           }}
                           labelFormatter={(label) => `Bulan: ${label}`}
-                          contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                          contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
                         />
                         <Bar 
                           yAxisId="left" 
                           dataKey="qty" 
                           name="qty" 
-                          fill="#4f46e5" 
-                          radius={[6, 6, 0, 0]} 
-                          maxBarSize={45} 
+                          fill="#2563eb" 
+                          radius={[4, 4, 0, 0]} 
+                          maxBarSize={40} 
                         />
                         <Line 
                           yAxisId="right" 
                           type="monotone" 
                           dataKey="spend" 
                           name="spend" 
-                          stroke="#10b981" 
-                          strokeWidth={2.5} 
-                          dot={{ r: 4, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} 
+                          stroke="#059669" 
+                          strokeWidth={2} 
+                          dot={{ r: 3.5, fill: '#059669', stroke: '#fff', strokeWidth: 2 }} 
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="flex h-full items-center justify-center text-slate-400 text-xs font-semibold">
+                    <div className="flex h-full items-center justify-center text-slate-400 text-xs font-medium">
                       Tidak ada data pembelian pada rentang periode yang dipilih.
                     </div>
                   )}
@@ -2196,7 +2252,7 @@
               {/* Sub-tab Navigation: Resume per Nama Barang (Sesuai Foto) vs Detail Transaksi */}
               <div className="mt-7">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1 p-1 bg-slate-100/90 rounded-lg border border-slate-200/80">
                     <button
                       id="tab-sparepart-summary"
                       type="button"
@@ -2204,13 +2260,13 @@
                         setActiveSubTab('summary');
                         setCurrentPage(1);
                       }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center ${
+                      className={`px-3.5 py-1.5 rounded-md text-xs transition-all flex items-center ${
                         activeSubTab === 'summary'
-                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 font-medium'
                       }`}
                     >
-                      <Layers className="w-3.5 h-3.5 mr-1.5" />
+                      <Layers className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                       Resume per Nama Barang ({groupedSummary.length} Item)
                     </button>
                     <button
@@ -2220,13 +2276,13 @@
                         setActiveSubTab('detail');
                         setCurrentPage(1);
                       }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center ${
+                      className={`px-3.5 py-1.5 rounded-md text-xs transition-all flex items-center ${
                         activeSubTab === 'detail'
-                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 font-medium'
                       }`}
                     >
-                      <FileText className="w-3.5 h-3.5 mr-1.5" />
+                      <FileText className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                       Detail Transaksi Live ({filteredData.length} Baris PO)
                     </button>
                   </div>
@@ -2239,19 +2295,19 @@
                           type="button"
                           id="btn-toggle-matrix"
                           onClick={() => setShowMatrixManual(prev => !prev)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center border ${
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center border ${
                             shouldShowMatrix
-                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-xs'
-                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                              ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                           }`}
                           title="Buka tabel rincian pemakaian bulanan (periode & Qty per bulan)"
                         >
-                          <Calendar className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                          <Calendar className="w-3.5 h-3.5 mr-1.5" />
                           {shouldShowMatrix ? 'Matriks Bulanan Aktif' : 'Tampilkan Matriks Bulanan'}
                         </button>
 
                         <div className="flex items-center space-x-1.5">
-                          <span className="text-[11px] font-bold text-slate-500">Urutkan:</span>
+                          <span className="text-[11px] font-medium text-slate-500">Urutkan:</span>
                           <select
                             id="select-sparepart-sort"
                             value={summarySortBy}
@@ -2259,19 +2315,19 @@
                               setSummarySortBy(e.target.value);
                               setCurrentPage(1);
                             }}
-                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-700 outline-none focus:ring-1 focus:ring-slate-900"
                           >
                             <option value="qtyDesc">Qty Terbanyak ↓</option>
                             <option value="qtyAsc">Qty Paling Sedikit ↑</option>
                             <option value="spendDesc">Nilai Pembelian Terbesar ↓</option>
-                            <option value="trxDesc">Paling Sering Dipesan (Frekuensi) ↓</option>
+                            <option value="trxDesc">Paling Sering Dipesan ↓</option>
                             <option value="nameAsc">Nama Barang (A - Z)</option>
                           </select>
                         </div>
                       </>
                     ) : (
-                      <div className="text-xs font-semibold text-slate-500">
-                        Menampilkan baris PO yang sesuai dengan filter
+                      <div className="text-xs font-medium text-slate-500">
+                        Menampilkan baris PO yang sesuai dengan kriteria filter
                       </div>
                     )}
                   </div>
@@ -2282,24 +2338,24 @@
                   <div className="mt-4">
                     {/* TABEL PEMAKAIAN BULANAN (SESUAI GRAFIK BAR) - HANYA TAMPIL SAAT DILAKUKAN PENCARIAN ATAU DITOGGLE */}
                     {shouldShowMatrix && groupedSummary.length > 0 && (
-                      <div className="mb-6 bg-white border border-indigo-200 rounded-2xl p-4 shadow-sm animate-in fade-in duration-200">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+                      <div className="mb-6 bg-white border border-slate-200 rounded-xl p-4 shadow-2xs animate-in fade-in duration-150">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                           <div>
                             <div className="flex items-center space-x-2 flex-wrap">
-                              <span className="p-1.5 bg-indigo-50 text-indigo-700 rounded-lg">
-                                <Calendar className="w-4 h-4" />
+                              <span className="p-1 bg-slate-100 text-slate-700 rounded">
+                                <Calendar className="w-3.5 h-3.5" />
                               </span>
-                              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                 Tabel Pemakaian Sparepart per Bulan (Sesuai Grafik Bar)
                               </h4>
                               {hasSearch && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                  Hasil Pencarian: "{searchQuery || focusedItem}"
+                                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium text-slate-600 bg-slate-100 border border-slate-200">
+                                  Pencarian: "{searchQuery || focusedItem}"
                                 </span>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-1">
-                              Menampilkan data periode bulan ({matrixPeriodMonths[0]?.short || "Jan"} s/d {matrixPeriodMonths[matrixPeriodMonths.length - 1]?.short || "Des"}) dan Qty pembelian di masing-masing bulan untuk pencarian sparepart, selaras dengan grafik bar di atas.
+                            <p className="text-xs text-slate-500 mt-1">
+                              Menampilkan data periode bulan ({matrixPeriodMonths[0]?.short || "Jan"} s/d {matrixPeriodMonths[matrixPeriodMonths.length - 1]?.short || "Des"}) dan Qty pembelian per bulan selaras dengan grafik bar.
                             </p>
                           </div>
 
@@ -2307,44 +2363,44 @@
                             <button
                               type="button"
                               onClick={handleCopyMatrixTSV}
-                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
+                              className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-md text-xs font-semibold transition-colors flex items-center shadow-2xs"
                               title="Salin tabel pemakaian bulanan untuk langsung di-paste ke Excel / Spreadsheet"
                             >
-                              <Copy className="w-3.5 h-3.5 mr-1.5" />
+                              <Copy className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
                               Salin (Excel)
                             </button>
                             <button
                               type="button"
                               onClick={handleExportMatrixCSV}
-                              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
+                              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-semibold transition-colors flex items-center shadow-xs"
                               title="Download format CSV"
                             >
-                              <Download className="w-3.5 h-3.5 mr-1.5" />
+                              <Download className="w-3.5 h-3.5 mr-1.5 text-slate-300" />
                               Download CSV
                             </button>
                           </div>
                         </div>
 
                         {/* Tabel Matriks Qty per Bulan */}
-                        <div className="mt-3 overflow-x-auto border border-slate-200 rounded-xl bg-white max-h-[380px] overflow-y-auto">
+                        <div className="mt-3 overflow-x-auto border border-slate-200 rounded-lg bg-white max-h-[400px] overflow-y-auto">
                           <table className="w-full text-xs text-left">
-                            <thead className="bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200 sticky top-0 z-10 shadow-xs">
+                            <thead className="bg-slate-50 text-[10px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200 sticky top-0 z-10">
                               <tr>
                                 <th className="px-3 py-2.5 w-10 text-center bg-slate-50">No</th>
                                 <th className="px-3 py-2.5 min-w-[200px] bg-slate-50">Nama Sparepart / Item</th>
                                 {matrixPeriodMonths.map(m => (
-                                  <th key={m.num} className="px-2 py-2 text-center min-w-[60px] bg-slate-100/80 border-l border-slate-200/60">
-                                    <div className="text-[11px] font-black text-slate-800">{m.short}</div>
-                                    <div className="text-[9px] font-bold text-slate-400">Bln {m.num}</div>
+                                  <th key={m.num} className="px-2 py-2 text-center min-w-[55px] bg-slate-50 border-l border-slate-200/80">
+                                    <div className="text-[11px] font-bold text-slate-800">{m.short}</div>
+                                    <div className="text-[9px] font-mono text-slate-400">Bln {m.num}</div>
                                   </th>
                                 ))}
-                                <th className="px-3 py-2.5 text-right min-w-[85px] bg-indigo-50 text-indigo-900 border-l border-indigo-100">
+                                <th className="px-3 py-2.5 text-right min-w-[85px] bg-slate-100 text-slate-900 border-l border-slate-200">
                                   Total Qty
                                 </th>
-                                <th className="px-3 py-2.5 text-right min-w-[75px] bg-slate-50 border-l border-slate-200/60">
+                                <th className="px-3 py-2.5 text-right min-w-[75px] bg-slate-50 border-l border-slate-200/80">
                                   Rata-rata/Bln
                                 </th>
-                                <th className="px-3 py-2.5 text-right min-w-[110px] bg-slate-50 border-l border-slate-200/60">
+                                <th className="px-3 py-2.5 text-right min-w-[110px] bg-slate-50 border-l border-slate-200/80">
                                   Total Nilai (Rp)
                                 </th>
                               </tr>
@@ -2353,79 +2409,77 @@
                               {groupedSummary.slice(0, 30).map((item, idx) => {
                                 const avgPerMonth = matrixPeriodMonths.length > 0 ? (item.totalQty / matrixPeriodMonths.length).toFixed(1) : 0;
                                 return (
-                                  <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
-                                    <td className="px-3 py-2 text-center text-slate-400 font-bold">
+                                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                    <td className="px-3 py-2 text-center text-slate-400 font-mono">
                                       {idx + 1}
                                     </td>
-                                    <td className="px-3 py-2 font-bold text-slate-800">
-                                      <div className="leading-snug text-xs font-extrabold text-slate-900">{item.name}</div>
-                                      <div className="text-[10px] font-medium text-slate-400 mt-0.5">
+                                    <td className="px-3 py-2 font-medium text-slate-900">
+                                      <div className="leading-snug font-semibold text-slate-900">{item.name}</div>
+                                      <div className="text-[10px] text-slate-400 mt-0.5">
                                         {item.lastSupplier ? `Supplier: ${item.lastSupplier}` : item.category}
                                       </div>
                                     </td>
                                     {matrixPeriodMonths.map(m => {
                                       const qty = item.monthlyQty[m.num] || 0;
                                       return (
-                                        <td key={m.num} className="px-2 py-2 text-center border-l border-slate-100">
+                                        <td key={m.num} className="px-2 py-2 text-center border-l border-slate-100 font-mono tabular-nums">
                                           {qty > 0 ? (
-                                            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                                            <span className="font-semibold text-xs text-slate-900">
                                               {qty.toLocaleString("id-ID")}
                                             </span>
                                           ) : (
-                                            <span className="text-slate-300 font-medium">-</span>
+                                            <span className="text-slate-300 font-normal">—</span>
                                           )}
                                         </td>
                                       );
                                     })}
-                                    <td className="px-3 py-2 text-right font-black text-indigo-900 bg-indigo-50/30 border-l border-indigo-100">
-                                      <span className="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs font-black">
-                                        {item.totalQty.toLocaleString("id-ID")}
-                                      </span>
+                                    <td className="px-3 py-2 text-right font-mono tabular-nums font-bold text-slate-900 bg-slate-50 border-l border-slate-200">
+                                      {item.totalQty.toLocaleString("id-ID")}
                                     </td>
-                                    <td className="px-3 py-2 text-right text-xs font-bold text-slate-600 border-l border-slate-100">
+                                    <td className="px-3 py-2 text-right text-xs font-mono tabular-nums text-slate-600 border-l border-slate-100">
                                       {avgPerMonth}
                                     </td>
-                                    <td className="px-3 py-2 text-right text-xs font-extrabold text-slate-900 border-l border-slate-100">
-                                      {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : "-"}
+                                    <td className="px-3 py-2 text-right text-xs font-mono tabular-nums font-semibold text-slate-900 border-l border-slate-100">
+                                      {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : "—"}
                                     </td>
                                   </tr>
                                 );
                               })}
                             </tbody>
                             {/* TOTAL PER BULAN (FOOTER) - SELARAS DENGAN GRAFIK BAR */}
-                            <tfoot className="border-t-2 border-slate-300 bg-slate-900 text-white font-extrabold sticky bottom-0 z-10">
+                            <tfoot className="border-t-2 border-slate-300 bg-slate-900 text-white font-mono sticky bottom-0 z-10">
                               <tr>
                                 <td colSpan={2} className="px-3 py-2.5 text-left">
                                   <div className="flex items-center space-x-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-100">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-100">
                                       TOTAL QTY PER BULAN ({groupedSummary.length} ITEM)
                                     </span>
                                   </div>
-                                  <div className="text-[9px] text-slate-400 font-medium">
+                                  <div className="text-[9px] text-slate-400 font-normal">
                                     Akumulasi pemakaian bulanan selaras dengan grafik bar di atas
                                   </div>
                                 </td>
                                 {matrixPeriodMonths.map(m => {
                                   const mTotal = matrixMonthlyTotals.totals[m.num] || 0;
                                   return (
-                                    <td key={m.num} className="px-2 py-2.5 text-center border-l border-slate-800">
-                                      <span className="font-black text-xs text-amber-300">
+                                    <td key={m.num} className="px-2 py-2.5 text-center border-l border-slate-800 font-mono tabular-nums">
+                                      <span className="font-bold text-xs text-amber-300">
                                         {mTotal.toLocaleString("id-ID")}
                                       </span>
                                     </td>
                                   );
                                 })}
-                                <td className="px-3 py-2.5 text-right border-l border-slate-800">
-                                  <span className="font-black text-xs text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-700/60">
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 font-mono tabular-nums">
+                                  <span className="font-bold text-xs text-emerald-300">
                                     {matrixMonthlyTotals.grandQty.toLocaleString("id-ID")}
                                   </span>
                                 </td>
-                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-slate-300 text-xs font-bold">
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-slate-300 text-xs font-mono tabular-nums">
                                   {matrixPeriodMonths.length > 0 ? (matrixMonthlyTotals.grandQty / matrixPeriodMonths.length).toFixed(1) : 0}
                                 </td>
-                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-white text-xs font-black">
-                                  {matrixMonthlyTotals.grandSpend > 0 ? formatCurrency(matrixMonthlyTotals.grandSpend) : "-"}
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-white text-xs font-mono tabular-nums font-bold">
+                                  {matrixMonthlyTotals.grandSpend > 0 ? formatCurrency(matrixMonthlyTotals.grandSpend) : "—"}
                                 </td>
                               </tr>
                             </tfoot>
@@ -2437,17 +2491,17 @@
                     {/* Subheading penanda tabel foto jika matriks sedang aktif */}
                     {shouldShowMatrix && groupedSummary.length > 0 && (
                       <div className="flex items-center justify-between mb-2.5 px-0.5">
-                        <div className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider flex items-center">
-                          <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                        <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center">
+                          <Layers className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                           Resume Detail per Nama Barang (Sesuai Foto)
                         </div>
-                        <div className="text-xs text-slate-400 font-semibold">
-                          Menampilkan {groupedSummary.length} item data
+                        <div className="text-xs text-slate-500 font-mono">
+                          {groupedSummary.length} item data
                         </div>
                       </div>
                     )}
                     {paginatedSummary.length > 0 ? (
-                      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                      <div className="overflow-x-auto border border-slate-200 rounded-lg">
                         <table className="w-full text-xs text-left">
                           <thead className="bg-slate-50 text-[10px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                             <tr>
@@ -2468,49 +2522,43 @@
                               const globalIdx = (currentPage - 1) * pageSize + idx + 1;
                               const fulfillmentRate = item.totalQty > 0 ? Math.round((item.totalQtyDatang / item.totalQty) * 100) : 0;
                               return (
-                                <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
-                                  <td className="px-3.5 py-3 text-center text-slate-400 font-bold">
+                                <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                  <td className="px-3.5 py-3 text-center text-slate-400 font-mono">
                                     {globalIdx}
                                   </td>
-                                  <td className="px-4 py-3 font-extrabold text-slate-800 max-w-xs">
+                                  <td className="px-4 py-3 font-semibold text-slate-900 max-w-xs">
                                     <div className="leading-snug">{item.name}</div>
                                     <div className="text-[10px] font-normal text-slate-400 mt-0.5">
                                       Dipasok oleh {item.supplierCount} supplier berbeda
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3 text-right font-extrabold text-indigo-700 text-sm">
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums font-bold text-slate-900 text-sm">
                                     {item.totalQty.toLocaleString('id-ID')}
                                   </td>
-                                  <td className="px-4 py-3 text-right font-bold text-slate-700">
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums text-slate-700">
                                     <div>{item.totalQtyDatang.toLocaleString('id-ID')}</div>
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                                      fulfillmentRate >= 100 
-                                        ? 'bg-emerald-50 text-emerald-700' 
-                                        : fulfillmentRate > 0 
-                                        ? 'bg-blue-50 text-blue-700' 
-                                        : 'bg-slate-100 text-slate-500'
-                                    }`}>
-                                      {fulfillmentRate}%
+                                    <span className="text-[10px] text-slate-500 font-mono">
+                                      {fulfillmentRate}% datang
                                     </span>
                                   </td>
                                   <td className="px-4 py-3 text-center">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-700">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-slate-100 text-slate-700">
                                       {item.trxCount}x PO
                                     </span>
                                   </td>
-                                  <td className="px-4 py-3 text-right font-extrabold text-slate-900">
-                                    {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : '-'}
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums font-bold text-slate-900">
+                                    {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : '—'}
                                   </td>
-                                  <td className="px-4 py-3 text-right font-medium text-slate-600">
-                                    {item.avgPrice > 0 ? formatCurrency(item.avgPrice) : '-'}
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums text-slate-600">
+                                    {item.avgPrice > 0 ? formatCurrency(item.avgPrice) : '—'}
                                   </td>
                                   <td className="px-4 py-3 text-slate-600 font-medium max-w-[180px] truncate" title={item.lastSupplier}>
-                                    {item.lastSupplier || '-'}
+                                    {item.lastSupplier || '—'}
                                   </td>
-                                  <td className="px-4 py-3 text-slate-500 text-[11px] font-medium">
-                                    <div>{item.lastDate || '-'}</div>
+                                  <td className="px-4 py-3 text-slate-500 text-[11px]">
+                                    <div>{item.lastDate || '—'}</div>
                                     {item.lastPo && (
-                                      <span className="font-bold text-slate-700">{item.lastPo}</span>
+                                      <span className="font-mono text-slate-700">{item.lastPo}</span>
                                     )}
                                   </td>
                                   <td className="px-3.5 py-3 text-center">
@@ -2521,7 +2569,7 @@
                                         setCurrentPage(1);
                                       }}
                                       title="Lihat seluruh PO untuk barang ini"
-                                      className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors inline-flex items-center text-[11px] font-bold"
+                                      className="px-2 py-1 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded text-xs font-semibold inline-flex items-center"
                                     >
                                       <Search className="w-3.5 h-3.5 mr-1" />
                                       PO
@@ -2543,25 +2591,27 @@
 
                     {/* Pagination Controls Summary */}
                     {totalSummaryPages > 1 && (
-                      <div className="flex items-center justify-between mt-4 text-xs font-semibold text-slate-600">
+                      <div className="flex items-center justify-between mt-4 text-xs font-medium text-slate-600">
                         <div>
-                          Halaman <strong>{currentPage}</strong> dari <strong>{totalSummaryPages}</strong> ({groupedSummary.length} total sparepart)
+                          Halaman <strong className="font-semibold text-slate-900 font-mono">{currentPage}</strong> dari <strong className="font-semibold text-slate-900 font-mono">{totalSummaryPages}</strong> ({groupedSummary.length} total sparepart)
                         </div>
                         <div className="flex items-center space-x-1.5">
                           <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-40"
+                            className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-30 transition-colors"
                           >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="w-4 h-4 text-slate-600" />
                           </button>
-                          <span className="px-2 font-bold text-indigo-600">{currentPage}</span>
+                          <span className="px-2 py-0.5 text-xs font-mono font-bold text-slate-900 bg-slate-100 rounded">
+                            {currentPage}
+                          </span>
                           <button
                             disabled={currentPage === totalSummaryPages}
                             onClick={() => setCurrentPage(prev => Math.min(totalSummaryPages, prev + 1))}
-                            className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-40"
+                            className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-30 transition-colors"
                           >
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="w-4 h-4 text-slate-600" />
                           </button>
                         </div>
                       </div>
@@ -2573,7 +2623,7 @@
                 {activeSubTab === 'detail' && (
                   <div className="mt-4">
                     {paginatedDetail.length > 0 ? (
-                      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                      <div className="overflow-x-auto border border-slate-200 rounded-lg">
                         <table className="w-full text-xs text-left">
                           <thead className="bg-slate-50 text-[10px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                             <tr>
@@ -2594,54 +2644,54 @@
                               const isClose = (item.statusPo || '').toUpperCase().includes('CLOSE');
                               const isBatal = (item.statusPo || '').toUpperCase().includes('BATAL');
                               return (
-                                <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
-                                  <td className="px-4 py-3 font-bold text-slate-800">
-                                    <div className="flex items-center">
-                                      <FileText className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                                      {item.poNumber || '-'}
+                                <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                  <td className="px-4 py-3 font-medium text-slate-900">
+                                    <div className="flex items-center font-mono font-semibold text-slate-900">
+                                      <FileText className="w-3.5 h-3.5 mr-1.5 text-slate-400 shrink-0" />
+                                      {item.poNumber || '—'}
                                     </div>
-                                    <div className="text-[10px] font-medium text-slate-400 mt-0.5">
-                                      {item.tgl || '-'}
+                                    <div className="text-[10px] text-slate-400 mt-0.5">
+                                      {item.tgl || '—'}
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3 text-slate-600 font-medium">
-                                    {item.spp || '-'}
+                                  <td className="px-4 py-3 text-slate-600 font-mono">
+                                    {item.spp || '—'}
                                   </td>
-                                  <td className="px-4 py-3 font-extrabold text-slate-800 max-w-xs">
+                                  <td className="px-4 py-3 font-semibold text-slate-900 max-w-xs">
                                     <div className="leading-snug">{item.namaBarang || item.vendor}</div>
-                                    <div className="text-[10px] font-semibold text-slate-400 mt-0.5 flex items-center">
-                                      <span className="px-1 py-0.2 bg-slate-100 rounded mr-1">PO {item.source}</span>
+                                    <div className="text-[10px] text-slate-400 mt-0.5 flex items-center font-normal">
+                                      <span className="px-1 py-0.2 bg-slate-100 rounded mr-1 font-mono">PO {item.source}</span>
                                       {item.category}
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3 text-right font-extrabold text-indigo-700 text-sm">
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums font-bold text-slate-900 text-sm">
                                     {item.qty ? item.qty.toLocaleString('id-ID') : '0'}
                                   </td>
-                                  <td className="px-4 py-3 text-right font-bold text-emerald-700">
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums text-emerald-700 font-semibold">
                                     {item.qtyDatang ? item.qtyDatang.toLocaleString('id-ID') : '0'}
                                   </td>
-                                  <td className="px-4 py-3 text-slate-700 font-semibold max-w-[180px] truncate" title={item.supplier}>
-                                    {item.supplier || '-'}
+                                  <td className="px-4 py-3 text-slate-700 font-medium max-w-[180px] truncate" title={item.supplier}>
+                                    {item.supplier || '—'}
                                   </td>
-                                  <td className="px-4 py-3 text-right font-medium text-slate-600">
-                                    {item.hargaSatuanNum > 0 ? formatCurrency(item.hargaSatuanNum) : (item.hargaSatuan || '-')}
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums text-slate-600">
+                                    {item.hargaSatuanNum > 0 ? formatCurrency(item.hargaSatuanNum) : (item.hargaSatuan || '—')}
                                   </td>
-                                  <td className="px-4 py-3 text-right font-extrabold text-slate-900">
-                                    {item.total > 0 ? formatCurrency(item.total) : '-'}
+                                  <td className="px-4 py-3 text-right font-mono tabular-nums font-bold text-slate-900">
+                                    {item.total > 0 ? formatCurrency(item.total) : '—'}
                                   </td>
                                   <td className="px-4 py-3 text-center">
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
                                       isClose 
-                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                        ? 'bg-slate-100 text-slate-800 border border-slate-200' 
                                         : isBatal 
                                         ? 'bg-rose-50 text-rose-700 border border-rose-200' 
-                                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                        : 'bg-amber-50 text-amber-800 border border-amber-200'
                                     }`}>
                                       {item.statusPo || 'CLOSE'}
                                     </span>
                                   </td>
                                   <td className="px-4 py-3 text-[11px] text-slate-500 max-w-[150px] truncate" title={item.keterangan}>
-                                    {item.keterangan || item.keterlambatan || '-'}
+                                    {item.keterangan || item.keterlambatan || '—'}
                                   </td>
                                 </tr>
                               );
@@ -2650,34 +2700,36 @@
                         </table>
                       </div>
                     ) : (
-                      <div className="p-8 text-center bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="p-8 text-center bg-slate-50 rounded-lg border border-slate-200">
                         <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <div className="text-sm font-bold text-slate-700">Tidak ada baris transaksi yang cocok</div>
+                        <div className="text-sm font-semibold text-slate-700">Tidak ada baris transaksi yang cocok</div>
                         <div className="text-xs text-slate-400 mt-1">Coba sesuaikan filter atau pilih rentang bulan yang lebih luas.</div>
                       </div>
                     )}
 
                     {/* Pagination Controls Detail */}
                     {totalDetailPages > 1 && (
-                      <div className="flex items-center justify-between mt-4 text-xs font-semibold text-slate-600">
+                      <div className="flex items-center justify-between mt-4 text-xs font-medium text-slate-600">
                         <div>
-                          Halaman <strong>{currentPage}</strong> dari <strong>{totalDetailPages}</strong> ({filteredData.length} total baris PO)
+                          Halaman <strong className="font-semibold text-slate-900 font-mono">{currentPage}</strong> dari <strong className="font-semibold text-slate-900 font-mono">{totalDetailPages}</strong> ({filteredData.length} total baris PO)
                         </div>
                         <div className="flex items-center space-x-1.5">
                           <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-40"
+                            className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-30 transition-colors"
                           >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="w-4 h-4 text-slate-600" />
                           </button>
-                          <span className="px-2 font-bold text-indigo-600">{currentPage}</span>
+                          <span className="px-2 py-0.5 text-xs font-mono font-bold text-slate-900 bg-slate-100 rounded">
+                            {currentPage}
+                          </span>
                           <button
                             disabled={currentPage === totalDetailPages}
                             onClick={() => setCurrentPage(prev => Math.min(totalDetailPages, prev + 1))}
-                            className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-40"
+                            className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-30 transition-colors"
                           >
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="w-4 h-4 text-slate-600" />
                           </button>
                         </div>
                       </div>
