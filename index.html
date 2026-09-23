@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -38,6 +39,7 @@
           font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+          transition: background-color 0.25s ease, color 0.25s ease;
         }
         .tabular-nums { font-variant-numeric: tabular-nums; }
         /* Refined luxury scrollbar */
@@ -45,6 +47,164 @@
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.7); }
+
+        /* Dark Mode Theme Overrides for Eye Comfort */
+        html.dark, html.dark body {
+          background-color: #0b1120 !important;
+          color: #f1f5f9 !important;
+          color-scheme: dark;
+        }
+        html.dark .bg-\[\#f8fafc\] {
+          background-color: #0b1120 !important;
+        }
+        html.dark .bg-white,
+        html.dark .bg-white\/95,
+        html.dark .bg-white\/90,
+        html.dark .bg-white\/80 {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        html.dark .bg-slate-50,
+        html.dark .bg-slate-100,
+        html.dark .bg-slate-50\/30,
+        html.dark .bg-slate-50\/50,
+        html.dark .bg-slate-50\/60,
+        html.dark .bg-slate-50\/80,
+        html.dark .bg-slate-50\/90,
+        html.dark .bg-slate-100\/50,
+        html.dark .bg-slate-100\/80,
+        html.dark .bg-slate-100\/90 {
+          background-color: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        html.dark .bg-slate-200,
+        html.dark .bg-slate-200\/90 {
+          background-color: #334155 !important;
+        }
+        html.dark .border-slate-200,
+        html.dark .border-slate-200\/50,
+        html.dark .border-slate-200\/60,
+        html.dark .border-slate-200\/70,
+        html.dark .border-slate-200\/80,
+        html.dark .border-slate-200\/90,
+        html.dark .border-slate-100,
+        html.dark .border-slate-300 {
+          border-color: #334155 !important;
+        }
+        html.dark .text-slate-900,
+        html.dark .text-slate-800 {
+          color: #f8fafc !important;
+        }
+        html.dark .text-slate-700,
+        html.dark .text-slate-600 {
+          color: #cbd5e1 !important;
+        }
+        html.dark .text-slate-500 {
+          color: #94a3b8 !important;
+        }
+        html.dark .text-slate-400 {
+          color: #64748b !important;
+        }
+        html.dark .hover\:bg-slate-50:hover,
+        html.dark .hover\:bg-slate-100:hover,
+        html.dark .hover\:bg-slate-50\/80:hover {
+          background-color: #1e293b !important;
+        }
+
+        /* Digital Clock & Realtime Indicator High-Contrast Styling in Dark Mode */
+        html.dark #digital-clock-container {
+          background-color: #0f172a !important;
+          border-color: #334155 !important;
+          box-shadow: 0 0 16px rgba(0, 0, 0, 0.6) !important;
+        }
+        html.dark #digital-clock-container .clock-date {
+          color: #94a3b8 !important;
+        }
+        html.dark #digital-clock-container .clock-time {
+          color: #ffffff !important;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        }
+        html.dark #digital-clock-container .clock-seconds {
+          color: #38bdf8 !important;
+        }
+        html.dark #digital-clock-container .clock-wib {
+          background-color: #1e293b !important;
+          color: #38bdf8 !important;
+          border-color: rgba(56, 189, 248, 0.4) !important;
+          box-shadow: 0 0 8px rgba(56, 189, 248, 0.2) !important;
+        }
+
+        /* High-contrast Crystal Clear Badge for Request Numbers (No. Pengajuan) */
+        html.dark .font-mono.bg-slate-100,
+        html.dark .font-mono.bg-slate-100\/80,
+        html.dark .font-mono.bg-slate-100\/90,
+        html.dark .font-mono.bg-slate-100\/50,
+        html.dark .font-mono[class*="bg-slate-100"] {
+          background-color: #0f172a !important;
+          color: #38bdf8 !important; /* Crystal-clear Sky Blue */
+          border-color: rgba(56, 189, 248, 0.4) !important;
+          border-width: 1px !important;
+          box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
+        }
+
+        html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        html.dark select,
+        html.dark textarea {
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+          color: #64748b !important;
+        }
+        html.dark .shadow-2xs,
+        html.dark .shadow-sm,
+        html.dark .shadow-md,
+        html.dark .shadow-lg,
+        html.dark .shadow-xl {
+          box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45) !important;
+        }
+        html.dark table tbody tr:hover {
+          background-color: #1e293b !important;
+        }
+        html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+        html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+          border-color: #1e293b !important;
+        }
+        html.dark .bg-blue-50,
+        html.dark .bg-blue-50\/50 {
+          background-color: rgba(30, 58, 138, 0.45) !important;
+          border-color: rgba(59, 130, 246, 0.4) !important;
+          color: #93c5fd !important;
+        }
+        html.dark .bg-emerald-50 {
+          background-color: rgba(6, 78, 59, 0.45) !important;
+          border-color: rgba(16, 185, 129, 0.4) !important;
+          color: #6ee7b7 !important;
+        }
+        html.dark .bg-amber-50 {
+          background-color: rgba(120, 53, 15, 0.5) !important;
+          border-color: rgba(245, 158, 11, 0.5) !important;
+          color: #fde047 !important;
+        }
+        html.dark .bg-rose-50 {
+          background-color: rgba(136, 19, 55, 0.45) !important;
+          border-color: rgba(244, 63, 94, 0.3) !important;
+          color: #fda4af !important;
+        }
+        html.dark .bg-indigo-50 {
+          background-color: rgba(49, 46, 129, 0.35) !important;
+          border-color: rgba(99, 102, 241, 0.3) !important;
+          color: #a5b4fc !important;
+        }
+        html.dark [filter="url(#callout-card-shadow)"] rect {
+          fill: #1e293b !important;
+          stroke: #334155 !important;
+        }
+        html.dark [filter="url(#callout-card-shadow)"] text[fill="#475569"] {
+          fill: #94a3b8 !important;
+        }
     </style>
 </head>
 <body>
@@ -74,7 +234,8 @@
           FolderSearch, Edit, AlertTriangle, Download, Upload, Search, ChevronLeft, 
           ChevronRight, PieChart as PieChartIcon, FileClock, ShoppingCart, 
           LogOut, ChevronDown, ChevronUp, Droplet, Layers, Truck, Activity, Files, BookOpen,
-          Eye, ClipboardList, Mountain, Printer, ArrowUpDown, ArrowDown, ArrowUp, Archive, RefreshCw, ExternalLink, Image as ImageIcon, Wrench, Coffee, Filter, Copy, Check, SlidersHorizontal, Clock
+          Eye, ClipboardList, Mountain, Printer, ArrowUpDown, ArrowDown, ArrowUp, Archive, RefreshCw, ExternalLink, Image as ImageIcon, Wrench, Coffee, Filter, Copy, Check, SlidersHorizontal, Clock,
+          Sun, Moon
         } from 'https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0';
         
         // Menggunakan Firebase resmi dari Gstatic untuk mencegah error registrasi modul
@@ -811,6 +972,63 @@
           }, [sheetData, selectedYear, selectedMonth, poCodeFilter]);
 
           const mirroredTotalSpend = useMemo(() => filteredSheetData.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0), [filteredSheetData]);
+
+          const sheetPeriodText = useMemo(() => {
+            const MONTH_NAMES = [
+              '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+              'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+
+            // 1. Jika filter bulan dipilih secara spesifik
+            if (selectedMonth && selectedMonth !== 'all') {
+              const formattedMonth = formatMonthDisplay(selectedMonth);
+              const yrSuffix = selectedYear !== 'all' ? ` ${selectedYear}` : (selectedMonth.includes('-') ? ` ${selectedMonth.split('-')[0]}` : '');
+              return `${formattedMonth}${yrSuffix}`;
+            }
+
+            // 2. Jika filter bulan 'all', hitung rentang bulan otomatis dari dataset Google Sheet aktual
+            const dataset = (filteredSheetData && filteredSheetData.length > 0) ? filteredSheetData : (sheetData || []);
+            const monthNumbers = new Set();
+            const years = new Set();
+
+            dataset.forEach(item => {
+              if (item.year) years.add(String(item.year).trim());
+              
+              if (item.standardMonth && item.standardMonth.includes('-')) {
+                const parts = item.standardMonth.split('-');
+                const m = parseInt(parts[1], 10);
+                if (!isNaN(m) && m >= 1 && m <= 12) monthNumbers.add(m);
+              } else if (item.month) {
+                const m = parseInt(item.month, 10);
+                if (!isNaN(m) && m >= 1 && m <= 12) monthNumbers.add(m);
+              }
+            });
+
+            if (monthNumbers.size === 0) {
+              return selectedYear !== 'all' ? `${selectedYear}` : 'Januari - Agustus';
+            }
+
+            const sortedMonths = Array.from(monthNumbers).sort((a, b) => a - b);
+            const minM = sortedMonths[0];
+            const maxM = sortedMonths[sortedMonths.length - 1];
+
+            const minName = MONTH_NAMES[minM] || `Bulan ${minM}`;
+            const maxName = MONTH_NAMES[maxM] || `Bulan ${maxM}`;
+
+            let yrSuffix = '';
+            if (selectedYear !== 'all') {
+              yrSuffix = ` ${selectedYear}`;
+            } else if (years.size === 1) {
+              yrSuffix = ` ${Array.from(years)[0]}`;
+            }
+
+            if (minM === maxM) {
+              return `${minName}${yrSuffix}`;
+            }
+
+            return `${minName} - ${maxName}${yrSuffix}`;
+          }, [filteredSheetData, sheetData, selectedMonth, selectedYear]);
+
           const totalSavingCost = projectSummaryData.reduce((acc, curr) => acc + curr.totalSavingCost, 0);
           const baselinePriceCalc = mirroredTotalSpend + totalSavingCost;
           const overallSavingPercentage = baselinePriceCalc > 0 ? ((totalSavingCost / baselinePriceCalc) * 100).toFixed(2) : 0;
@@ -873,7 +1091,7 @@
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 bg-white p-6 rounded-xl border border-slate-200/80 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)]">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Procurement Dashboard</h1>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">Analisis Komparasi Harga, Realisasi Efisiensi & Monitoring Belanja</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Analisis Komparasi Harga, Realisasi Efisiensi & Monitoring Pembelian</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
                   <select value={poCodeFilter} onChange={(e) => setPoCodeFilter(e.target.value)} className="w-full sm:w-auto pl-3.5 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer hover:bg-slate-100 transition-colors bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2364748B%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-no-repeat"><option value="all">Semua Kode PO</option><option value="4M">PO Kode 4M</option><option value="4T">PO Kode 4T</option></select>
@@ -889,9 +1107,16 @@
                     <span className="text-[10px] text-slate-400 font-mono">PO 4M / 4T</span>
                   </div>
                   <div className="text-2xl font-bold font-mono tabular-nums text-slate-900 tracking-tight mt-1">{formatCurrency(mirroredTotalSpend)}</div>
-                  <div className="mt-3 text-[11px] font-medium text-slate-500 flex items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
-                    Sumber: Google Sheets Live
+                  <div className="mt-3 text-[11px] font-medium text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="flex items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-sky-400 mr-1.5 shrink-0 shadow-[0_0_6px_rgba(59,130,246,0.8)]"></span>
+                      Sumber: Google Sheets Live
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-sky-300 border border-blue-200/70 dark:border-sky-500/40 shadow-2xs" title="Rentang Periode Pembelian G-Sheet Sesuai Filter Aktual">
+                      <Calendar className="w-3 h-3 text-blue-600 dark:text-sky-400 shrink-0" />
+                      <span>Periode: {sheetPeriodText}</span>
+                    </span>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between">
@@ -1069,7 +1294,7 @@
                     <tbody className="divide-y divide-slate-100">
                       {paginatedProjects.length > 0 ? paginatedProjects.map((row) => (
                         <tr key={row.id} className="hover:bg-slate-50/80 transition-colors bg-white">
-                          <td className="px-5 py-4 align-top"><div className="font-mono text-[13px] font-bold text-slate-700 bg-slate-100/80 px-2 py-1 rounded border border-slate-200/60 inline-block mb-2">{row.reqNumber}</div><div className="text-xs text-slate-500 font-medium flex items-center mt-1"><Calendar className="w-3 h-3 mr-1" />{formatDateDisplay(row.date)}</div>{row.poNumber && row.poNumber !== '-' && <div className="mt-2 flex flex-wrap gap-1">{row.poNumber.split(',').map((po, idx) => <span key={idx} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{po.trim()}</span>)}</div>}</td>
+                          <td className="px-5 py-4 align-top"><div className="font-mono text-[13px] font-bold text-slate-700 dark:text-sky-300 bg-slate-100/80 dark:bg-slate-800/90 px-2.5 py-1 rounded border border-slate-200/60 dark:border-sky-500/30 inline-block mb-2 shadow-2xs">{row.reqNumber}</div><div className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center mt-1"><Calendar className="w-3 h-3 mr-1 text-slate-400 dark:text-slate-500" />{formatDateDisplay(row.date)}</div>{row.poNumber && row.poNumber !== '-' && <div className="mt-2 flex flex-wrap gap-1">{row.poNumber.split(',').map((po, idx) => <span key={idx} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700/60">{po.trim()}</span>)}</div>}</td>
                           <td className="px-5 py-4 align-top"><div className="font-bold text-slate-800 text-sm mb-1.5 leading-snug">{row.projectName}</div><span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/50">{row.itemCount} Item</span></td>
                           <td className="px-5 py-4 align-top"><div className="max-h-32 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">{data.filter(d => getProjectKey(d) === row.id).map((d, i) => (<div key={i} className="text-xs text-slate-600 break-words whitespace-normal" title={`${d.qty} ${d.unit} - ${d.itemDescription}`}><strong className="text-slate-800">{d.qty} {d.unit}</strong> - {d.itemDescription}</div>))}</div></td>
                           <td className="px-5 py-4 align-top">{row.grandWinner !== '-' ? (<div className="mb-2"><div className="text-xs font-bold text-emerald-700 mb-0.5 flex items-center"><Trophy className="w-3 h-3 mr-1 text-emerald-500" />{row.grandWinner}</div><div className="text-slate-900 font-extrabold text-sm tracking-tight">{formatCurrency(row.supplierRanks.find(s => s.name === row.grandWinner)?.totalValue || 0)}</div></div>) : <span className="text-slate-400 text-sm">-</span>}</td>
@@ -3671,6 +3896,29 @@
         };
 
         function PriceComparisonApp() {
+          const [theme, setTheme] = useState(() => {
+            try {
+              return localStorage.getItem('sja_theme') || 'light';
+            } catch (e) {
+              return 'light';
+            }
+          });
+
+          useEffect(() => {
+            try {
+              localStorage.setItem('sja_theme', theme);
+              if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('dark');
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }, [theme]);
+
           const [data, setData] = useState([]);
           const [activeTab, setActiveTab] = useState('dashboard'); 
           const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -4121,7 +4369,7 @@
               {/* Sidebar Desktop dengan sistem Toggle In / Out */}
               <aside className={`hidden md:flex flex-col bg-[#0f172a] border-r border-[#1e293b] z-20 shadow-2xl relative transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 border-r-0 pointer-events-none'}`}>
                 <div className="w-64 flex flex-col h-full relative">
-                  <div className="flex items-center justify-between h-20 border-b border-[#1e293b] px-4 bg-[#0f172a]">
+                  <div className="flex items-center justify-between min-h-[86px] py-3.5 border-b border-[#1e293b] px-4 bg-[#0f172a]">
                     <div className="flex items-center overflow-hidden min-w-0">
                       <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-white/10 p-1 relative group overflow-hidden shrink-0">
                         {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-5 h-5 text-slate-300" />}
@@ -4134,6 +4382,13 @@
                       <div className="flex flex-col justify-center min-w-0">
                         <span className="text-white font-extrabold text-sm tracking-tight truncate">Portal Procurement</span>
                         <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5 truncate">SJA Sukodono • v2.5</span>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]"></span>
+                          </span>
+                          <span className="text-[10.5px] font-bold text-emerald-400 tracking-wide">Status Online</span>
+                        </div>
                       </div>
                     </div>
                     <button
@@ -4205,11 +4460,38 @@
                 </div>
               </aside>
 
-              <header className="md:hidden flex items-center justify-between px-5 py-4 bg-[#0f172a] border-b border-[#1e293b] z-10 shadow-sm text-white"><div className="flex items-center"><div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div><span className="text-white font-extrabold text-sm tracking-tight">Portal SJA</span></div><button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-300 p-1.5 border border-slate-700 rounded-lg hover:bg-slate-800"><Menu className="w-5 h-5" /></button></header>
+              <header className="md:hidden flex items-center justify-between px-5 py-4 bg-[#0f172a] border-b border-[#1e293b] z-10 shadow-sm text-white">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div>
+                  <span className="text-white font-extrabold text-sm tracking-tight">Portal SJA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Tombol 2 Mode Layar (Mobile) */}
+                  <div className="flex items-center p-0.5 rounded-full bg-slate-800 border border-slate-700 shadow-2xs select-none">
+                    <button
+                      type="button"
+                      onClick={() => setTheme('light')}
+                      className={`p-1.5 rounded-full transition-all ${theme === 'light' ? 'bg-white text-amber-600 shadow-xs ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-200'}`}
+                      title="Mode Terang"
+                    >
+                      <Sun className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTheme('dark')}
+                      className={`p-1.5 rounded-full transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'}`}
+                      title="Mode Gelap"
+                    >
+                      <Moon className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-300 p-1.5 border border-slate-700 rounded-lg hover:bg-slate-800"><Menu className="w-5 h-5" /></button>
+                </div>
+              </header>
               {isMobileMenuOpen && (
                 <div className="fixed inset-0 bg-[#0f172a]/80 z-50 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}>
                   <aside className="w-[280px] h-full bg-[#0f172a] text-white flex flex-col shadow-2xl animate-in slide-in-from-left-full relative border-r border-[#1e293b]" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center justify-between h-20 border-b border-[#1e293b] px-5 bg-[#0f172a]"><div className="flex items-center"><div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 shadow-lg shadow-white/10 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div><div className="flex flex-col"><span className="text-white font-extrabold text-sm tracking-tight">Portal Procurement</span><span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5">SJA Sukodono • v2.5</span></div></div><button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white bg-slate-800 p-1.5 rounded-lg border border-slate-700"><X className="w-4 h-4" /></button></div>
+                    <div className="flex items-center justify-between min-h-[86px] py-3.5 border-b border-[#1e293b] px-5 bg-[#0f172a]"><div className="flex items-center"><div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 shadow-lg shadow-white/10 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div><div className="flex flex-col"><span className="text-white font-extrabold text-sm tracking-tight">Portal Procurement</span><span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5">SJA Sukodono • v2.5</span><div className="flex items-center gap-1.5 mt-1.5"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]"></span></span><span className="text-[10.5px] font-bold text-emerald-400 tracking-wide">Status Online</span></div></div></div><button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white bg-slate-800 p-1.5 rounded-lg border border-slate-700"><X className="w-4 h-4" /></button></div>
                     <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5 pb-24">
                       <button onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'dashboard')}><LayoutDashboard className="w-4 h-4 mr-3" /> Dashboard Harga</button>
                       <button onClick={() => { setActiveTab('input'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'input')}><Database className="w-4 h-4 mr-3" /> Input Penawaran</button>
@@ -4219,14 +4501,38 @@
                         <><span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-4">Lainnya</span><button onClick={() => { setActiveTab('sop-wi'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'sop-wi')}><BookOpen className="w-4 h-4 mr-3" /> SOP & Instruksi Kerja</button><button onClick={() => { setActiveTab('form'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'form')}><FileText className="w-4 h-4 mr-3" /> Form Standar</button><button onClick={() => { setActiveTab('seleksi-supplier'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'seleksi-supplier')}><Users className="w-4 h-4 mr-3" /> Seleksi Supplier</button><button onClick={() => { setActiveTab('evaluasi-supplier'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'evaluasi-supplier')}><CheckCircle2 className="w-4 h-4 mr-3" /> Evaluasi Supplier</button><button onClick={() => { setActiveTab('backup-restore-dokumen'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'backup-restore-dokumen')}><Database className="w-4 h-4 mr-3" /> Backup & Restore Dokumen</button></>
                       )}
                     </nav>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#1e293b] bg-[#0f172a]"><button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold"><LogOut className="w-4 h-4 mr-2" /> Akhiri Sesi</button></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#1e293b] bg-[#0f172a] space-y-2.5">
+                      <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-400" />}
+                          <span className="text-xs font-bold text-slate-300">Mode Mata</span>
+                        </div>
+                        <div className="flex items-center p-0.5 rounded-lg bg-slate-900 border border-slate-700">
+                          <button 
+                            type="button"
+                            onClick={() => setTheme('light')}
+                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${theme === 'light' ? 'bg-white text-slate-900 shadow' : 'text-slate-400'}`}
+                          >
+                            Terang
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setTheme('dark')}
+                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}
+                          >
+                            Gelap
+                          </button>
+                        </div>
+                      </div>
+                      <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold"><LogOut className="w-4 h-4 mr-2" /> Akhiri Sesi</button>
+                    </div>
                   </aside>
                 </div>
               )}
 
               <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc]">
                 {/* Desktop Top Header Bar dengan tombol Toggle In / Out */}
-                <header className="hidden md:flex items-center justify-between px-6 py-2.5 bg-white border-b border-slate-200/80 z-10 shadow-2xs">
+                <header className="hidden md:flex items-center justify-between px-6 py-2.5 bg-white dark:bg-[#0f172a] border-b border-slate-200/80 dark:border-slate-800/80 z-10 shadow-2xs transition-colors">
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
@@ -4234,30 +4540,30 @@
                       onClick={handleToggleSidebar}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-2xs group cursor-pointer ${
                         isSidebarOpen 
-                          ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300' 
-                          : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 hover:border-indigo-300 ring-2 ring-indigo-500/20'
+                          ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700' 
+                          : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 hover:border-indigo-300 ring-2 ring-indigo-500/20 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800'
                       }`}
                       title={isSidebarOpen ? "Ciutkan Sidebar (Toggle Out)" : "Tampilkan Sidebar (Toggle In)"}
                     >
                       {isSidebarOpen ? (
                         <>
-                          <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:text-slate-800 transition-transform group-hover:-translate-x-0.5" />
+                          <ChevronLeft className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-white transition-transform group-hover:-translate-x-0.5" />
                           <span>Ciutkan Menu</span>
                         </>
                       ) : (
                         <>
-                          <Menu className="w-4 h-4 text-indigo-600" />
-                          <span className="font-extrabold text-indigo-700">Buka Menu Sidebar</span>
+                          <Menu className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                          <span className="font-extrabold text-indigo-700 dark:text-indigo-300">Buka Menu Sidebar</span>
                         </>
                       )}
                     </button>
 
-                    <div className="h-4 w-px bg-slate-200 mx-1"></div>
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="font-semibold text-slate-400">Portal</span>
-                      <span className="text-slate-300">/</span>
-                      <span className="font-bold text-slate-700">
+                      <span className="font-semibold text-slate-400 dark:text-slate-500">Portal</span>
+                      <span className="text-slate-300 dark:text-slate-600">/</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">
                         {activeTab === 'dashboard' ? 'Analisis Harga & Summary' :
                          activeTab === 'input' ? 'Input Penawaran Vendor' :
                          activeTab === 'update-pembelian' ? 'Data Pembelian Live' :
@@ -4271,27 +4577,62 @@
                   </div>
 
                   <div className="flex items-center gap-2.5">
-                    {/* Jam Digital & Tanggal Sistem Realtime - Desain Elegan & Dinamis */}
+                    {/* Jam Digital & Tanggal Sistem Realtime - Desain Elegan, Jelas & Berkilau di Dark Mode */}
                     <div 
-                      className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 rounded-full bg-white/95 hover:bg-slate-50 border border-slate-200/90 shadow-[0_1px_3px_0_rgba(15,23,42,0.04)] transition-all select-none group"
+                      id="digital-clock-container"
+                      className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-slate-50 dark:hover:bg-slate-850 border border-slate-200/90 dark:border-slate-700/90 shadow-[0_1px_3px_0_rgba(15,23,42,0.04)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-all select-none group"
                       title="Waktu dan Tanggal Sistem Realtime"
                     >
-                      <div className="hidden md:flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                        <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <div className="hidden md:flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 clock-date">
+                        <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400 shrink-0" />
                         <span className="tracking-tight">{formattedDate}</span>
                       </div>
 
-                      <span className="hidden md:inline-block w-px h-3.5 bg-slate-200/90"></span>
+                      <span className="hidden md:inline-block w-px h-3.5 bg-slate-200/90 dark:bg-slate-700"></span>
 
-                      <div className="flex items-center gap-1.5 font-mono text-xs tabular-nums text-slate-800">
+                      <div className="flex items-center gap-1.5 font-mono text-xs tabular-nums">
                         <span className="relative flex h-2 w-2 mr-0.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]"></span>
                         </span>
-                        <span className="font-bold text-slate-900 tracking-tight">{timeParts.hours}:{timeParts.minutes}</span>
-                        <span className="text-[11px] font-medium text-slate-400">:{timeParts.seconds}</span>
-                        <span className="text-[9px] font-sans font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-100/90 text-slate-500 border border-slate-200/70 leading-none ml-0.5">WIB</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white tracking-tight clock-time text-[13px]">{timeParts.hours}:{timeParts.minutes}</span>
+                        <span className="text-[11px] font-bold text-slate-400 dark:text-sky-400 clock-seconds">:{timeParts.seconds}</span>
+                        <span className="text-[9px] font-sans font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-slate-100/90 dark:bg-slate-800 text-slate-500 dark:text-sky-300 border border-slate-200/70 dark:border-sky-500/40 leading-none ml-0.5 clock-wib shadow-2xs">WIB</span>
                       </div>
+                    </div>
+
+                    {/* Tombol Pilihan 2 Mode: Terang & Gelap (Kenyamanan Mata) */}
+                    <div 
+                      className="flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs select-none"
+                      title="Pilihan Mode Tampilan untuk Kenyamanan Mata"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setTheme('light')}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          theme === 'light'
+                            ? 'bg-white text-amber-600 shadow-xs ring-1 ring-slate-200/80 font-extrabold'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
+                        title="Mode Terang (Light Mode)"
+                      >
+                        <Sun className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-amber-500 fill-amber-500/20' : 'text-slate-400'}`} />
+                        <span>Terang</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTheme('dark')}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-indigo-600 text-white shadow-xs font-extrabold'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
+                        title="Mode Gelap untuk Kenyamanan Mata (Dark Mode)"
+                      >
+                        <Moon className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-white fill-white/20' : 'text-slate-400'}`} />
+                        <span>Gelap</span>
+                      </button>
                     </div>
 
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200/80">
