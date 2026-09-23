@@ -8,7 +8,16 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
-// Serve static assets
+// Serve static assets with no-cache headers for HTML files
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/' || !req.path.includes('.')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 app.use(express.static(__dirname));
 
 // Primary landing page (Portal Procurement)

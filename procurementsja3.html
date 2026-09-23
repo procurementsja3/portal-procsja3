@@ -7,6 +7,9 @@
     <meta name="description" content="Portal Procurement SJA - Sistem Manajemen Pembelian">
     <meta property="og:title" content="Portal Procurement - SJA">
     <meta property="og:description" content="Portal Procurement SJA - Sistem Manajemen Pembelian">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Babel for transpiling JSX -->
@@ -1143,7 +1146,8 @@
           const [startMonth, setStartMonth] = useState(1);
           const [endMonth, setEndMonth] = useState(12);
           const [selectedStatus, setSelectedStatus] = useState('all'); // all, CLOSE, OPEN, BATAL
-          const [activeSubTab, setActiveSubTab] = useState('monthlyMatrix'); // 'monthlyMatrix' | 'summary' | 'detail'
+          const [activeSubTab, setActiveSubTab] = useState('summary'); // 'summary' (Sesuai Foto) | 'detail'
+          const [showMatrixManual, setShowMatrixManual] = useState(false);
           const [currentPage, setCurrentPage] = useState(1);
           const [pageSize, setPageSize] = useState(15);
           const [summarySortBy, setSummarySortBy] = useState('qtyDesc'); // qtyDesc, qtyAsc, spendDesc, trxDesc, nameAsc
@@ -1154,6 +1158,9 @@
           const [focusedItem, setFocusedItem] = useState(null);
           const [showSuggestions, setShowSuggestions] = useState(false);
           const [toastMessage, setToastMessage] = useState('');
+
+          const hasSearch = Boolean((searchQuery && searchQuery.trim().length > 0) || focusedItem);
+          const shouldShowMatrix = hasSearch || showMatrixManual;
 
           // Detect latest active month in data - Khusus PO 4M
           const latestMonthInData = useMemo(() => {
@@ -2186,26 +2193,10 @@
                 </div>
               </div>
 
-              {/* Sub-tab Navigation: Matriks Bulanan vs Resume per Item vs Detail Transaksi */}
+              {/* Sub-tab Navigation: Resume per Nama Barang (Sesuai Foto) vs Detail Transaksi */}
               <div className="mt-7">
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      id="tab-sparepart-matrix"
-                      type="button"
-                      onClick={() => {
-                        setActiveSubTab('monthlyMatrix');
-                        setMatrixCurrentPage(1);
-                      }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center ${
-                        activeSubTab === 'monthlyMatrix'
-                          ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/20'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                      Tabel Matriks Bulanan & Qty per Bulan ({matrixFilteredItems.length} Item)
-                    </button>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                  <div className="flex space-x-2">
                     <button
                       id="tab-sparepart-summary"
                       type="button"
@@ -2220,7 +2211,7 @@
                       }`}
                     >
                       <Layers className="w-3.5 h-3.5 mr-1.5" />
-                      Resume Akumulasi Barang ({groupedSummary.length} Item)
+                      Resume per Nama Barang ({groupedSummary.length} Item)
                     </button>
                     <button
                       id="tab-sparepart-detail"
@@ -2240,374 +2231,221 @@
                     </button>
                   </div>
 
-                  {/* Sort Controls */}
-                  {activeSubTab === 'monthlyMatrix' ? (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[11px] font-bold text-slate-500">Urutkan Matriks:</span>
-                      <select
-                        id="select-matrix-sort"
-                        value={matrixSortBy}
-                        onChange={(e) => {
-                          setMatrixSortBy(e.target.value);
-                          setMatrixCurrentPage(1);
-                        }}
-                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500"
-                      >
-                        <option value="qtyDesc">Total Qty Terbanyak ↓</option>
-                        <option value="qtyAsc">Total Qty Paling Sedikit ↑</option>
-                        <option value="spendDesc">Nilai Pembelian Terbesar ↓</option>
-                        <option value="nameAsc">Nama Sparepart (A - Z)</option>
-                        <option value="latestMonthDesc">Qty Bulan Terakhir ↓</option>
-                      </select>
-                    </div>
-                  ) : activeSubTab === 'summary' ? (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[11px] font-bold text-slate-500">Urutkan:</span>
-                      <select
-                        id="select-sparepart-sort"
-                        value={summarySortBy}
-                        onChange={(e) => {
-                          setSummarySortBy(e.target.value);
-                          setCurrentPage(1);
-                        }}
-                        className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500"
-                      >
-                        <option value="qtyDesc">Qty Terbanyak ↓</option>
-                        <option value="qtyAsc">Qty Paling Sedikit ↑</option>
-                        <option value="spendDesc">Nilai Pembelian Terbesar ↓</option>
-                        <option value="trxDesc">Paling Sering Dipesan (Frekuensi) ↓</option>
-                        <option value="nameAsc">Nama Barang (A - Z)</option>
-                      </select>
-                    </div>
-                  ) : (
-                    <div className="text-xs font-semibold text-slate-500">
-                      Menampilkan baris PO yang sesuai dengan filter
-                    </div>
-                  )}
-                </div>
-
-                {/* TAB 0: TABEL MATRIKS BULANAN & PENCARIAN PEMAKAIAN SPAREPART */}
-                {activeSubTab === 'monthlyMatrix' && (
-                  <div className="mt-4 space-y-4">
-                    {/* Header Card Pencarian Sparepart Khusus Matriks */}
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-                      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                        {/* Search Input */}
-                        <div className="relative flex-1">
-                          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" />
-                          <input
-                            type="text"
-                            id="input-matrix-search-sparepart"
-                            value={matrixSearch}
-                            onChange={(e) => {
-                              setMatrixSearch(e.target.value);
-                              setMatrixCurrentPage(1);
-                            }}
-                            placeholder="Ketik nama sparepart yang diminta (contoh: BEARING 6205, V-BELT, MECHANICAL SEAL, FILTER OLI, SENSOR, VALVE, dll)..."
-                            className="w-full pl-10 pr-9 py-2.5 bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200 focus:border-indigo-500 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-xs"
-                          />
-                          {matrixSearch && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setMatrixSearch('');
-                                setMatrixCurrentPage(1);
-                              }}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-600 transition-colors"
-                              title="Hapus Pencarian"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Action Buttons: Copy Excel, Export CSV */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={handleCopyMatrixTSV}
-                            className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
-                            title="Salin tabel matriks untuk langsung di-paste ke Microsoft Excel / Google Sheets"
-                          >
-                            <Copy className="w-3.5 h-3.5 mr-1.5" />
-                            Salin Matriks (Excel)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleExportMatrixCSV}
-                            className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
-                            title="Download format CSV"
-                          >
-                            <Download className="w-3.5 h-3.5 mr-1.5" />
-                            Download CSV
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Quick Filter Keyword Pills */}
-                      <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-slate-500 mr-1 flex items-center">
-                          <Filter className="w-3 h-3 mr-1 text-indigo-500" />
-                          Pencarian Cepat:
-                        </span>
-                        {['SEMUA', 'BEARING', 'BELT', 'SEAL', 'FILTER', 'SENSOR', 'ROLLER', 'VALVE', 'O-RING', 'CHAIN', 'SOLENOID'].map(kw => {
-                          const isActive = kw === 'SEMUA' ? matrixSearch === '' : matrixSearch.toUpperCase() === kw;
-                          return (
-                            <button
-                              key={kw}
-                              type="button"
-                              onClick={() => {
-                                setMatrixSearch(kw === 'SEMUA' ? '' : kw);
-                                setMatrixCurrentPage(1);
-                              }}
-                              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                                isActive
-                                  ? 'bg-indigo-600 text-white shadow-2xs'
-                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                              }`}
-                            >
-                              {kw}
-                            </button>
-                          );
-                        })}
-                        {matrixSearch && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMatrixSearch('');
-                              setMatrixCurrentPage(1);
-                            }}
-                            className="text-[11px] font-bold text-rose-600 hover:underline ml-1"
-                          >
-                            Reset
-                          </button>
-                        )}
-                        <span className="ml-auto text-[11px] font-semibold text-slate-500">
-                          Ditemukan <strong>{matrixFilteredItems.length}</strong> sparepart (Periode Bulan {startMonth} s/d Bulan {endMonth})
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Matrix Table */}
-                    {paginatedMatrix.length > 0 ? (
-                      <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-xs">
-                        <table className="w-full text-xs text-left">
-                          <thead className="bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200 sticky top-0 z-10">
-                            <tr>
-                              <th className="px-3.5 py-3 w-12 text-center">No</th>
-                              <th className="px-4 py-3 min-w-[240px]">Nama Sparepart / Deskripsi Item (Kolom F)</th>
-                              {matrixPeriodMonths.map(m => (
-                                <th key={m.num} className="px-2 py-3 text-center min-w-[65px] bg-slate-100/60 border-l border-slate-200/60">
-                                  <div className="text-[11px] font-black text-slate-800">{m.short}</div>
-                                  <div className="text-[9px] font-bold text-slate-400">Bln {m.num}</div>
-                                </th>
-                              ))}
-                              <th className="px-4 py-3 text-right min-w-[95px] bg-indigo-50/70 text-indigo-900 border-l border-indigo-100">
-                                Total Qty
-                              </th>
-                              <th className="px-3 py-3 text-right min-w-[85px] bg-slate-50 text-slate-700 border-l border-slate-200/60">
-                                Rata-rata/Bln
-                              </th>
-                              <th className="px-4 py-3 text-right min-w-[130px] bg-slate-50 text-slate-800 border-l border-slate-200/60">
-                                Total Nilai (Rp)
-                              </th>
-                              <th className="px-3 py-3 text-center w-20 border-l border-slate-200/60">Aksi</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 bg-white">
-                            {paginatedMatrix.map((item, idx) => {
-                              const globalIdx = (matrixCurrentPage - 1) * matrixPageSize + idx + 1;
-                              const avgPerMonth = matrixPeriodMonths.length > 0 ? (item.totalQty / matrixPeriodMonths.length).toFixed(1) : 0;
-                              return (
-                                <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
-                                  <td className="px-3.5 py-2.5 text-center text-slate-400 font-bold">
-                                    {globalIdx}
-                                  </td>
-                                  <td className="px-4 py-2.5 font-bold text-slate-800">
-                                    <div className="leading-snug text-xs font-extrabold text-slate-900">{item.name}</div>
-                                    <div className="text-[10px] font-medium text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                                      <span className="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-semibold">{item.category}</span>
-                                      {item.lastSupplier && (
-                                        <span className="truncate max-w-[180px]" title={`Supplier terakhir: ${item.lastSupplier}`}>
-                                          • {item.lastSupplier}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </td>
-                                  {matrixPeriodMonths.map(m => {
-                                    const qty = item.monthlyQty[m.num] || 0;
-                                    return (
-                                      <td key={m.num} className="px-2 py-2.5 text-center border-l border-slate-100">
-                                        {qty > 0 ? (
-                                          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs min-w-[32px]">
-                                            {qty.toLocaleString('id-ID')}
-                                          </span>
-                                        ) : (
-                                          <span className="text-slate-300 font-medium">-</span>
-                                        )}
-                                      </td>
-                                    );
-                                  })}
-                                  <td className="px-4 py-2.5 text-right font-black text-indigo-900 bg-indigo-50/30 border-l border-indigo-100">
-                                    <span className="bg-indigo-100/70 text-indigo-800 px-2 py-0.5 rounded-md text-xs font-black">
-                                      {item.totalQty.toLocaleString('id-ID')}
-                                    </span>
-                                  </td>
-                                  <td className="px-3 py-2.5 text-right text-xs font-bold text-slate-600 border-l border-slate-100">
-                                    {avgPerMonth}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-right text-xs font-extrabold text-slate-900 border-l border-slate-100">
-                                    {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : '-'}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center border-l border-slate-100">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setSearchQuery(item.name);
-                                        setActiveSubTab('detail');
-                                        setCurrentPage(1);
-                                      }}
-                                      className="px-2 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600 rounded-lg text-[10px] font-bold transition-colors shadow-2xs"
-                                      title="Lihat riwayat PO sparepart ini"
-                                    >
-                                      PO
-                                    </button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                          {/* SUMMARY TOTAL ROW (BOTTOM FOOTER) */}
-                          <tfoot className="border-t-2 border-slate-300 bg-slate-900 text-white font-extrabold sticky bottom-0 z-10 shadow-lg">
-                            <tr>
-                              <td colSpan={2} className="px-4 py-3 text-left">
-                                <div className="flex items-center space-x-2">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-100">
-                                    TOTAL QTY PEMBELIAN PER BULAN ({matrixFilteredItems.length} ITEM)
-                                  </span>
-                                </div>
-                                <div className="text-[9px] text-slate-400 font-medium">
-                                  Akumulasi pemakaian bulanan selaras dengan grafik bar di atas
-                                </div>
-                              </td>
-                              {matrixPeriodMonths.map(m => {
-                                const mTotal = matrixMonthlyTotals.totals[m.num] || 0;
-                                return (
-                                  <td key={m.num} className="px-2 py-3 text-center border-l border-slate-800">
-                                    <span className="font-black text-xs text-amber-300 tracking-tight">
-                                      {mTotal.toLocaleString('id-ID')}
-                                    </span>
-                                  </td>
-                                );
-                              })}
-                              <td className="px-4 py-3 text-right border-l border-slate-800">
-                                <span className="font-black text-xs text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/60">
-                                  {matrixMonthlyTotals.grandQty.toLocaleString('id-ID')}
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-right border-l border-slate-800 text-slate-300 text-xs font-bold">
-                                {matrixPeriodMonths.length > 0 ? (matrixMonthlyTotals.grandQty / matrixPeriodMonths.length).toFixed(1) : 0}
-                              </td>
-                              <td className="px-4 py-3 text-right border-l border-slate-800 text-white text-xs font-black">
-                                {matrixMonthlyTotals.grandSpend > 0 ? formatCurrency(matrixMonthlyTotals.grandSpend) : '-'}
-                              </td>
-                              <td className="px-3 py-3 border-l border-slate-800"></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                    ) : (
-                      <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                        <Wrench className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                        <div className="text-sm font-bold text-slate-700">Sparepart tidak ditemukan</div>
-                        <div className="text-xs text-slate-400 mt-1">
-                          Tidak ada data pembelian sparepart yang cocok dengan kata kunci "{matrixSearch}".
-                        </div>
+                  {/* Controls: Matriks Bulanan Toggle & Sort */}
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                    {activeSubTab === 'summary' ? (
+                      <>
                         <button
                           type="button"
-                          onClick={() => {
-                            setMatrixSearch('');
-                            setMatrixCurrentPage(1);
-                          }}
-                          className="mt-3 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100"
+                          id="btn-toggle-matrix"
+                          onClick={() => setShowMatrixManual(prev => !prev)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center border ${
+                            shouldShowMatrix
+                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                          }`}
+                          title="Buka tabel rincian pemakaian bulanan (periode & Qty per bulan)"
                         >
-                          Tampilkan Semua Sparepart
+                          <Calendar className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                          {shouldShowMatrix ? 'Matriks Bulanan Aktif' : 'Tampilkan Matriks Bulanan'}
                         </button>
-                      </div>
-                    )}
-
-                    {/* Pagination Controls Matrix */}
-                    {totalMatrixPages > 1 && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-slate-600 bg-white p-3 rounded-xl border border-slate-200/80">
-                        <div className="flex items-center gap-2">
-                          <span>
-                            Halaman <strong>{matrixCurrentPage}</strong> dari <strong>{totalMatrixPages}</strong> ({matrixFilteredItems.length} total sparepart)
-                          </span>
-                          <span className="text-slate-300">•</span>
-                          <div className="flex items-center space-x-1">
-                            <span className="text-[11px] text-slate-500 font-bold">Baris:</span>
-                            <select
-                              value={matrixPageSize}
-                              onChange={(e) => {
-                                setMatrixPageSize(Number(e.target.value));
-                                setMatrixCurrentPage(1);
-                              }}
-                              className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700"
-                            >
-                              <option value={15}>15</option>
-                              <option value={25}>25</option>
-                              <option value={50}>50</option>
-                              <option value={100}>100</option>
-                            </select>
-                          </div>
-                        </div>
 
                         <div className="flex items-center space-x-1.5">
-                          <button
-                            type="button"
-                            disabled={matrixCurrentPage === 1}
-                            onClick={() => setMatrixCurrentPage(1)}
-                            className="px-2 py-1 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-30 text-[11px] font-bold"
+                          <span className="text-[11px] font-bold text-slate-500">Urutkan:</span>
+                          <select
+                            id="select-sparepart-sort"
+                            value={summarySortBy}
+                            onChange={(e) => {
+                              setSummarySortBy(e.target.value);
+                              setCurrentPage(1);
+                            }}
+                            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500"
                           >
-                            Awal
-                          </button>
-                          <button
-                            type="button"
-                            disabled={matrixCurrentPage === 1}
-                            onClick={() => setMatrixCurrentPage(prev => Math.max(1, prev - 1))}
-                            className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-30"
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                          </button>
-                          <span className="px-2.5 py-1 font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/60 rounded-lg">
-                            {matrixCurrentPage}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={matrixCurrentPage === totalMatrixPages}
-                            onClick={() => setMatrixCurrentPage(prev => Math.min(totalMatrixPages, prev + 1))}
-                            className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-30"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={matrixCurrentPage === totalMatrixPages}
-                            onClick={() => setMatrixCurrentPage(totalMatrixPages)}
-                            className="px-2 py-1 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-30 text-[11px] font-bold"
-                          >
-                            Akhir
-                          </button>
+                            <option value="qtyDesc">Qty Terbanyak ↓</option>
+                            <option value="qtyAsc">Qty Paling Sedikit ↑</option>
+                            <option value="spendDesc">Nilai Pembelian Terbesar ↓</option>
+                            <option value="trxDesc">Paling Sering Dipesan (Frekuensi) ↓</option>
+                            <option value="nameAsc">Nama Barang (A - Z)</option>
+                          </select>
                         </div>
+                      </>
+                    ) : (
+                      <div className="text-xs font-semibold text-slate-500">
+                        Menampilkan baris PO yang sesuai dengan filter
                       </div>
                     )}
                   </div>
-                )}
+                </div>
 
-                {/* TAB 1: RESUME PER NAMA BARANG (GROUPED) */}
+                {/* TAB 1: RESUME PER NAMA BARANG (GROUPED - SESUAI FOTO) */}
                 {activeSubTab === 'summary' && (
                   <div className="mt-4">
+                    {/* TABEL PEMAKAIAN BULANAN (SESUAI GRAFIK BAR) - HANYA TAMPIL SAAT DILAKUKAN PENCARIAN ATAU DITOGGLE */}
+                    {shouldShowMatrix && groupedSummary.length > 0 && (
+                      <div className="mb-6 bg-white border border-indigo-200 rounded-2xl p-4 shadow-sm animate-in fade-in duration-200">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+                          <div>
+                            <div className="flex items-center space-x-2 flex-wrap">
+                              <span className="p-1.5 bg-indigo-50 text-indigo-700 rounded-lg">
+                                <Calendar className="w-4 h-4" />
+                              </span>
+                              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                                Tabel Pemakaian Sparepart per Bulan (Sesuai Grafik Bar)
+                              </h4>
+                              {hasSearch && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                  Hasil Pencarian: "{searchQuery || focusedItem}"
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-1">
+                              Menampilkan data periode bulan ({matrixPeriodMonths[0]?.short || "Jan"} s/d {matrixPeriodMonths[matrixPeriodMonths.length - 1]?.short || "Des"}) dan Qty pembelian di masing-masing bulan untuk pencarian sparepart, selaras dengan grafik bar di atas.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center space-x-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={handleCopyMatrixTSV}
+                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
+                              title="Salin tabel pemakaian bulanan untuk langsung di-paste ke Excel / Spreadsheet"
+                            >
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />
+                              Salin (Excel)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleExportMatrixCSV}
+                              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition-colors flex items-center shadow-xs"
+                              title="Download format CSV"
+                            >
+                              <Download className="w-3.5 h-3.5 mr-1.5" />
+                              Download CSV
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Tabel Matriks Qty per Bulan */}
+                        <div className="mt-3 overflow-x-auto border border-slate-200 rounded-xl bg-white max-h-[380px] overflow-y-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200 sticky top-0 z-10 shadow-xs">
+                              <tr>
+                                <th className="px-3 py-2.5 w-10 text-center bg-slate-50">No</th>
+                                <th className="px-3 py-2.5 min-w-[200px] bg-slate-50">Nama Sparepart / Item</th>
+                                {matrixPeriodMonths.map(m => (
+                                  <th key={m.num} className="px-2 py-2 text-center min-w-[60px] bg-slate-100/80 border-l border-slate-200/60">
+                                    <div className="text-[11px] font-black text-slate-800">{m.short}</div>
+                                    <div className="text-[9px] font-bold text-slate-400">Bln {m.num}</div>
+                                  </th>
+                                ))}
+                                <th className="px-3 py-2.5 text-right min-w-[85px] bg-indigo-50 text-indigo-900 border-l border-indigo-100">
+                                  Total Qty
+                                </th>
+                                <th className="px-3 py-2.5 text-right min-w-[75px] bg-slate-50 border-l border-slate-200/60">
+                                  Rata-rata/Bln
+                                </th>
+                                <th className="px-3 py-2.5 text-right min-w-[110px] bg-slate-50 border-l border-slate-200/60">
+                                  Total Nilai (Rp)
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 bg-white">
+                              {groupedSummary.slice(0, 30).map((item, idx) => {
+                                const avgPerMonth = matrixPeriodMonths.length > 0 ? (item.totalQty / matrixPeriodMonths.length).toFixed(1) : 0;
+                                return (
+                                  <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
+                                    <td className="px-3 py-2 text-center text-slate-400 font-bold">
+                                      {idx + 1}
+                                    </td>
+                                    <td className="px-3 py-2 font-bold text-slate-800">
+                                      <div className="leading-snug text-xs font-extrabold text-slate-900">{item.name}</div>
+                                      <div className="text-[10px] font-medium text-slate-400 mt-0.5">
+                                        {item.lastSupplier ? `Supplier: ${item.lastSupplier}` : item.category}
+                                      </div>
+                                    </td>
+                                    {matrixPeriodMonths.map(m => {
+                                      const qty = item.monthlyQty[m.num] || 0;
+                                      return (
+                                        <td key={m.num} className="px-2 py-2 text-center border-l border-slate-100">
+                                          {qty > 0 ? (
+                                            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md font-extrabold text-xs bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                                              {qty.toLocaleString("id-ID")}
+                                            </span>
+                                          ) : (
+                                            <span className="text-slate-300 font-medium">-</span>
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+                                    <td className="px-3 py-2 text-right font-black text-indigo-900 bg-indigo-50/30 border-l border-indigo-100">
+                                      <span className="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs font-black">
+                                        {item.totalQty.toLocaleString("id-ID")}
+                                      </span>
+                                    </td>
+                                    <td className="px-3 py-2 text-right text-xs font-bold text-slate-600 border-l border-slate-100">
+                                      {avgPerMonth}
+                                    </td>
+                                    <td className="px-3 py-2 text-right text-xs font-extrabold text-slate-900 border-l border-slate-100">
+                                      {item.totalSpend > 0 ? formatCurrency(item.totalSpend) : "-"}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                            {/* TOTAL PER BULAN (FOOTER) - SELARAS DENGAN GRAFIK BAR */}
+                            <tfoot className="border-t-2 border-slate-300 bg-slate-900 text-white font-extrabold sticky bottom-0 z-10">
+                              <tr>
+                                <td colSpan={2} className="px-3 py-2.5 text-left">
+                                  <div className="flex items-center space-x-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-100">
+                                      TOTAL QTY PER BULAN ({groupedSummary.length} ITEM)
+                                    </span>
+                                  </div>
+                                  <div className="text-[9px] text-slate-400 font-medium">
+                                    Akumulasi pemakaian bulanan selaras dengan grafik bar di atas
+                                  </div>
+                                </td>
+                                {matrixPeriodMonths.map(m => {
+                                  const mTotal = matrixMonthlyTotals.totals[m.num] || 0;
+                                  return (
+                                    <td key={m.num} className="px-2 py-2.5 text-center border-l border-slate-800">
+                                      <span className="font-black text-xs text-amber-300">
+                                        {mTotal.toLocaleString("id-ID")}
+                                      </span>
+                                    </td>
+                                  );
+                                })}
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800">
+                                  <span className="font-black text-xs text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-700/60">
+                                    {matrixMonthlyTotals.grandQty.toLocaleString("id-ID")}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-slate-300 text-xs font-bold">
+                                  {matrixPeriodMonths.length > 0 ? (matrixMonthlyTotals.grandQty / matrixPeriodMonths.length).toFixed(1) : 0}
+                                </td>
+                                <td className="px-3 py-2.5 text-right border-l border-slate-800 text-white text-xs font-black">
+                                  {matrixMonthlyTotals.grandSpend > 0 ? formatCurrency(matrixMonthlyTotals.grandSpend) : "-"}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subheading penanda tabel foto jika matriks sedang aktif */}
+                    {shouldShowMatrix && groupedSummary.length > 0 && (
+                      <div className="flex items-center justify-between mb-2.5 px-0.5">
+                        <div className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider flex items-center">
+                          <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                          Resume Detail per Nama Barang (Sesuai Foto)
+                        </div>
+                        <div className="text-xs text-slate-400 font-semibold">
+                          Menampilkan {groupedSummary.length} item data
+                        </div>
+                      </div>
+                    )}
                     {paginatedSummary.length > 0 ? (
                       <div className="overflow-x-auto border border-slate-200 rounded-xl">
                         <table className="w-full text-xs text-left">
@@ -3704,7 +3542,7 @@
                       </div>
                       <div className="flex flex-col justify-center min-w-0">
                         <span className="text-white font-extrabold text-sm tracking-tight truncate">Portal Procurement</span>
-                        <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5 truncate">SJA Sukodono</span>
+                        <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5 truncate">SJA Sukodono • v2.5</span>
                       </div>
                     </div>
                     <button
@@ -3780,7 +3618,7 @@
               {isMobileMenuOpen && (
                 <div className="fixed inset-0 bg-[#0f172a]/80 z-50 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}>
                   <aside className="w-[280px] h-full bg-[#0f172a] text-white flex flex-col shadow-2xl animate-in slide-in-from-left-full relative border-r border-[#1e293b]" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center justify-between h-20 border-b border-[#1e293b] px-5 bg-[#0f172a]"><div className="flex items-center"><div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 shadow-lg shadow-white/10 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div><div className="flex flex-col"><span className="text-white font-extrabold text-sm tracking-tight">Portal Procurement</span></div></div><button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white bg-slate-800 p-1.5 rounded-lg border border-slate-700"><X className="w-4 h-4" /></button></div>
+                    <div className="flex items-center justify-between h-20 border-b border-[#1e293b] px-5 bg-[#0f172a]"><div className="flex items-center"><div className="w-8 h-8 bg-white rounded flex items-center justify-center mr-2 shadow-lg shadow-white/10 p-1 overflow-hidden shrink-0">{appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <ImageIcon className="w-4 h-4 text-slate-300" />}</div><div className="flex flex-col"><span className="text-white font-extrabold text-sm tracking-tight">Portal Procurement</span><span className="text-slate-400 font-semibold text-[10px] uppercase tracking-widest mt-0.5">SJA Sukodono • v2.5</span></div></div><button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white bg-slate-800 p-1.5 rounded-lg border border-slate-700"><X className="w-4 h-4" /></button></div>
                     <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5 pb-24">
                       <button onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'dashboard')}><LayoutDashboard className="w-4 h-4 mr-3" /> Dashboard Harga</button>
                       <button onClick={() => { setActiveTab('input'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'input')}><Database className="w-4 h-4 mr-3" /> Input Penawaran</button>
