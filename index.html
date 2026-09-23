@@ -167,12 +167,386 @@
             );
         };
 
+        const Isometric3DPieChart = ({ spendValue = 0, savingValue = 0, hoveredKey, onHoverKey, formatCurrency }) => {
+          const [internalHover, setInternalHover] = useState(null);
+          const activeHover = hoveredKey !== undefined ? hoveredKey : internalHover;
+          const setHover = (key) => {
+            if (onHoverKey) onHoverKey(key);
+            setInternalHover(key);
+          };
+
+          const total = spendValue + savingValue;
+          if (total <= 0) {
+            return (
+              <div className="flex flex-col items-center justify-center h-52 text-slate-400 font-medium text-xs">
+                <PieChartIcon className="w-8 h-8 mb-2 opacity-40 text-slate-300" />
+                Belum ada data anggaran
+              </div>
+            );
+          }
+
+          const spendRatio = spendValue / total;
+          const savingRatio = savingValue / total;
+          const spendPercent = (spendRatio * 100).toFixed(1);
+          const savingPercent = (savingRatio * 100).toFixed(1);
+
+          // Center & radii for 3D Isometric View
+          const cx = 200;
+          const cy = 100;
+          const rx = 105;
+          const ry = 48; // isometric tilt squish
+          const depth = 22; // 3D extrusion height
+
+          // Circular 3D Pedestal Base (Plinth) as seen in reference photo
+          const baseRx = 138;
+          const baseRy = 62;
+          const baseCy = cy + 24;
+          const baseDepth = 15;
+
+          // Slices angles: Saving is centered in the front-right at ~52 deg (0.9 rad)
+          const savingSpan = Math.max(0.2, Math.min(Math.PI * 1.8, savingRatio * 2 * Math.PI));
+          const savingCenterAngle = 0.92;
+          const savingStart = savingCenterAngle - savingSpan / 2;
+          const savingEnd = savingCenterAngle + savingSpan / 2;
+
+          // Explode offsets
+          const isSavingHovered = activeHover === 'saving';
+          const isSpendHovered = activeHover === 'spend';
+
+          const savingExplode = isSavingHovered ? 20 : 12;
+          const spendExplode = isSpendHovered ? 8 : 4;
+
+          const sgDx = Math.cos(savingCenterAngle) * savingExplode;
+          const sgDy = Math.sin(savingCenterAngle) * savingExplode * (ry / rx);
+          const centerSaving = { x: cx + sgDx, y: cy + sgDy };
+
+          const spendCenterAngle = savingCenterAngle + Math.PI;
+          const spDx = Math.cos(spendCenterAngle) * spendExplode;
+          const spDy = Math.sin(spendCenterAngle) * spendExplode * (ry / rx);
+          const centerSpend = { x: cx + spDx, y: cy + spDy };
+
+          const getPt = (center, angle) => ({
+            x: center.x + rx * Math.cos(angle),
+            y: center.y + ry * Math.sin(angle)
+          });
+
+          // Saving wedge points
+          const ps1 = getPt(centerSaving, savingStart);
+          const ps2 = getPt(centerSaving, savingEnd);
+
+          // Spend wedge points
+          const pb1 = getPt(centerSpend, savingStart);
+          const pb2 = getPt(centerSpend, savingEnd);
+          const pbFrontLeft = { x: centerSpend.x - rx, y: centerSpend.y };
+          const pbFrontRight = { x: centerSpend.x + rx, y: centerSpend.y };
+
+          // Pin coordinates for Callout Leader Lines
+          const pinSpend = {
+            x: centerSpend.x + rx * 0.52 * Math.cos(spendCenterAngle - 0.25),
+            y: centerSpend.y + ry * 0.52 * Math.sin(spendCenterAngle - 0.25)
+          };
+
+          const pinSaving = {
+            x: centerSaving.x + rx * 0.62 * Math.cos(savingCenterAngle),
+            y: centerSaving.y + ry * 0.62 * Math.sin(savingCenterAngle)
+          };
+
+          return (
+            <div className="relative w-full flex flex-col items-center select-none py-1">
+              <svg viewBox="0 0 400 220" className="w-full h-auto overflow-visible max-h-[235px]">
+                <defs>
+                  {/* Drop shadows */}
+                  <filter id="pedestal-ground-shadow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
+                    <feOffset dx="0" dy="12" result="offsetblur" />
+                    <feFlood floodColor="#0f172a" floodOpacity="0.16" />
+                    <feComposite in2="offsetblur" operator="in" />
+                    <feMerge>
+                      <feMergeNode />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+
+                  <filter id="slice-shadow-saving-3d" x="-20%" y="-20%" width="150%" height="150%">
+                    <feDropShadow dx="3" dy="8" stdDeviation="5" floodColor="#064e3b" floodOpacity="0.32" />
+                  </filter>
+
+                  <filter id="slice-shadow-spend-3d" x="-20%" y="-20%" width="150%" height="150%">
+                    <feDropShadow dx="-2" dy="7" stdDeviation="6" floodColor="#1e3a8a" floodOpacity="0.25" />
+                  </filter>
+
+                  <filter id="callout-card-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#0f172a" floodOpacity="0.08" />
+                  </filter>
+
+                  {/* Metallic Pedestal Gradients (Foto 2) */}
+                  <linearGradient id="pedestal-wall-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#94a3b8" />
+                    <stop offset="25%" stopColor="#e2e8f0" />
+                    <stop offset="50%" stopColor="#f8fafc" />
+                    <stop offset="75%" stopColor="#e2e8f0" />
+                    <stop offset="100%" stopColor="#64748b" />
+                  </linearGradient>
+
+                  <linearGradient id="pedestal-surface-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" />
+                    <stop offset="100%" stopColor="#f1f5f9" />
+                  </linearGradient>
+
+                  {/* 3D Blue Shading Gradients (Total Pengeluaran) */}
+                  <linearGradient id="blue-top-face-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="35%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#1d4ed8" />
+                  </linearGradient>
+
+                  <linearGradient id="blue-wall-front-left" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#1e40af" />
+                    <stop offset="45%" stopColor="#2563eb" />
+                    <stop offset="75%" stopColor="#1d4ed8" />
+                    <stop offset="100%" stopColor="#1e3a8a" />
+                  </linearGradient>
+
+                  <linearGradient id="blue-wall-cut-1" x1="0%" y1="0%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="#1e3a8a" />
+                    <stop offset="100%" stopColor="#172554" />
+                  </linearGradient>
+
+                  <linearGradient id="blue-wall-cut-2" x1="0%" y1="0%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="#2563eb" />
+                    <stop offset="100%" stopColor="#1e40af" />
+                  </linearGradient>
+
+                  {/* 3D Emerald Shading Gradients (Total Saving Cost) */}
+                  <linearGradient id="green-top-face-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#34d399" />
+                    <stop offset="40%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#059669" />
+                  </linearGradient>
+
+                  <linearGradient id="green-wall-cylinder" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#059669" />
+                    <stop offset="40%" stopColor="#10b981" />
+                    <stop offset="85%" stopColor="#047857" />
+                    <stop offset="100%" stopColor="#064e3b" />
+                  </linearGradient>
+
+                  <linearGradient id="green-wall-cut-left" x1="0%" y1="0%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="#059669" />
+                    <stop offset="100%" stopColor="#047857" />
+                  </linearGradient>
+
+                  <linearGradient id="green-wall-cut-right" x1="0%" y1="0%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="#047857" />
+                    <stop offset="100%" stopColor="#064e3b" />
+                  </linearGradient>
+
+                  {/* Specular Lighting & Gloss Effect */}
+                  <linearGradient id="gloss-reflection" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
+                    <stop offset="40%" stopColor="#ffffff" stopOpacity="0.1" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                {/* 1. 3D CIRCULAR PEDESTAL BASE (Foto 2) */}
+                <g filter="url(#pedestal-ground-shadow)" className="pointer-events-none">
+                  {/* Pedestal Side Cylinder Wall */}
+                  <path
+                    d={`M ${cx + baseRx} ${baseCy} A ${baseRx} ${baseRy} 0 0 1 ${cx - baseRx} ${baseCy} L ${cx - baseRx} ${baseCy + baseDepth} A ${baseRx} ${baseRy} 0 0 0 ${cx + baseRx} ${baseCy + baseDepth} Z`}
+                    fill="url(#pedestal-wall-grad)"
+                  />
+                  {/* Bottom Bevel Rim */}
+                  <path
+                    d={`M ${cx - baseRx} ${baseCy + baseDepth} A ${baseRx} ${baseRy} 0 0 0 ${cx + baseRx} ${baseCy + baseDepth}`}
+                    stroke="#94a3b8"
+                    strokeWidth="1.2"
+                    fill="none"
+                    opacity="0.7"
+                  />
+                  {/* Pedestal Top Elliptical Stage */}
+                  <ellipse
+                    cx={cx}
+                    cy={baseCy}
+                    rx={baseRx}
+                    ry={baseRy}
+                    fill="url(#pedestal-surface-grad)"
+                    stroke="#e2e8f0"
+                    strokeWidth="1.5"
+                  />
+                  {/* Concentric inner gloss line on pedestal */}
+                  <ellipse
+                    cx={cx}
+                    cy={baseCy}
+                    rx={baseRx - 4}
+                    ry={baseRy - 2}
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="1.2"
+                    opacity="0.9"
+                  />
+                </g>
+
+                {/* 2. BLUE 3D SLICE: TOTAL PENGELUARAN */}
+                <g 
+                  className="cursor-pointer transition-all duration-300"
+                  filter="url(#slice-shadow-spend-3d)"
+                  onMouseEnter={() => setHover('spend')}
+                  onMouseLeave={() => setHover(null)}
+                >
+                  {/* Cut face at savingStart */}
+                  <path
+                    d={`M ${centerSpend.x} ${centerSpend.y} L ${pb1.x} ${pb1.y} L ${pb1.x} ${pb1.y + depth} L ${centerSpend.x} ${centerSpend.y + depth} Z`}
+                    fill="url(#blue-wall-cut-1)"
+                  />
+                  {/* Cut face at savingEnd */}
+                  <path
+                    d={`M ${centerSpend.x} ${centerSpend.y} L ${pb2.x} ${pb2.y} L ${pb2.x} ${pb2.y + depth} L ${centerSpend.x} ${centerSpend.y + depth} Z`}
+                    fill="url(#blue-wall-cut-2)"
+                  />
+                  {/* Front-left cylinder wall */}
+                  <path
+                    d={`M ${pb2.x} ${pb2.y} A ${rx} ${ry} 0 0 1 ${pbFrontLeft.x} ${pbFrontLeft.y} L ${pbFrontLeft.x} ${pbFrontLeft.y + depth} A ${rx} ${ry} 0 0 0 ${pb2.x} ${pb2.y + depth} Z`}
+                    fill="url(#blue-wall-front-left)"
+                  />
+                  {/* Front-right cylinder segment */}
+                  {savingStart > 0 && (
+                    <path
+                      d={`M ${pbFrontRight.x} ${pbFrontRight.y} A ${rx} ${ry} 0 0 1 ${pb1.x} ${pb1.y} L ${pb1.x} ${pb1.y + depth} A ${rx} ${ry} 0 0 0 ${pbFrontRight.x} ${pbFrontRight.y + depth} Z`}
+                      fill="url(#blue-wall-front-left)"
+                    />
+                  )}
+                  {/* Blue Top Wedge Face */}
+                  <path
+                    d={`M ${centerSpend.x} ${centerSpend.y} L ${pb2.x} ${pb2.y} A ${rx} ${ry} 0 1 1 ${pb1.x} ${pb1.y} Z`}
+                    fill="url(#blue-top-face-grad)"
+                    stroke={isSpendHovered ? "#bfdbfe" : "#93c5fd"}
+                    strokeWidth={isSpendHovered ? "1.5" : "0.8"}
+                  />
+                  {/* Gloss highlight on Blue top */}
+                  <path
+                    d={`M ${centerSpend.x} ${centerSpend.y} L ${pb2.x} ${pb2.y} A ${rx} ${ry} 0 1 1 ${pb1.x} ${pb1.y} Z`}
+                    fill="url(#gloss-reflection)"
+                  />
+                </g>
+
+                {/* 3. GREEN 3D SLICE: TOTAL SAVING COST (Popped Out in Front-Right) */}
+                <g 
+                  className="cursor-pointer transition-all duration-300"
+                  filter="url(#slice-shadow-saving-3d)"
+                  onMouseEnter={() => setHover('saving')}
+                  onMouseLeave={() => setHover(null)}
+                >
+                  {/* Green Cut Face Left (facing center) */}
+                  <path
+                    d={`M ${centerSaving.x} ${centerSaving.y} L ${ps1.x} ${ps1.y} L ${ps1.x} ${ps1.y + depth} L ${centerSaving.x} ${centerSaving.y + depth} Z`}
+                    fill="url(#green-wall-cut-left)"
+                  />
+                  {/* Green Cut Face Right */}
+                  <path
+                    d={`M ${centerSaving.x} ${centerSaving.y} L ${ps2.x} ${ps2.y} L ${ps2.x} ${ps2.y + depth} L ${centerSaving.x} ${centerSaving.y + depth} Z`}
+                    fill="url(#green-wall-cut-right)"
+                  />
+                  {/* Green Front Outer Cylinder Wall */}
+                  <path
+                    d={`M ${ps1.x} ${ps1.y} A ${rx} ${ry} 0 0 1 ${ps2.x} ${ps2.y} L ${ps2.x} ${ps2.y + depth} A ${rx} ${ry} 0 0 0 ${ps1.x} ${ps1.y + depth} Z`}
+                    fill="url(#green-wall-cylinder)"
+                  />
+                  {/* Green Top Wedge Face */}
+                  <path
+                    d={`M ${centerSaving.x} ${centerSaving.y} L ${ps1.x} ${ps1.y} A ${rx} ${ry} 0 0 1 ${ps2.x} ${ps2.y} Z`}
+                    fill="url(#green-top-face-grad)"
+                    stroke={isSavingHovered ? "#a7f3d0" : "#6ee7b7"}
+                    strokeWidth={isSavingHovered ? "1.5" : "0.8"}
+                  />
+                  {/* Gloss overlay on Green top face */}
+                  <path
+                    d={`M ${centerSaving.x} ${centerSaving.y} L ${ps1.x} ${ps1.y} A ${rx} ${ry} 0 0 1 ${ps2.x} ${ps2.y} Z`}
+                    fill="url(#gloss-reflection)"
+                  />
+                </g>
+
+                {/* 4. CALLOUT LEADER LINES & PIN DOTS (Foto 2 Model) */}
+                {/* Spend Leader Line */}
+                <g className="pointer-events-none transition-opacity duration-300">
+                  <polyline
+                    points={`${pinSpend.x},${pinSpend.y} ${pinSpend.x - 30},${pinSpend.y - 34} 130,37`}
+                    fill="none"
+                    stroke={isSpendHovered ? "#2563eb" : "#94a3b8"}
+                    strokeWidth="1.2"
+                    strokeDasharray="3 2"
+                  />
+                  <circle cx={pinSpend.x} cy={pinSpend.y} r="3.5" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                </g>
+
+                {/* Saving Leader Line */}
+                <g className="pointer-events-none transition-opacity duration-300">
+                  <polyline
+                    points={`${pinSaving.x},${pinSaving.y} ${pinSaving.x + 32},${pinSaving.y + 22} 270,167`}
+                    fill="none"
+                    stroke={isSavingHovered ? "#059669" : "#94a3b8"}
+                    strokeWidth="1.2"
+                    strokeDasharray="3 2"
+                  />
+                  <circle cx={pinSaving.x} cy={pinSaving.y} r="3.5" fill="#ffffff" stroke="#059669" strokeWidth="2" />
+                </g>
+
+                {/* 5. CALLOUT BADGES (Foto 2 Model) */}
+                {/* Badge Left: Total Pengeluaran */}
+                <g 
+                  className="cursor-pointer transition-all duration-200"
+                  onMouseEnter={() => setHover('spend')}
+                  onMouseLeave={() => setHover(null)}
+                  filter="url(#callout-card-shadow)"
+                >
+                  <rect 
+                    x="12" 
+                    y="16" 
+                    width="118" 
+                    height="42" 
+                    rx="8" 
+                    fill="#ffffff" 
+                    stroke={isSpendHovered ? "#2563eb" : "#e2e8f0"} 
+                    strokeWidth={isSpendHovered ? "2" : "1"} 
+                  />
+                  <circle cx="24" cy="30" r="3.5" fill="#2563eb" />
+                  <text x="33" y="33" fontSize="9.5" fontWeight="700" fill="#475569" letterSpacing="0.02em">PENGELUARAN</text>
+                  <text x="33" y="49" fontSize="14" fontWeight="800" fontFamily="monospace" fill="#1d4ed8">{spendPercent}%</text>
+                </g>
+
+                {/* Badge Right: Total Saving Cost */}
+                <g 
+                  className="cursor-pointer transition-all duration-200"
+                  onMouseEnter={() => setHover('saving')}
+                  onMouseLeave={() => setHover(null)}
+                  filter="url(#callout-card-shadow)"
+                >
+                  <rect 
+                    x="270" 
+                    y="146" 
+                    width="118" 
+                    height="42" 
+                    rx="8" 
+                    fill="#ffffff" 
+                    stroke={isSavingHovered ? "#059669" : "#e2e8f0"} 
+                    strokeWidth={isSavingHovered ? "2" : "1"} 
+                  />
+                  <circle cx="282" cy="160" r="3.5" fill="#10b981" />
+                  <text x="291" y="163" fontSize="9.5" fontWeight="700" fill="#475569" letterSpacing="0.02em">SAVING COST</text>
+                  <text x="291" y="179" fontSize="14" fontWeight="800" fontFamily="monospace" fill="#047857">{savingPercent}%</text>
+                </g>
+              </svg>
+            </div>
+          );
+        };
+
         const DashboardView = ({ data, isLoading, onEdit, onDelete, sheetData, persistentFilters, setPersistentFilters }) => {
           const [projectToDelete, setProjectToDelete] = useState(null);
           const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
           const [savingSortOrder, setSavingSortOrder] = useState('none');
           const [pdfData, setPdfData] = useState(null);
           const [isRefreshing, setIsRefreshing] = useState(false);
+          const [hoveredBudgetSlice, setHoveredBudgetSlice] = useState(null);
 
           const selectedYear = persistentFilters.year;
           const selectedMonth = persistentFilters.month;
@@ -459,26 +833,53 @@
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 flex flex-col">
-                  <div className="mb-4"><h2 className="text-base font-bold text-slate-800 tracking-tight">Komposisi Anggaran</h2><p className="text-xs text-slate-500 mt-1">Rasio Pengeluaran vs Saving</p></div>
-                  <div className="flex-1 flex justify-center items-center h-48">
-                    {data.length > 0 && totalPieValue > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <defs><filter id="3d-pie-effect-dash" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="2" dy="5" stdDeviation="4" floodColor="#0f172a" floodOpacity="0.3" /></filter></defs>
-                          <Pie data={spendVsSavingData} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={2} dataKey="value" stroke="none">{spendVsSavingData.map((entry, index) => <Cell key={`cell-${index}`} fill={SPEND_SAVING_COLORS[index % SPEND_SAVING_COLORS.length]} filter="url(#3d-pie-effect-dash)" />)}</Pie>
-                          <RechartsTooltip formatter={(value) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : <div className="text-slate-400 text-sm font-medium">Belum ada data saving</div>}
+                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 flex flex-col justify-between">
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-base font-bold text-slate-800 tracking-tight">Komposisi Anggaran 3D</h2>
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider">3D Isometric</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">Rasio Pengeluaran vs Saving (Foto 2)</p>
                   </div>
+                  
+                  <div className="flex-1 flex justify-center items-center py-2">
+                    {data.length > 0 && totalPieValue > 0 ? (
+                      <Isometric3DPieChart 
+                        spendValue={mirroredTotalSpend} 
+                        savingValue={totalSavingCost} 
+                        hoveredKey={hoveredBudgetSlice}
+                        onHoverKey={setHoveredBudgetSlice}
+                        formatCurrency={formatCurrency} 
+                      />
+                    ) : (
+                      <div className="text-slate-400 text-sm font-medium py-12">Belum ada data saving</div>
+                    )}
+                  </div>
+
                   {data.length > 0 && totalPieValue > 0 && (
-                     <div className="mt-4 space-y-3 pt-4 border-t border-slate-100">
+                     <div className="mt-2 space-y-2 pt-3 border-t border-slate-100">
                         {spendVsSavingData.map((item, index) => {
+                           const isSpend = item.name === 'Total Pengeluaran';
+                           const sliceKey = isSpend ? 'spend' : 'saving';
                            const percent = totalPieValue > 0 ? ((item.value / totalPieValue) * 100).toFixed(1) : 0;
+                           const isHovered = hoveredBudgetSlice === sliceKey;
                            return (
-                             <div key={item.name} className="flex items-center justify-between"><div className="flex items-center"><div className="w-3 h-3 rounded mr-2" style={{ backgroundColor: SPEND_SAVING_COLORS[index] }}></div><span className="text-sm text-slate-600 font-medium">{item.name}</span></div><div className="text-right"><div className="text-sm font-bold text-slate-800 tracking-tight">{formatCurrency(item.value)}</div><div className="text-[11px] font-semibold" style={{ color: SPEND_SAVING_COLORS[index] }}>{percent}%</div></div></div>
-                           )
+                             <div 
+                               key={item.name} 
+                               onMouseEnter={() => setHoveredBudgetSlice(sliceKey)}
+                               onMouseLeave={() => setHoveredBudgetSlice(null)}
+                               className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer ${isHovered ? (isSpend ? 'bg-blue-50/80 border border-blue-200 ring-1 ring-blue-200/50' : 'bg-emerald-50/80 border border-emerald-200 ring-1 ring-emerald-200/50') : 'hover:bg-slate-50/90 border border-transparent'}`}
+                             >
+                               <div className="flex items-center">
+                                 <div className={`w-3.5 h-3.5 rounded-md mr-2.5 shadow-2xs ${isSpend ? 'bg-gradient-to-br from-blue-400 to-blue-600' : 'bg-gradient-to-br from-emerald-400 to-emerald-600'}`}></div>
+                                 <span className="text-xs sm:text-sm text-slate-700 font-semibold">{item.name}</span>
+                               </div>
+                               <div className="text-right">
+                                 <div className="text-xs sm:text-sm font-bold font-mono text-slate-900 tracking-tight">{formatCurrency(item.value)}</div>
+                                 <div className={`text-[11px] font-bold font-mono ${isSpend ? 'text-blue-600' : 'text-emerald-600'}`}>{percent}%</div>
+                               </div>
+                             </div>
+                           );
                         })}
                      </div>
                   )}
