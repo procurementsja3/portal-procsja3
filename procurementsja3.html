@@ -3160,6 +3160,31 @@
           const [data, setData] = useState([]);
           const [activeTab, setActiveTab] = useState('dashboard'); 
           const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+          const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
+
+          useEffect(() => {
+            const timer = setInterval(() => {
+              setCurrentDateTime(new Date());
+            }, 1000);
+            return () => clearInterval(timer);
+          }, []);
+
+          const formattedDate = useMemo(() => {
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const dayName = days[currentDateTime.getDay()];
+            const dateNum = String(currentDateTime.getDate()).padStart(2, '0');
+            const monthName = months[currentDateTime.getMonth()];
+            const yearNum = currentDateTime.getFullYear();
+            return `${dayName}, ${dateNum} ${monthName} ${yearNum}`;
+          }, [currentDateTime]);
+
+          const timeParts = useMemo(() => {
+            const hours = String(currentDateTime.getHours()).padStart(2, '0');
+            const minutes = String(currentDateTime.getMinutes()).padStart(2, '0');
+            const seconds = String(currentDateTime.getSeconds()).padStart(2, '0');
+            return { hours, minutes, seconds };
+          }, [currentDateTime]);
           const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
             try {
               const saved = localStorage.getItem('sja_sidebar_state');
@@ -3731,7 +3756,30 @@
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
+                    {/* Jam Digital & Tanggal Sistem Realtime - Desain Elegan & Dinamis */}
+                    <div 
+                      className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 rounded-full bg-white/95 hover:bg-slate-50 border border-slate-200/90 shadow-[0_1px_3px_0_rgba(15,23,42,0.04)] transition-all select-none group"
+                      title="Waktu dan Tanggal Sistem Realtime"
+                    >
+                      <div className="hidden md:flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                        <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span className="tracking-tight">{formattedDate}</span>
+                      </div>
+
+                      <span className="hidden md:inline-block w-px h-3.5 bg-slate-200/90"></span>
+
+                      <div className="flex items-center gap-1.5 font-mono text-xs tabular-nums text-slate-800">
+                        <span className="relative flex h-2 w-2 mr-0.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span className="font-bold text-slate-900 tracking-tight">{timeParts.hours}:{timeParts.minutes}</span>
+                        <span className="text-[11px] font-medium text-slate-400">:{timeParts.seconds}</span>
+                        <span className="text-[9px] font-sans font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-100/90 text-slate-500 border border-slate-200/70 leading-none ml-0.5">WIB</span>
+                      </div>
+                    </div>
+
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200/80">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                       {userRole === 'admin' ? 'Administrator Portal' : 'User Tamu'}
