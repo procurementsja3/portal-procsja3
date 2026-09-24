@@ -205,6 +205,240 @@
         html.dark [filter="url(#callout-card-shadow)"] text[fill="#475569"] {
           fill: #94a3b8 !important;
         }
+
+        /* =========================================================================
+           MODE CETAK & TABULASI PDF PREVIEW:
+           Selalu warna putih bersih (Kertas Resmi / Paper White) seperti Foto 2,
+           bebas dari pengaruh tema gelap (Dark Mode).
+           ========================================================================= */
+        #pdf-content-area,
+        html.dark #pdf-content-area,
+        #pdf-content-area.bg-white,
+        html.dark #pdf-content-area.bg-white {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          color-scheme: light !important;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        #pdf-content-area *,
+        html.dark #pdf-content-area * {
+          color-scheme: light !important;
+        }
+
+        /* Container meja preview dokumen */
+        #pdf-scroll-container {
+          background-color: #cbd5e1 !important;
+        }
+        html.dark #pdf-scroll-container {
+          background-color: #1e293b !important;
+        }
+
+        /* Header modal cetak */
+        #pdf-modal-header,
+        html.dark #pdf-modal-header {
+          background-color: #ffffff !important;
+          border-bottom-color: #e2e8f0 !important;
+        }
+        #pdf-modal-header h2,
+        html.dark #pdf-modal-header h2 {
+          color: #0f172a !important;
+        }
+
+        /* Card background modal */
+        #pdf-modal-card,
+        html.dark #pdf-modal-card {
+          background-color: #ffffff !important;
+          border-color: #cbd5e1 !important;
+        }
+
+        /* Override semua kelas di dalam #pdf-content-area agar kembali putih dan bersih */
+        #pdf-content-area .bg-white,
+        html.dark #pdf-content-area .bg-white,
+        #pdf-content-area [class*="bg-white"],
+        html.dark #pdf-content-area [class*="bg-white"] {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+        }
+
+        #pdf-content-area .bg-slate-50,
+        #pdf-content-area .bg-slate-50\/50,
+        #pdf-content-area .bg-slate-50\/80,
+        html.dark #pdf-content-area .bg-slate-50,
+        html.dark #pdf-content-area .bg-slate-50\/50,
+        html.dark #pdf-content-area .bg-slate-50\/80 {
+          background-color: #f8fafc !important;
+          color: #0f172a !important;
+        }
+
+        #pdf-content-area .bg-\[\#1e3a8a\],
+        html.dark #pdf-content-area .bg-\[\#1e3a8a\] {
+          background-color: #1e3a8a !important;
+          color: #ffffff !important;
+        }
+
+        #pdf-content-area table th,
+        html.dark #pdf-content-area table th {
+          background-color: #1e3a8a !important;
+          color: #ffffff !important;
+          border-color: #ffffff !important;
+        }
+
+        #pdf-content-area table,
+        #pdf-content-area table td,
+        html.dark #pdf-content-area table,
+        html.dark #pdf-content-area table td {
+          border-color: #1e3a8a !important;
+          background-color: #ffffff !important;
+        }
+
+        #pdf-content-area table tbody tr:hover,
+        html.dark #pdf-content-area table tbody tr:hover {
+          background-color: #f8fafc !important;
+        }
+
+        #pdf-content-area table tr.bg-slate-50\/80,
+        #pdf-content-area table tr.bg-slate-50\/80 td,
+        html.dark #pdf-content-area table tr.bg-slate-50\/80,
+        html.dark #pdf-content-area table tr.bg-slate-50\/80 td {
+          background-color: #f8fafc !important;
+        }
+
+        #pdf-content-area .text-\[\#1e3a8a\],
+        html.dark #pdf-content-area .text-\[\#1e3a8a\] {
+          color: #1e3a8a !important;
+        }
+
+        #pdf-content-area .text-white,
+        html.dark #pdf-content-area .text-white {
+          color: #ffffff !important;
+        }
+
+        #pdf-content-area .text-slate-900,
+        html.dark #pdf-content-area .text-slate-900 {
+          color: #0f172a !important;
+        }
+
+        #pdf-content-area .text-slate-800,
+        html.dark #pdf-content-area .text-slate-800 {
+          color: #1e293b !important;
+        }
+
+        #pdf-content-area .text-slate-700,
+        html.dark #pdf-content-area .text-slate-700 {
+          color: #334155 !important;
+        }
+
+        #pdf-content-area .text-slate-600,
+        html.dark #pdf-content-area .text-slate-600 {
+          color: #475569 !important;
+        }
+
+        #pdf-content-area .text-slate-500,
+        html.dark #pdf-content-area .text-slate-500 {
+          color: #64748b !important;
+        }
+
+        #pdf-content-area .text-slate-400,
+        html.dark #pdf-content-area .text-slate-400 {
+          color: #94a3b8 !important;
+        }
+
+        #pdf-content-area .text-blue-600,
+        html.dark #pdf-content-area .text-blue-600 {
+          color: #2563eb !important;
+        }
+
+        #pdf-content-area .text-emerald-600,
+        html.dark #pdf-content-area .text-emerald-600 {
+          color: #059669 !important;
+        }
+
+        #pdf-content-area .text-emerald-800,
+        html.dark #pdf-content-area .text-emerald-800 {
+          color: #065f46 !important;
+        }
+
+        #pdf-content-area .bg-emerald-100,
+        html.dark #pdf-content-area .bg-emerald-100 {
+          background-color: #d1fae5 !important;
+          color: #065f46 !important;
+        }
+
+        #pdf-content-area .bg-emerald-500,
+        html.dark #pdf-content-area .bg-emerald-500 {
+          background-color: #10b981 !important;
+          color: #ffffff !important;
+        }
+
+        #pdf-content-area .border-emerald-200,
+        html.dark #pdf-content-area .border-emerald-200 {
+          border-color: #a7f3d0 !important;
+        }
+
+        #pdf-content-area .border-slate-800,
+        html.dark #pdf-content-area .border-slate-800 {
+          border-color: #1e293b !important;
+        }
+
+        #pdf-content-area .border-slate-200,
+        html.dark #pdf-content-area .border-slate-200 {
+          border-color: #e2e8f0 !important;
+        }
+
+        #pdf-content-area .border-\[\#1e3a8a\],
+        html.dark #pdf-content-area .border-\[\#1e3a8a\] {
+          border-color: #1e3a8a !important;
+        }
+
+        #pdf-content-area .border-white,
+        html.dark #pdf-content-area .border-white {
+          border-color: #ffffff !important;
+        }
+
+        /* Cetak Fisik / Print Browser (Ctrl+P / window.print) */
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 8mm;
+          }
+          body, html, html.dark, html.dark body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+          }
+          aside, header, #sidebar, .md\:hidden, button, #btn-toggle-sidebar-top, #pdf-modal-header {
+            display: none !important;
+          }
+          #pdf-modal-backdrop {
+            position: static !important;
+            background: #ffffff !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+          #pdf-modal-backdrop > div,
+          #pdf-modal-card {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            overflow: visible !important;
+          }
+          #pdf-scroll-container {
+            padding: 0 !important;
+            background: #ffffff !important;
+            overflow: visible !important;
+          }
+          #pdf-content-area {
+            min-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            background-color: #ffffff !important;
+            color: #000000 !important;
+          }
+        }
     </style>
 </head>
 <body>
@@ -1211,7 +1445,13 @@
           const handleDownloadPdf = () => {
             const element = document.getElementById('pdf-content-area');
             if (element && window.html2pdf) {
-                const opt = { margin: [0.4, 0.4, 0.4, 0.4], filename: `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
+                const opt = { 
+                  margin: [0.4, 0.4, 0.4, 0.4], 
+                  filename: `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.pdf`, 
+                  image: { type: 'jpeg', quality: 1 }, 
+                  html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' }, 
+                  jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } 
+                };
                 window.html2pdf().set(opt).from(element).save();
             }
           };
@@ -1219,10 +1459,17 @@
           const handleDownloadJpg = () => {
             const element = document.getElementById('pdf-content-area');
             if (element && window.html2canvas) {
-                window.html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
-                    const link = document.createElement('a'); link.download = `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.jpg`; link.href = canvas.toDataURL('image/jpeg', 1.0); link.click();
+                window.html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+                    const link = document.createElement('a'); 
+                    link.download = `Tabulasi_${pdfData.summary.reqNumber.replace(/\//g, '_')}.jpg`; 
+                    link.href = canvas.toDataURL('image/jpeg', 1.0); 
+                    link.click();
                 });
             }
+          };
+
+          const handlePrintDirect = () => {
+            window.print();
           };
 
           const availableYears = useMemo(() => {
@@ -1683,12 +1930,28 @@
 
               {}
               {pdfData && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
-                   <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden my-8 relative flex flex-col max-h-[90vh]">
-                      <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-white sticky top-0 z-10"><h2 className="text-base font-bold text-slate-800 flex items-center"><FileText className="w-4 h-4 mr-2 text-blue-600"/> Tabulasi PDF</h2><div className="flex space-x-2"><button onClick={handleDownloadJpg} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors">Unduh JPG</button><button onClick={handleDownloadPdf} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">Unduh PDF</button><button onClick={() => setPdfData(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg"><X className="w-5 h-5" /></button></div></div>
-                      <div id="pdf-scroll-container" className="p-4 overflow-auto bg-slate-100 w-full flex-1">
-                         <div className="w-max min-w-full flex justify-center">
-                             <div className="bg-white p-8 shadow-sm text-left inline-block" id="pdf-content-area" style={{ minWidth: '297mm' }}>
+                <div id="pdf-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+                   <div id="pdf-modal-card" className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden my-8 relative flex flex-col max-h-[90vh] border border-slate-200">
+                      <div id="pdf-modal-header" className="flex justify-between items-center p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                            <FileText className="w-5 h-5"/>
+                          </div>
+                          <div>
+                            <h2 className="text-base font-bold text-slate-800 leading-tight">Tabulasi PDF (Mode Cetak)</h2>
+                            <p className="text-[11px] text-slate-500 font-medium">Tampilan kertas resmi format putih (A4 Landscape)</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button onClick={handlePrintDirect} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center border border-slate-200 shadow-2xs" title="Cetak langsung lewat printer atau dialog print browser"><Printer className="w-3.5 h-3.5 mr-1.5 text-slate-600" /> Cetak</button>
+                          <button onClick={handleDownloadJpg} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200 shadow-2xs">Unduh JPG</button>
+                          <button onClick={handleDownloadPdf} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center"><Download className="w-3.5 h-3.5 mr-1.5" /> Unduh PDF</button>
+                          <button onClick={() => setPdfData(null)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title="Tutup Modal"><X className="w-5 h-5" /></button>
+                        </div>
+                      </div>
+                      <div id="pdf-scroll-container" className="p-4 overflow-auto w-full flex-1">
+                         <div className="w-max min-w-full flex justify-center py-2">
+                             <div className="bg-white p-8 text-left inline-block" id="pdf-content-area" style={{ minWidth: '297mm', backgroundColor: '#ffffff', color: '#0f172a' }}>
                                  <div className="flex justify-between items-start mb-6">
                                      <div>
                                          <h1 className="text-[#1e3a8a] text-2xl font-bold mb-4 uppercase tracking-wide">TABULASI KOMPARASI HARGA</h1>
