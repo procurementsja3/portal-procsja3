@@ -206,6 +206,14 @@
           fill: #94a3b8 !important;
         }
 
+        /* Warna teks nama vendor saat input data agar terang dan sangat jelas dibaca di tema gelap */
+        html.dark th.text-blue-800,
+        html.dark .text-blue-800,
+        html.dark .vendor-header-text {
+          color: #38bdf8 !important; /* Sky 400 - Biru terang bercahaya kontras tinggi */
+          text-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        }
+
         /* =========================================================================
            MODE CETAK & TABULASI PDF PREVIEW:
            Selalu warna putih bersih (Kertas Resmi / Paper White) seperti Foto 2,
@@ -2373,7 +2381,7 @@
                         <button type="button" onClick={handleAddSupplier} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-bold text-xs shadow-sm">Tambah</button>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
-                        {suppliers.map(supp => <div key={supp} className="flex items-center bg-blue-50 text-blue-700 border border-blue-200/60 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm">{supp} <button type="button" onClick={() => handleRemoveSupplier(supp)} className="ml-1.5 text-blue-400 hover:text-rose-500"><X className="w-3.5 h-3.5" /></button></div>)}
+                        {suppliers.map(supp => <div key={supp} className="flex items-center bg-blue-50 dark:bg-sky-950/70 text-blue-700 dark:text-sky-300 border border-blue-200/60 dark:border-sky-600/50 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm">{supp} <button type="button" onClick={() => handleRemoveSupplier(supp)} className="ml-1.5 text-blue-400 dark:text-sky-400 hover:text-rose-500"><X className="w-3.5 h-3.5" /></button></div>)}
                       </div>
                     </div>
                   </div>
@@ -2388,7 +2396,11 @@
                           <th className="px-4 py-3 min-w-[200px] rounded-tl-lg">Deskripsi Item</th>
                           <th className="px-4 py-3 min-w-[70px]">Qty</th>
                           <th className="px-4 py-3 min-w-[110px]">Satuan</th>
-                          {suppliers.map(supp => <th key={supp} className="px-4 py-3 min-w-[280px] border-l border-slate-200 text-blue-800">{supp}</th>)}
+                          {suppliers.map(supp => (
+                            <th key={supp} className="px-4 py-3 min-w-[280px] border-l border-slate-200 dark:border-slate-700 text-blue-700 dark:text-sky-300 vendor-header-text font-extrabold text-xs tracking-wide">
+                              {supp}
+                            </th>
+                          ))}
                           <th className="px-2 py-3 w-12 text-center rounded-tr-lg">Aksi</th>
                         </tr>
                       </thead>
@@ -2443,8 +2455,8 @@
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {suppliers.map(supp => (
-                          <tr key={supp} className="hover:bg-slate-50">
-                            <td className="px-5 py-4 font-bold text-slate-800">{supp}</td>
+                          <tr key={supp} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                            <td className="px-5 py-4 font-bold text-slate-800 dark:text-sky-300">{supp}</td>
                             <td className="px-5 py-4"><div className="flex border border-slate-200 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors"><input type="text" placeholder="1-2" value={supplierTerms[supp]?.leadTime?.value || ''} onChange={(e) => handleTermChange(supp, 'leadTime', 'value', e.target.value)} className="w-full px-3 py-1.5 outline-none text-sm font-medium" /><select value={supplierTerms[supp]?.leadTime?.unit || 'Hari'} onChange={(e) => handleTermChange(supp, 'leadTime', 'unit', e.target.value)} className="w-[85px] bg-slate-50 px-2 border-l border-slate-200 outline-none text-xs font-bold text-slate-600">{TIME_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></td>
                             <td className="px-5 py-4"><div className="flex flex-col gap-2"><div className="flex border border-slate-200 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors"><input type="text" placeholder="DP 30%" value={supplierTerms[supp]?.payment?.value || ''} onChange={(e) => handleTermChange(supp, 'payment', 'value', e.target.value)} className="w-full px-3 py-1.5 outline-none text-sm font-medium" /><select value={supplierTerms[supp]?.payment?.unit || 'Hari'} onChange={(e) => handleTermChange(supp, 'payment', 'unit', e.target.value)} className="w-[85px] bg-slate-50 px-2 border-l border-slate-200 outline-none text-xs font-bold text-slate-600">{TIME_UNITS.map(u => <option key={u} value={u}>{u}</option>)}<option value="Lainnya">Lainnya</option></select></div>{supplierTerms[supp]?.payment?.unit === 'Lainnya' && <input type="text" placeholder="Ketik format bayar..." value={supplierTerms[supp]?.payment?.customUnit || ''} onChange={(e) => handleTermChange(supp, 'payment', 'customUnit', e.target.value)} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-blue-500" />}</div></td>
                             <td className="px-5 py-4"><div className="flex border border-slate-200 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors"><input type="text" placeholder="1" value={supplierTerms[supp]?.warranty?.value || ''} onChange={(e) => handleTermChange(supp, 'warranty', 'value', e.target.value)} className="w-full px-3 py-1.5 outline-none text-sm font-medium" /><select value={supplierTerms[supp]?.warranty?.unit || 'Tahun'} onChange={(e) => handleTermChange(supp, 'warranty', 'unit', e.target.value)} className="w-[85px] bg-slate-50 px-2 border-l border-slate-200 outline-none text-xs font-bold text-slate-600">{TIME_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></td>
