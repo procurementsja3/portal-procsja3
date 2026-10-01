@@ -483,7 +483,7 @@
         // Menggunakan Firebase resmi dari Gstatic untuk mencegah error registrasi modul
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+        import { getFirestore, initializeFirestore, setLogLevel, doc, setDoc, deleteDoc, onSnapshot, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
         // --- KONFIGURASI FIREBASE ASLI SJA3 ---
         const firebaseConfig = {
@@ -498,7 +498,21 @@
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+
+        // Inisialisasi Firestore dengan opsi long polling agar tahan terhadap kendala koneksi proxy/iframe/backend
+        let db;
+        try {
+          db = initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+          });
+        } catch (e) {
+          db = getFirestore(app);
+        }
+
+        try {
+          setLogLevel('error');
+        } catch (e) {}
+
         const safeAppId = "portal_procurement_sja"; // Hardcoded safe ID for collection path
         const isDummyFirebase = false; // Menggunakan Firebase SJA3 Asli
 
@@ -5097,6 +5111,7 @@
                           {isMonitoringOpen && (
                             <div className="mt-1 space-y-1">
                               <button onClick={() => window.open('https://procurementsja3.github.io/sistem-pengajuan/', '_blank')} className={subNavItemClass(false)}><ClipboardList className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Pengajuan Stock / Persediaan</button>
+                              <button onClick={() => window.open('https://procurementsja3.github.io/spp-monitoring-sja/', '_blank')} className={subNavItemClass(false)}><CheckCircle2 className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Realisasi SPP</button>
                               <button onClick={() => window.open('https://gemini.google.com/share/9ef62681fb8c?skid=ac242023-3f8b-433a-a599-e91fc708e58d', '_blank')} className={subNavItemClass(false)}><Droplet className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Solar</button>
                               <button onClick={() => window.open('https://gemini.google.com/share/2d8ea2848468', '_blank')} className={subNavItemClass(false)}><Package className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Pallet Kayu</button>
                               <button onClick={() => window.open('https://gemini.google.com/share/cc921c59e922', '_blank')} className={subNavItemClass(false)}><Truck className="w-3.5 h-3.5 mr-2.5 opacity-70" /> Kedatangan Barang</button>
@@ -5167,6 +5182,7 @@
                       <button onClick={() => { setActiveTab('input'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'input')}><Database className="w-4 h-4 mr-3" /> Input Penawaran</button>
                       <button onClick={() => { setActiveTab('update-pembelian'); setIsMobileMenuOpen(false); }} className={navItemClass(activeTab === 'update-pembelian')}><ShoppingCart className="w-4 h-4 mr-3" /> Dashboard G-Sheet</button>
                       <button onClick={() => { window.open('https://procurementsja3.github.io/sistem-pengajuan/', '_blank'); }} className={navItemClass(false)}><ClipboardList className="w-4 h-4 mr-3" /> Pengajuan Persediaan</button>
+                      <button onClick={() => { window.open('https://procurementsja3.github.io/spp-monitoring-sja/', '_blank'); }} className={navItemClass(false)}><CheckCircle2 className="w-4 h-4 mr-3" /> Realisasi SPP</button>
                       {userRole === 'admin' && (
                         <>
                           <span className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block mb-2 mt-4">Monitoring Sistem</span>
