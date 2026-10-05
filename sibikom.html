@@ -155,6 +155,9 @@
                 <button onclick="switchTab('dashboard'); toggleMobileSidebar()" id="btn-dashboard" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
                     <i class="ph ph-chart-line-up text-lg mr-3 group-hover:scale-110 transition-transform"></i> Rekap UPBM
                 </button>
+                <button onclick="switchTab('gudang-cetak-rmw'); toggleMobileSidebar()" id="btn-upbm-cetak-rmw" class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200 group text-left">
+                    <i class="ph ph-printer text-lg mr-3 group-hover:scale-110 transition-transform"></i> Cetak Bukti (RMW)
+                </button>
             </div>
             
             <div id="nav-group-gudang-ops">
@@ -1765,15 +1768,29 @@ function testReadData() {
             const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'gudang-ceklist': 'Data Ceklist Warehouse', 'produksi': 'Form Permintaan UPBM Roasting' };
             
             tabs.forEach(id => {
-                const section = document.getElementById(`sec-${id}`); const btn = document.getElementById(`btn-${id}`); const icon = btn ? btn.querySelector('i') : null;
+                const section = document.getElementById(`sec-${id}`);
+                const btns = [document.getElementById(`btn-${id}`)];
+                if (id === 'gudang-cetak-rmw') {
+                    const upbmBtn = document.getElementById('btn-upbm-cetak-rmw');
+                    if (upbmBtn) btns.push(upbmBtn);
+                }
+                btns.forEach(btn => {
+                    if (!btn) return;
+                    const icon = btn.querySelector('i');
+                    if (id === tabId) {
+                        btn.classList.add('bg-brand-primary/10', 'text-brand-primary');
+                        btn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+                        if (icon) { icon.classList.add('text-brand-primary'); icon.classList.remove('text-slate-400'); }
+                    } else {
+                        btn.classList.remove('bg-brand-primary/10', 'text-brand-primary');
+                        btn.classList.add('text-slate-400', 'hover:bg-slate-800');
+                        if (icon) { icon.classList.remove('text-brand-primary'); icon.classList.add('text-slate-400'); }
+                    }
+                });
                 if (id === tabId) {
                     if (section) { section.classList.remove('hidden'); setTimeout(() => section.classList.remove('opacity-0'), 10); }
-                    if (btn) { btn.classList.add('bg-brand-primary/10', 'text-brand-primary'); btn.classList.remove('text-slate-400', 'hover:bg-slate-800'); }
-                    if (icon) { icon.classList.add('text-brand-primary'); icon.classList.remove('text-slate-400'); }
                 } else {
                     if (section) section.classList.add('hidden', 'opacity-0');
-                    if (btn) { btn.classList.remove('bg-brand-primary/10', 'text-brand-primary'); btn.classList.add('text-slate-400', 'hover:bg-slate-800'); }
-                    if (icon) { icon.classList.remove('text-brand-primary'); icon.classList.add('text-slate-400'); }
                 }
             });
             document.getElementById('header-title').innerText = titles[tabId] || '';

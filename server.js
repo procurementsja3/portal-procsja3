@@ -18,24 +18,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(__dirname));
-
-// Primary landing page (Portal Procurement)
+// Primary landing page (SIBIKOM - Sistem Biji Kopi Management)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Direct routes for conveniences
-app.get('/portal', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/procurement', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/procurementsja3', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
 
 // Standalone SIBIKOM route
@@ -43,9 +28,25 @@ app.get('/sibikom', (req, res) => {
   res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
 
-// Fallback to Portal Procurement
+// Portal Procurement routes (if needed by user)
+app.get('/portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+});
+
+app.get('/procurement', (req, res) => {
+  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+});
+
+app.get('/procurementsja3', (req, res) => {
+  res.sendFile(path.join(__dirname, 'procurementsja3.html'));
+});
+
+// Static files (disabled index.html default to prevent unexpected fallbacks)
+app.use(express.static(__dirname, { index: false }));
+
+// Fallback to SIBIKOM
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'sibikom.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
