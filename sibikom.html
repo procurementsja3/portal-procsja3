@@ -1192,6 +1192,10 @@
                         <option value="High">High</option>
                         <option value="Critical">Critical</option>
                     </select>
+                    <select id="filter-sort-ceklist" onchange="handleSortOrderCeklist(this.value)" class="px-3 py-2.5 text-xs rounded-lg border border-indigo-200 outline-none bg-indigo-50/70 focus:border-indigo-500 shadow-sm text-indigo-900 font-semibold cursor-pointer">
+                        <option value="desc" selected>📅 Tanggal Terbaru di Atas (Terbaru → Lama)</option>
+                        <option value="asc">📅 Tanggal Terlama di Atas (Lama → Baru)</option>
+                    </select>
                 </div>
 
                 <!-- Table with Google Sheets columns -->
@@ -1200,14 +1204,18 @@
                         <thead class="bg-slate-100/90 text-slate-700 uppercase font-semibold text-[11px] border-b border-slate-200">
                             <tr>
                                 <th class="px-3 py-3 text-center w-10">No</th>
-                                <th class="px-3 py-3 whitespace-nowrap">
-                                    <div class="font-bold text-indigo-700">Waktu</div>
+                                <th class="px-3 py-3 whitespace-nowrap cursor-pointer hover:bg-slate-200/70 transition-colors" onclick="toggleSortCeklistTime()" title="Klik untuk mengurutkan terbaru atau terlama">
+                                    <div class="font-bold text-indigo-700 flex items-center">
+                                        Waktu <i class="ph ph-sort-descending text-indigo-600 font-bold ml-1 text-sm" id="sort-icon-ceklist-time"></i>
+                                    </div>
                                 </th>
                                 <th class="px-3 py-3 whitespace-nowrap">
                                     <div class="font-bold text-slate-800">Nama Warehouse Inspektor</div>
                                 </th>
-                                <th class="px-3 py-3 whitespace-nowrap">
-                                    <div class="font-bold text-slate-800">Tgl Inspeksi</div>
+                                <th class="px-3 py-3 whitespace-nowrap cursor-pointer hover:bg-slate-200/70 transition-colors" onclick="toggleSortCeklistTime()" title="Klik untuk mengurutkan terbaru atau terlama">
+                                    <div class="font-bold text-slate-800 flex items-center">
+                                        Tgl Inspeksi <i class="ph ph-arrows-down-up text-slate-400 ml-1 text-xs"></i>
+                                    </div>
                                 </th>
                                 <th class="px-3 py-3 whitespace-nowrap">Bagian & Area</th>
                                 <th class="px-3 py-3 text-center whitespace-nowrap">No Gudang</th>
@@ -1263,6 +1271,102 @@
                     <button onclick="closeConfirmModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Batal</button>
                     <button id="btn-confirm-delete" class="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md flex items-center gap-2 transition-colors"><i class="ph ph-trash"></i> Ya, Hapus</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit Permintaan UPBM Roasting -->
+        <div id="modal-edit-permintaan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                            <i class="ph ph-pencil-simple text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Edit Data Permintaan UPBM</h3>
+                            <p class="text-xs text-slate-500">Perbarui data permintaan biji kopi roasting</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeEditPermintaanModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                        <i class="ph ph-x text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="form-edit-permintaan" onsubmit="submitEditPermintaan(event)" class="space-y-4 pt-4">
+                    <input type="hidden" id="edit-req-id-original" name="id">
+                    
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Permintaan</label>
+                            <input type="text" id="edit-req-id" name="ID_PERMINTAAN" readonly class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-100 text-slate-600 font-bold outline-none cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Permintaan</label>
+                            <input type="date" id="edit-req-tgl" name="TANGGAL_PERMINTAAN" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Permintaan</label>
+                            <input type="time" id="edit-req-jam" name="JAM_PERMINTAAN" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Shift</label>
+                            <select id="edit-req-shift" name="SHIFT" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="SHIFT 1">SHIFT 1</option>
+                                <option value="SHIFT 2">SHIFT 2</option>
+                                <option value="SHIFT 3">SHIFT 3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Peminta</label>
+                            <select id="edit-req-peminta" name="PEMINTA" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="Operator UPBM">Operator UPBM</option>
+                                <option value="Supervisor UPBM">Supervisor UPBM</option>
+                                <option value="Admin Gudang">Admin Gudang</option>
+                                <option value="Foreman">Foreman</option>
+                                <option value="Manager">Manager</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Unit Tujuan</label>
+                            <input type="text" id="edit-req-unit" name="UNIT" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Kopi</label>
+                            <select id="edit-req-jenis-kopi" name="JENIS_KOPI" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="18">18</option>
+                                <option value="19">19</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Prioritas</label>
+                            <select id="edit-req-prioritas" name="PRIORITAS" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="Normal">Normal</option>
+                                <option value="Tinggi (Urgent)">Tinggi (Urgent)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Qty Permintaan Netto (Kg)</label>
+                        <input type="number" step="0.01" id="edit-req-qty" name="QTY_PERMINTAAN_NETTO_KG" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-800">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="closeEditPermintaanModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                            <i class="ph ph-check text-sm"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1813,18 +1917,33 @@ function testReadData() {
         }
 
         function checkLoginState() {
-            let savedUser = localStorage.getItem('sibikom_logged_user');
-            if (!savedUser) {
-                // Default ke superadmin saat pertama kali dibuka agar langsung tampil preview aktif
-                savedUser = 'superadmin';
-                localStorage.setItem('sibikom_logged_user', 'superadmin');
+            // Bersihkan data login lama di localStorage
+            if (localStorage.getItem('sibikom_logged_user')) {
+                localStorage.removeItem('sibikom_logged_user');
             }
+
+            // Sesi hanya disimpan di sessionStorage (otomatis terhapus saat tab atau browser ditutup)
+            const savedUser = sessionStorage.getItem('sibikom_session_user');
+            const overlay = document.getElementById('login-overlay');
+            
+            // Jika belum login, sudah logout, browser ditutup, atau membuka link kembali:
+            // Tampilan SELALU diarahkan dan tetap pada layar login
+            if (!savedUser) {
+                if (overlay) overlay.classList.remove('hidden');
+                const uInput = document.getElementById('login-username');
+                const pInput = document.getElementById('login-password');
+                if (uInput) uInput.value = '';
+                if (pInput) pInput.value = '';
+                return;
+            }
+
             const found = findUser(savedUser);
             if (found) {
                 applyUserRole(found.user);
-                document.getElementById('login-overlay').classList.add('hidden');
+                if (overlay) overlay.classList.add('hidden');
             } else {
-                document.getElementById('login-overlay').classList.remove('hidden');
+                sessionStorage.removeItem('sibikom_session_user');
+                if (overlay) overlay.classList.remove('hidden');
             }
         }
 
@@ -1845,24 +1964,38 @@ function testReadData() {
             
             const found = findUser(u);
             if (found && found.user.pass === p) {
-                err.classList.add('hidden');
-                localStorage.setItem('sibikom_logged_user', found.key);
-                document.getElementById('login-overlay').classList.add('hidden');
+                if (err) err.classList.add('hidden');
+                // Simpan sesi aktif ke sessionStorage (berakhir begitu tab/browser ditutup)
+                sessionStorage.setItem('sibikom_session_user', found.key);
+                localStorage.removeItem('sibikom_logged_user');
+                
+                const overlay = document.getElementById('login-overlay');
+                if (overlay) overlay.classList.add('hidden');
                 showToast(`Selamat datang, ${found.user.name}!`, 'success');
                 applyUserRole(found.user);
             } else {
-                err.classList.remove('hidden');
-                document.getElementById('login-password').value = '';
+                if (err) err.classList.remove('hidden');
+                const passInput = document.getElementById('login-password');
+                if (passInput) passInput.value = '';
             }
         }
 
         function processLogout() {
+            // Hapus semua jejak sesi
+            sessionStorage.removeItem('sibikom_session_user');
             localStorage.removeItem('sibikom_logged_user');
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-            document.getElementById('login-error').classList.add('hidden');
-            document.getElementById('login-overlay').classList.remove('hidden');
-            showToast('Anda telah logout.', 'info');
+            
+            const userInput = document.getElementById('login-username');
+            const passInput = document.getElementById('login-password');
+            if (userInput) userInput.value = '';
+            if (passInput) passInput.value = '';
+            
+            const err = document.getElementById('login-error');
+            if (err) err.classList.add('hidden');
+            
+            const overlay = document.getElementById('login-overlay');
+            if (overlay) overlay.classList.remove('hidden');
+            showToast('Anda telah logout. Silakan login kembali.', 'info');
         }
 
         function applyUserRole(userObj) {
@@ -2402,10 +2535,160 @@ function testReadData() {
         function renderTablePermintaanHistory() {
             const tbody = document.getElementById('table-body-riwayat-permintaan'); if (filteredPermintaan.length === 0) { tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">Tidak ada data.</td></tr>`; document.getElementById('page-info-permintaan').innerText = "0 - 0"; return; }
             let s = (pagePermintaan - 1) * 10; let e = s + 10; let html = "";
-            filteredPermintaan.slice(s, e).forEach(r => { let idReq = findValue(r,'ID_PERMINTAAN'); html += `<tr class="hover:bg-red-50/50 transition-colors"><td class="px-4 py-3">${formatSheetDate(findValue(r,'TANGGAL_PERMINTAAN'))}</td><td class="px-4 py-3 font-semibold text-red-700">${idReq||"-"}</td><td class="px-4 py-3">${findValue(r,'PEMINTA')||"-"}</td><td class="px-4 py-3">${findValue(r,'UNIT')||"-"}</td><td class="px-4 py-3">${findValue(r,'JENIS_KOPI')||"-"}</td><td class="px-4 py-3 text-right font-bold text-slate-700">${formatAngkaId(parseNilaiAngka(findValue(r,'QTY_PERMINTAAN_NETTO_KG')))}</td><td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(parseNilaiAngka(findValue(r,'TOTAL_REALISASI_KG')||findValue(r,'TOTAL_REALISASI')))}</td><td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(parseNilaiAngka(findValue(r,'SISA_PERMINTAAN_KG')||findValue(r,'SISA_PERMINTAAN')))}</td><td class="px-4 py-3 text-center"><button type="button" onclick="deleteDataPermintaan('${idReq}')" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors"><i class="ph ph-trash"></i></button></td></tr>`; });
+            filteredPermintaan.slice(s, e).forEach(r => { 
+                let idReq = findValue(r,'ID_PERMINTAAN'); 
+                html += `<tr class="hover:bg-red-50/50 transition-colors">
+                    <td class="px-4 py-3">${formatSheetDate(findValue(r,'TANGGAL_PERMINTAAN'))}</td>
+                    <td class="px-4 py-3 font-semibold text-red-700">${idReq||"-"}</td>
+                    <td class="px-4 py-3">${findValue(r,'PEMINTA')||"-"}</td>
+                    <td class="px-4 py-3">${findValue(r,'UNIT')||"-"}</td>
+                    <td class="px-4 py-3">${findValue(r,'JENIS_KOPI')||"-"}</td>
+                    <td class="px-4 py-3 text-right font-bold text-slate-700">${formatAngkaId(parseNilaiAngka(findValue(r,'QTY_PERMINTAAN_NETTO_KG')))}</td>
+                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(parseNilaiAngka(findValue(r,'TOTAL_REALISASI_KG')||findValue(r,'TOTAL_REALISASI')))}</td>
+                    <td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(parseNilaiAngka(findValue(r,'SISA_PERMINTAAN_KG')||findValue(r,'SISA_PERMINTAAN')))}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="openEditPermintaan('${idReq}')" title="Edit Permintaan" class="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors mr-1">
+                            <i class="ph ph-pencil-simple text-sm"></i>
+                        </button>
+                        <button type="button" onclick="deleteDataPermintaan('${idReq}')" title="Hapus Permintaan" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors">
+                            <i class="ph ph-trash text-sm"></i>
+                        </button>
+                    </td>
+                </tr>`; 
+            });
             tbody.innerHTML = html; document.getElementById('page-info-permintaan').innerText=`${s+1} - ${e>filteredPermintaan.length?filteredPermintaan.length:e}`; document.getElementById('total-info-permintaan').innerText=filteredPermintaan.length; document.getElementById('btn-prev-permintaan').disabled=pagePermintaan===1; document.getElementById('btn-next-permintaan').disabled=e>=filteredPermintaan.length;
         }
-        function prevPagePermintaan() { if (pagePermintaan > 1) { pagePermintaan--; renderTablePermintaanHistory(); } } function nextPagePermintaan() { if ((pagePermintaan * 10) < filteredPermintaan.length) { pagePermintaan++; renderTablePermintaanHistory(); } }
+        function prevPagePermintaan() { if (pagePermintaan > 1) { pagePermintaan--; renderTablePermintaanHistory(); } } 
+        function nextPagePermintaan() { if ((pagePermintaan * 10) < filteredPermintaan.length) { pagePermintaan++; renderTablePermintaanHistory(); } }
+
+        function openEditPermintaan(idReq) {
+            const item = allRiwayatPermintaan.find(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === String(idReq).trim());
+            if (!item) {
+                showToast('Data permintaan tidak ditemukan.', 'error');
+                return;
+            }
+            
+            document.getElementById('edit-req-id-original').value = idReq;
+            document.getElementById('edit-req-id').value = idReq;
+            
+            let rawTgl = findValue(item, 'TANGGAL_PERMINTAAN');
+            let dateStr = "";
+            if (rawTgl) {
+                let d = new Date(rawTgl);
+                if (!isNaN(d.getTime())) {
+                    dateStr = d.toISOString().split('T')[0];
+                } else if (String(rawTgl).includes('/')) {
+                    let parts = String(rawTgl).split('/');
+                    if (parts.length === 3) {
+                        let p0 = parts[0].padStart(2, '0');
+                        let p1 = parts[1].padStart(2, '0');
+                        let p2 = parts[2];
+                        if (p2.length === 4) dateStr = `${p2}-${p0}-${p1}`;
+                    }
+                }
+            }
+            if (!dateStr) dateStr = new Date().toISOString().split('T')[0];
+            document.getElementById('edit-req-tgl').value = dateStr;
+            document.getElementById('edit-req-jam').value = findValue(item, 'JAM_PERMINTAAN') || "08:00";
+            document.getElementById('edit-req-shift').value = findValue(item, 'SHIFT') || "SHIFT 1";
+            document.getElementById('edit-req-peminta').value = findValue(item, 'PEMINTA') || "Operator UPBM";
+            document.getElementById('edit-req-unit').value = findValue(item, 'UNIT') || "UPBM";
+            document.getElementById('edit-req-jenis-kopi').value = findValue(item, 'JENIS_KOPI') || "18";
+            document.getElementById('edit-req-prioritas').value = findValue(item, 'PRIORITAS') || "Normal";
+            document.getElementById('edit-req-qty').value = parseNilaiAngka(findValue(item, 'QTY_PERMINTAAN_NETTO_KG')) || "";
+
+            document.getElementById('modal-edit-permintaan').classList.remove('hidden');
+        }
+
+        function closeEditPermintaanModal() {
+            document.getElementById('modal-edit-permintaan').classList.add('hidden');
+        }
+
+        function submitEditPermintaan(e) {
+            e.preventDefault();
+            const idReq = document.getElementById('edit-req-id-original').value.trim();
+            if (!idReq) return;
+
+            const tgl = document.getElementById('edit-req-tgl').value;
+            const jam = document.getElementById('edit-req-jam').value;
+            const shift = document.getElementById('edit-req-shift').value;
+            const peminta = document.getElementById('edit-req-peminta').value;
+            const unit = document.getElementById('edit-req-unit').value.trim();
+            const jenisKopi = document.getElementById('edit-req-jenis-kopi').value;
+            const prioritas = document.getElementById('edit-req-prioritas').value;
+            const qty = parseFloat(document.getElementById('edit-req-qty').value) || 0;
+
+            // 1. Optimistic Update pada data lokal di browser
+            const itemIndex = allRiwayatPermintaan.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
+            if (itemIndex !== -1) {
+                allRiwayatPermintaan[itemIndex]['TANGGAL_PERMINTAAN'] = tgl;
+                allRiwayatPermintaan[itemIndex]['JAM_PERMINTAAN'] = jam;
+                allRiwayatPermintaan[itemIndex]['SHIFT'] = shift;
+                allRiwayatPermintaan[itemIndex]['PEMINTA'] = peminta;
+                allRiwayatPermintaan[itemIndex]['UNIT'] = unit;
+                allRiwayatPermintaan[itemIndex]['JENIS_KOPI'] = jenisKopi;
+                allRiwayatPermintaan[itemIndex]['PRIORITAS'] = prioritas;
+                allRiwayatPermintaan[itemIndex]['QTY_PERMINTAAN_NETTO_KG'] = qty;
+                
+                let realisasi = parseNilaiAngka(findValue(allRiwayatPermintaan[itemIndex], 'TOTAL_REALISASI_KG') || findValue(allRiwayatPermintaan[itemIndex], 'TOTAL_REALISASI'));
+                let sisa = Math.max(0, qty - realisasi);
+                allRiwayatPermintaan[itemIndex]['SISA_PERMINTAAN_KG'] = sisa;
+                allRiwayatPermintaan[itemIndex]['SISA_PERMINTAAN'] = sisa;
+                applyFilterAndSortPermintaan();
+            }
+
+            if (typeof rekapPermintaanData !== 'undefined' && Array.isArray(rekapPermintaanData)) {
+                const rIndex = rekapPermintaanData.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
+                if (rIndex !== -1) {
+                    rekapPermintaanData[rIndex]['TANGGAL_PERMINTAAN'] = tgl;
+                    rekapPermintaanData[rIndex]['JAM_PERMINTAAN'] = jam;
+                    rekapPermintaanData[rIndex]['SHIFT'] = shift;
+                    rekapPermintaanData[rIndex]['PEMINTA'] = peminta;
+                    rekapPermintaanData[rIndex]['UNIT'] = unit;
+                    rekapPermintaanData[rIndex]['JENIS_KOPI'] = jenisKopi;
+                    rekapPermintaanData[rIndex]['PRIORITAS'] = prioritas;
+                    rekapPermintaanData[rIndex]['QTY_PERMINTAAN_NETTO_KG'] = qty;
+                    if (typeof applyFilterAndSortPermintaanDash === 'function') {
+                        applyFilterAndSortPermintaanDash();
+                    }
+                }
+            }
+
+            closeEditPermintaanModal();
+            const ov = document.getElementById('loading-overlay');
+            ov.classList.remove('hidden');
+            ov.querySelector('p').innerText = "Menyimpan Perubahan ke Google Sheet...";
+
+            // 2. Kirim update ke Google Apps Script Web App
+            const fd = new URLSearchParams();
+            fd.append('action', 'edit');
+            fd.append('sheetName', 'FORM_PERMINTAAN_UPBM');
+            fd.append('columnName', 'ID_PERMINTAAN');
+            fd.append('id', idReq);
+            fd.append('ID_PERMINTAAN', idReq);
+            fd.append('TANGGAL_PERMINTAAN', tgl);
+            fd.append('JAM_PERMINTAAN', jam);
+            fd.append('SHIFT', shift);
+            fd.append('PEMINTA', peminta);
+            fd.append('UNIT', unit);
+            fd.append('JENIS_KOPI', jenisKopi);
+            fd.append('PRIORITAS', prioritas);
+            fd.append('QTY_PERMINTAAN_NETTO_KG', qty.toString().replace('.', ','));
+
+            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                showToast(`Data ID ${idReq} berhasil diperbarui di Google Sheet!`, 'success');
+                setTimeout(() => {
+                    fetchRiwayatPermintaan();
+                    syncMainDashboard();
+                }, 2500);
+            }).catch(err => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                showToast('Gagal mengirim update ke Google Sheet.', 'error');
+            });
+        }
 
         function toggleManualJenisKopiPO() { const sel = document.getElementById('select-jenis-kopi-po'); const inp = document.getElementById('input-jenis-kopi-po-manual'); if (sel.value === 'Lainnya') { inp.classList.remove('hidden'); inp.setAttribute('name', 'JENIS_KOPI'); inp.setAttribute('required', 'true'); sel.removeAttribute('name'); inp.focus(); } else { inp.classList.add('hidden'); inp.removeAttribute('name'); inp.removeAttribute('required'); sel.setAttribute('name', 'JENIS_KOPI'); inp.value = ''; } }
         function submitFormPO(e) { e.preventDefault(); const frm = e.target; const over = document.getElementById('loading-overlay'); over.classList.remove('hidden'); const fd = new FormData(frm); fd.append('sheetName', 'INPUT_PO_SUPPLIER'); const cp = new URLSearchParams(); for (const [k, v] of fd.entries()) { cp.append(k, typeof v === 'string' ? v.trim() : v); } fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: cp }).then(() => { over.classList.add('hidden'); showToast(`Data PO tersimpan!`, 'success'); frm.reset(); setTimeout(() => fetchRiwayatPO(), 1500); }).catch(e => { over.classList.add('hidden'); showToast(`Gagal Menyimpan.`, 'error'); }); }
@@ -3040,7 +3323,11 @@ function testReadData() {
         
         document.getElementById('btn-confirm-delete').addEventListener('click', function() {
             if(!deleteConfig.id) return;
-            const tId = deleteConfig.id; const tSh = deleteConfig.sheetName; const tCol = deleteConfig.columnName; closeConfirmModal();
+            const tId = deleteConfig.id; 
+            const tSh = deleteConfig.sheetName; 
+            const tCol = deleteConfig.columnName; 
+            closeConfirmModal();
+
             if (tSh === 'LOCAL_CHECKLIST') {
                 allCeklistData = allCeklistData.filter(item => item.id !== tId);
                 let localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
@@ -3051,9 +3338,58 @@ function testReadData() {
                 updateCeklistStats();
                 return;
             }
-            const ov = document.getElementById('loading-overlay'); ov.classList.remove('hidden'); ov.querySelector('p').innerText = "Menghapus Data...";
-            const fd = new URLSearchParams(); fd.append('sheetName', tSh); fd.append('action', 'delete'); fd.append(tCol, tId); 
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => { ov.classList.add('hidden'); ov.querySelector('p').innerText = "Memproses Data..."; showToast(`Hapus ID ${tId} terkirim!`, 'success'); setTimeout(() => { if(tSh==='INPUT_PENERIMAAN_KOPI') fetchRiwayatPenerimaan(); if(tSh==='INPUT_TRANSAKSI_KELUAR') fetchRiwayatPengeluaran(); if(tSh==='FORM_PERMINTAAN_UPBM') fetchRiwayatPermintaan(); if(tSh==='INPUT_PO_SUPPLIER') fetchRiwayatPO(); syncMainDashboard(); }, 3000); }).catch(e => { ov.classList.add('hidden'); ov.querySelector('p').innerText = "Memproses Data..."; showToast(`Gagal menghapus.`, 'error'); });
+
+            // Hapus secara instan dari state lokal di aplikasi (Optimistic UI Update)
+            if (tSh === 'FORM_PERMINTAAN_UPBM') {
+                allRiwayatPermintaan = allRiwayatPermintaan.filter(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() !== String(tId).trim());
+                applyFilterAndSortPermintaan();
+                if (typeof rekapPermintaanData !== 'undefined' && Array.isArray(rekapPermintaanData)) {
+                    rekapPermintaanData = rekapPermintaanData.filter(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() !== String(tId).trim());
+                    if (typeof applyFilterAndSortPermintaanDash === 'function') {
+                        applyFilterAndSortPermintaanDash();
+                    }
+                }
+            } else if (tSh === 'INPUT_PENERIMAAN_KOPI') {
+                allRiwayatData = allRiwayatData.filter(r => String(findValue(r, 'ID_LOT') || '').trim() !== String(tId).trim());
+                applyFilterAndSort();
+            } else if (tSh === 'INPUT_TRANSAKSI_KELUAR') {
+                allRiwKel = allRiwKel.filter(r => String(findValue(r, 'ID_KELUAR') || '').trim() !== String(tId).trim());
+                applyFilterAndSortKel();
+            } else if (tSh === 'INPUT_PO_SUPPLIER') {
+                allRiwayatPO = allRiwayatPO.filter(r => String(findValue(r, 'NO_PO') || '').trim() !== String(tId).trim());
+                applyFilterAndSortPO();
+            }
+
+            const ov = document.getElementById('loading-overlay'); 
+            ov.classList.remove('hidden'); 
+            ov.querySelector('p').innerText = "Menghapus Data dari Google Sheet...";
+
+            const fd = new URLSearchParams(); 
+            fd.append('action', 'delete');
+            fd.append('sheetName', tSh); 
+            fd.append('columnName', tCol); 
+            fd.append('id', tId); 
+            fd.append(tCol, tId);
+            if (tCol === 'ID_PERMINTAAN') {
+                fd.append('ID_PERMINTAAN', tId);
+            }
+
+            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => { 
+                ov.classList.add('hidden'); 
+                ov.querySelector('p').innerText = "Memproses Data..."; 
+                showToast(`Data ID ${tId} berhasil dihapus dari aplikasi & Google Sheet!`, 'success'); 
+                setTimeout(() => { 
+                    if(tSh==='INPUT_PENERIMAAN_KOPI') fetchRiwayatPenerimaan(); 
+                    if(tSh==='INPUT_TRANSAKSI_KELUAR') fetchRiwayatPengeluaran(); 
+                    if(tSh==='FORM_PERMINTAAN_UPBM') fetchRiwayatPermintaan(); 
+                    if(tSh==='INPUT_PO_SUPPLIER') fetchRiwayatPO(); 
+                    syncMainDashboard(); 
+                }, 2500); 
+            }).catch(e => { 
+                ov.classList.add('hidden'); 
+                ov.querySelector('p').innerText = "Memproses Data..."; 
+                showToast(`Gagal menghapus data dari Google Sheet.`, 'error'); 
+            });
         });
 
         // ==========================================
@@ -3403,6 +3739,83 @@ function testReadData() {
             applyFilterAndSortCeklist();
         }
 
+        let sortCeklistOrder = 'desc'; // Default: Tanggal update terbaru selalu berada di posisi paling atas!
+
+        function parseCeklistDateTime(item) {
+            if (!item) return 0;
+            let val = item.waktu || item.timestamp || item.tanggal || item.tanggalInspeksi || '';
+            if (!val) {
+                // Fallback ke id numerik jika ada
+                let match = String(item.id || '').match(/\d+/);
+                return match ? parseInt(match[0]) : 0;
+            }
+
+            if (val instanceof Date) return val.getTime();
+            val = String(val).trim();
+
+            let d = new Date(val);
+            if (!isNaN(d.getTime())) {
+                return d.getTime();
+            }
+
+            // Parser khusus format spreadsheet M/D/YYYY HH:mm:ss atau D/M/YYYY HH:mm:ss
+            let parts = val.split(' ');
+            let datePart = parts[0];
+            let timePart = parts.length > 1 ? parts[1] : '00:00:00';
+
+            if (datePart.includes('/')) {
+                let sub = datePart.split('/');
+                if (sub.length === 3) {
+                    let p1 = parseInt(sub[0]);
+                    let p2 = parseInt(sub[1]);
+                    let year = parseInt(sub[2]);
+                    if (year < 100) year += 2000;
+
+                    let timeSub = timePart.split(':');
+                    let hour = parseInt(timeSub[0]) || 0;
+                    let minute = parseInt(timeSub[1]) || 0;
+                    let second = parseInt(timeSub[2]) || 0;
+
+                    // Google Sheets export default: Month/Day/Year
+                    let month = p1 - 1;
+                    let day = p2;
+                    if (p1 > 12) { // Format Day/Month/Year
+                        month = p2 - 1;
+                        day = p1;
+                    }
+                    return new Date(year, month, day, hour, minute, second).getTime();
+                }
+            } else if (datePart.includes('-')) {
+                let sub = datePart.split('-');
+                if (sub.length === 3) {
+                    let year = parseInt(sub[0]);
+                    let month = parseInt(sub[1]) - 1;
+                    let day = parseInt(sub[2]);
+                    let timeSub = timePart.split(':');
+                    let hour = parseInt(timeSub[0]) || 0;
+                    let minute = parseInt(timeSub[1]) || 0;
+                    let second = parseInt(timeSub[2]) || 0;
+                    return new Date(year, month, day, hour, minute, second).getTime();
+                }
+            }
+
+            return 0;
+        }
+
+        function handleSortOrderCeklist(val) {
+            sortCeklistOrder = val;
+            pageCeklist = 1;
+            applyFilterAndSortCeklist();
+        }
+
+        function toggleSortCeklistTime() {
+            sortCeklistOrder = sortCeklistOrder === 'desc' ? 'asc' : 'desc';
+            const selectEl = document.getElementById('filter-sort-ceklist');
+            if (selectEl) selectEl.value = sortCeklistOrder;
+            pageCeklist = 1;
+            applyFilterAndSortCeklist();
+        }
+
         function handleFilterSeverityCeklist(val) {
             filterSeverityCeklistVal = val;
             pageCeklist = 1;
@@ -3428,6 +3841,27 @@ function testReadData() {
 
                 return matchSearch && matchStatus && matchSeverity;
             });
+
+            // Urutkan data berdasarkan waktu/tanggal (Default: Tanggal update terbaru paling atas)
+            filteredCeklistData.sort((a, b) => {
+                const timeA = parseCeklistDateTime(a);
+                const timeB = parseCeklistDateTime(b);
+                if (sortCeklistOrder === 'asc') {
+                    if (timeA !== timeB) return timeA - timeB;
+                    return String(a.id || '').localeCompare(String(b.id || ''));
+                } else {
+                    if (timeA !== timeB) return timeB - timeA;
+                    return String(b.id || '').localeCompare(String(a.id || ''));
+                }
+            });
+
+            // Sinkronkan icon indikator urutan di header tabel
+            const sortIcon = document.getElementById('sort-icon-ceklist-time');
+            if (sortIcon) {
+                sortIcon.className = sortCeklistOrder === 'desc' 
+                    ? 'ph ph-sort-descending text-indigo-600 font-bold ml-1 text-sm' 
+                    : 'ph ph-sort-ascending text-indigo-600 font-bold ml-1 text-sm';
+            }
 
             renderTableCeklist();
         }
