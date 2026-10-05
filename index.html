@@ -2519,6 +2519,13 @@ function testReadData() {
             const overlay = document.getElementById('loading-overlay'); overlay.classList.remove('hidden');
             const fd = new FormData(form); fd.append('sheetName', targetSheet); const cp = new URLSearchParams();
             for (const [k, v] of fd.entries()) { let fv = typeof v === 'string' ? v.trim() : v; let inf = form.querySelector(`[name="${k}"]`); if (inf && inf.type === 'number' && typeof fv === 'string') fv = fv.replace('.', ','); cp.append(k, fv); }
+            if (targetSheet === 'FORM_PERMINTAAN_UPBM') {
+                if (!cp.has('STATUS_PERMINTAAN')) cp.append('STATUS_PERMINTAAN', 'OPEN');
+                if (!cp.has('TOTAL_REALISASI_KG')) cp.append('TOTAL_REALISASI_KG', '0');
+                let qVal = cp.get('QTY_PERMINTAAN_NETTO_KG') || '0';
+                if (!cp.has('SISA_PERMINTAAN_KG')) cp.append('SISA_PERMINTAAN_KG', qVal);
+                if (!cp.has('PERSEN_REALISASI')) cp.append('PERSEN_REALISASI', '0');
+            }
             fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: cp }).then(() => { overlay.classList.add('hidden'); showToast(`Data terkirim!`, 'success'); form.reset(); if (targetSheet === 'FORM_PERMINTAAN_UPBM') { toggleManualUnit(); document.getElementById('req-id-permintaan').value = ''; setTimeout(() => fetchRiwayatPermintaan(), 2000); } }).catch(error => { overlay.classList.add('hidden'); showToast(`Gagal mengirim data.`, 'error'); console.error(error); });
         }
 

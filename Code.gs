@@ -299,6 +299,15 @@ function doPost(e) {
     // ==============================================================
     // PERINTAH: TAMBAH DATA BARU (INSERT)
     // ==============================================================
+    if (sheetName === "FORM_PERMINTAAN_UPBM") {
+      if (!p.STATUS_PERMINTAAN) p.STATUS_PERMINTAAN = "OPEN";
+      if (p.TOTAL_REALISASI_KG === undefined || p.TOTAL_REALISASI_KG === "") p.TOTAL_REALISASI_KG = 0;
+      if (p.SISA_PERMINTAAN_KG === undefined || p.SISA_PERMINTAAN_KG === "") {
+        p.SISA_PERMINTAAN_KG = p.QTY_PERMINTAAN_NETTO_KG || 0;
+      }
+      if (p.PERSEN_REALISASI === undefined || p.PERSEN_REALISASI === "") p.PERSEN_REALISASI = 0;
+    }
+
     var lastCol = Math.max(sheet.getLastColumn(), 1);
     var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
     var newRow = [];
