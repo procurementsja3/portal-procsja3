@@ -265,6 +265,21 @@ function doPost(e) {
         })).setMimeType(ContentService.MimeType.JSON);
       }
 
+      // Proteksi otomatis perhitungan Sisa Permintaan untuk sheet FORM_PERMINTAAN_UPBM
+      if (sheetName === "FORM_PERMINTAAN_UPBM") {
+        var qtyVal = p.QTY_PERMINTAAN_NETTO_KG;
+        if (qtyVal !== undefined) {
+          var numQty = parseFloat(String(qtyVal).replace(",", ".")) || 0;
+          var numReal = parseFloat(String(p.TOTAL_REALISASI_KG || 0).replace(",", ".")) || 0;
+          if (p.SISA_PERMINTAAN_KG === undefined || p.SISA_PERMINTAAN_KG === "") {
+            p.SISA_PERMINTAAN_KG = Math.max(0, numQty - numReal);
+          }
+          if (p.STATUS_PERMINTAAN === undefined || p.STATUS_PERMINTAAN === "") {
+            p.STATUS_PERMINTAAN = p.SISA_PERMINTAAN_KG <= 0 ? "COMPLETED" : (numReal > 0 ? "PARTIAL" : "OPEN");
+          }
+        }
+      }
+
       // Perbarui kolom yang nilainya dikirimkan dari aplikasi
       for (var c = 0; c < headers.length; c++) {
         var colHeader = String(headers[c]).trim();

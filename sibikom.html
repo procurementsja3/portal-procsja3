@@ -2488,6 +2488,10 @@ function testReadData() {
                 else if (stLower.includes("close") || stLower.includes("selesai") || stLower.includes("done")) stBadge = "bg-emerald-50 text-emerald-700 border border-emerald-200";
                 else if (stLower.includes("cancel") || stLower.includes("batal") || stLower.includes("reject")) stBadge = "bg-red-50 text-red-700 border border-red-200";
 
+                let qNet = parseNilaiAngka(findValue(row, 'QTY_PERMINTAAN_NETTO_KG'));
+                let tReal = parseNilaiAngka(findValue(row, 'TOTAL_REALISASI_KG') || findValue(row, 'TOTAL_REALISASI'));
+                let sisaCalcDash = Math.max(0, qNet - tReal);
+
                 html += `<tr class="hover:bg-brand-primary/5 transition-colors">
                     <td class="px-4 py-3">${formatSheetDate(findValue(row, 'TANGGAL_PERMINTAAN')) || "-"}</td>
                     <td class="px-4 py-3 font-medium text-slate-900">${findValue(row, 'ID_PERMINTAAN') || "-"}</td>
@@ -2496,9 +2500,9 @@ function testReadData() {
                     <td class="px-4 py-3">${row.PEMINTA || "-"}</td>
                     <td class="px-4 py-3">${row.UNIT || "-"}</td>
                     <td class="px-4 py-3">${row.JENIS_KOPI || "-"}</td>
-                    <td class="px-4 py-3 text-right font-semibold">${formatAngkaId(row.QTY_PERMINTAAN_NETTO_KG)}</td>
-                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(findValue(row,'TOTAL_REALISASI_KG')||findValue(row,'TOTAL_REALISASI'))}</td>
-                    <td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(findValue(row,'SISA_PERMINTAAN_KG')||findValue(row,'SISA_PERMINTAAN'))}</td>
+                    <td class="px-4 py-3 text-right font-semibold">${formatAngkaId(qNet)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(tReal)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(sisaCalcDash)}</td>
                     <td class="px-4 py-3 text-center"><span class="px-2.5 py-1 rounded-md text-xs font-semibold ${stBadge}">${stVal || "-"}</span></td>
                     <td class="px-4 py-3 text-center"><span class="px-3 py-1 rounded-md text-xs font-semibold ${pBadge}">${row.PRIORITAS || "-"}</span></td>
                 </tr>`;
@@ -2544,15 +2548,18 @@ function testReadData() {
             let s = (pagePermintaan - 1) * 10; let e = s + 10; let html = "";
             filteredPermintaan.slice(s, e).forEach(r => { 
                 let idReq = findValue(r,'ID_PERMINTAAN'); 
+                let qNet = parseNilaiAngka(findValue(r,'QTY_PERMINTAAN_NETTO_KG'));
+                let tReal = parseNilaiAngka(findValue(r,'TOTAL_REALISASI_KG')||findValue(r,'TOTAL_REALISASI'));
+                let sisaCalc = Math.max(0, qNet - tReal);
                 html += `<tr class="hover:bg-red-50/50 transition-colors">
                     <td class="px-4 py-3">${formatSheetDate(findValue(r,'TANGGAL_PERMINTAAN'))}</td>
                     <td class="px-4 py-3 font-semibold text-red-700">${idReq||"-"}</td>
                     <td class="px-4 py-3">${findValue(r,'PEMINTA')||"-"}</td>
                     <td class="px-4 py-3">${findValue(r,'UNIT')||"-"}</td>
                     <td class="px-4 py-3">${findValue(r,'JENIS_KOPI')||"-"}</td>
-                    <td class="px-4 py-3 text-right font-bold text-slate-700">${formatAngkaId(parseNilaiAngka(findValue(r,'QTY_PERMINTAAN_NETTO_KG')))}</td>
-                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(parseNilaiAngka(findValue(r,'TOTAL_REALISASI_KG')||findValue(r,'TOTAL_REALISASI')))}</td>
-                    <td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(parseNilaiAngka(findValue(r,'SISA_PERMINTAAN_KG')||findValue(r,'SISA_PERMINTAAN')))}</td>
+                    <td class="px-4 py-3 text-right font-bold text-slate-700">${formatAngkaId(qNet)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(tReal)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(sisaCalc)}</td>
                     <td class="px-4 py-3 text-center whitespace-nowrap">
                         <button type="button" onclick="openEditPermintaan('${idReq}')" title="Edit Permintaan" class="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors mr-1">
                             <i class="ph ph-pencil-simple text-sm"></i>
@@ -2625,6 +2632,15 @@ function testReadData() {
             const prioritas = document.getElementById('edit-req-prioritas').value;
             const qty = parseFloat(document.getElementById('edit-req-qty').value) || 0;
 
+            let realisasi = 0;
+            const existingItem = allRiwayatPermintaan.find(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
+            if (existingItem) {
+                realisasi = parseNilaiAngka(findValue(existingItem, 'TOTAL_REALISASI_KG') || findValue(existingItem, 'TOTAL_REALISASI'));
+            }
+            let sisa = Math.max(0, qty - realisasi);
+            let stBaru = sisa <= 0 ? 'COMPLETED' : (realisasi > 0 ? 'PARTIAL' : 'OPEN');
+            let persenBaru = qty > 0 ? (realisasi / qty) : 0;
+
             // 1. Optimistic Update pada data lokal di browser
             const itemIndex = allRiwayatPermintaan.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
             if (itemIndex !== -1) {
@@ -2636,11 +2652,11 @@ function testReadData() {
                 allRiwayatPermintaan[itemIndex]['JENIS_KOPI'] = jenisKopi;
                 allRiwayatPermintaan[itemIndex]['PRIORITAS'] = prioritas;
                 allRiwayatPermintaan[itemIndex]['QTY_PERMINTAAN_NETTO_KG'] = qty;
-                
-                let realisasi = parseNilaiAngka(findValue(allRiwayatPermintaan[itemIndex], 'TOTAL_REALISASI_KG') || findValue(allRiwayatPermintaan[itemIndex], 'TOTAL_REALISASI'));
-                let sisa = Math.max(0, qty - realisasi);
+                allRiwayatPermintaan[itemIndex]['TOTAL_REALISASI_KG'] = realisasi;
                 allRiwayatPermintaan[itemIndex]['SISA_PERMINTAAN_KG'] = sisa;
                 allRiwayatPermintaan[itemIndex]['SISA_PERMINTAAN'] = sisa;
+                allRiwayatPermintaan[itemIndex]['STATUS_PERMINTAAN'] = stBaru;
+                allRiwayatPermintaan[itemIndex]['PERSEN_REALISASI'] = persenBaru;
                 applyFilterAndSortPermintaan();
             }
 
@@ -2655,6 +2671,11 @@ function testReadData() {
                     rekapPermintaanData[rIndex]['JENIS_KOPI'] = jenisKopi;
                     rekapPermintaanData[rIndex]['PRIORITAS'] = prioritas;
                     rekapPermintaanData[rIndex]['QTY_PERMINTAAN_NETTO_KG'] = qty;
+                    rekapPermintaanData[rIndex]['TOTAL_REALISASI_KG'] = realisasi;
+                    rekapPermintaanData[rIndex]['SISA_PERMINTAAN_KG'] = sisa;
+                    rekapPermintaanData[rIndex]['SISA_PERMINTAAN'] = sisa;
+                    rekapPermintaanData[rIndex]['STATUS_PERMINTAAN'] = stBaru;
+                    rekapPermintaanData[rIndex]['PERSEN_REALISASI'] = persenBaru;
                     if (typeof applyFilterAndSortPermintaanDash === 'function') {
                         applyFilterAndSortPermintaanDash();
                     }
@@ -2681,6 +2702,10 @@ function testReadData() {
             fd.append('JENIS_KOPI', jenisKopi);
             fd.append('PRIORITAS', prioritas);
             fd.append('QTY_PERMINTAAN_NETTO_KG', qty.toString().replace('.', ','));
+            fd.append('TOTAL_REALISASI_KG', realisasi.toString().replace('.', ','));
+            fd.append('SISA_PERMINTAAN_KG', sisa.toString().replace('.', ','));
+            fd.append('STATUS_PERMINTAAN', stBaru);
+            fd.append('PERSEN_REALISASI', persenBaru.toString().replace('.', ','));
 
             fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
                 ov.classList.add('hidden');
