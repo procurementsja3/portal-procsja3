@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIBIKOM - Sistem Biji Kopi Management</title>
-    <meta name="description" content="SIBIKOM - Sistem Biji Kopi Management">
-    <meta property="og:title" content="SIBIKOM - Sistem Biji Kopi Management">
-    <meta property="og:description" content="SIBIKOM - Sistem Biji Kopi Management">
+    <title>SIBIKOM - Sistem Biji Kopi Manajemen</title>
+    <meta name="description" content="SIBIKOM - Sistem Biji Kopi Manajemen">
+    <meta property="og:title" content="SIBIKOM - Sistem Biji Kopi Manajemen">
+    <meta property="og:description" content="SIBIKOM - Sistem Biji Kopi Manajemen">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -46,10 +46,132 @@
 
         /* Glassmorphism Header */
         .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
+
+        /* Blinking / Pulsing Online Status Dot */
+        @keyframes blinkOnline {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+            50% { opacity: 0.35; transform: scale(1.15); box-shadow: 0 0 6px 3px rgba(16, 185, 129, 0.4); }
+        }
+        .blink-dot {
+            animation: blinkOnline 1.4s ease-in-out infinite;
+        }
+
+        /* Smooth Theme Transitions */
+        html {
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        /* Comprehensive Dark Mode Styles */
+        html.dark body {
+            background-color: #0b1120 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark main {
+            background-color: #0b1120 !important;
+        }
+        html.dark .glass-header {
+            background: rgba(15, 23, 42, 0.92) !important;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.8) !important;
+        }
+        html.dark #header-title {
+            color: #f8fafc !important;
+        }
+        html.dark .bg-white {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+        }
+        html.dark .bg-slate-50 {
+            background-color: #0f172a !important;
+        }
+        html.dark .bg-slate-100 {
+            background-color: #1e293b !important;
+        }
+        html.dark .border-slate-100,
+        html.dark .border-slate-200 {
+            border-color: #334155 !important;
+        }
+        html.dark .text-slate-800,
+        html.dark .text-slate-700 {
+            color: #f1f5f9 !important;
+        }
+        html.dark .text-slate-600,
+        html.dark .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+        html.dark input, 
+        html.dark select, 
+        html.dark textarea {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #64748b !important;
+        }
+        html.dark .table-container-fifo thead th {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark .table-container-fifo thead tr:nth-child(2) th {
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
+            border-bottom-color: #334155 !important;
+        }
+        html.dark table thead th {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+        html.dark table tbody tr {
+            border-color: #334155 !important;
+        }
+        html.dark table tbody tr:hover {
+            background-color: rgba(51, 65, 85, 0.45) !important;
+        }
+        html.dark .shadow-sm,
+        html.dark .shadow-md,
+        html.dark .shadow-lg,
+        html.dark .shadow-xl {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6) !important;
+        }
+        html.dark .bg-emerald-50 {
+            background-color: rgba(6, 78, 59, 0.35) !important;
+            border-color: rgba(16, 185, 129, 0.3) !important;
+        }
+        html.dark .text-emerald-700 {
+            color: #34d399 !important;
+        }
+        html.dark .bg-sky-50 {
+            background-color: rgba(12, 74, 110, 0.35) !important;
+            border-color: rgba(14, 165, 233, 0.3) !important;
+        }
+        html.dark .bg-amber-50 {
+            background-color: rgba(120, 53, 15, 0.35) !important;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        html.dark .bg-purple-50 {
+            background-color: rgba(88, 28, 135, 0.35) !important;
+            border-color: rgba(168, 85, 247, 0.3) !important;
+        }
     </style>
 
     <script>
+        // Apply theme immediately to prevent flashing
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('sibikom_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch(e) {}
+        })();
+
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
@@ -72,12 +194,18 @@
     <div id="login-overlay" class="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300 p-4">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 transform transition-all">
             <div class="text-center mb-6">
-                <div id="login-logo-container" class="bg-brand-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-brand-primary shadow-sm border border-brand-primary/20 overflow-hidden">
-                    <i id="login-default-icon" class="ph ph-coffee text-3xl font-bold"></i>
-                    <img id="login-custom-img" src="" class="hidden w-full h-full object-cover">
+                <div id="login-logo-container" class="w-20 h-20 flex items-center justify-center mx-auto mb-3">
+                    <img id="login-custom-img" src="/kapal_api_logo_sm.png" alt="Logo Kapal Api" class="w-full h-full object-contain drop-shadow-md">
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800">Login SIBIKOM</h2>
-                <p class="text-xs text-slate-500 mt-1">Sistem Informasi Biji Kopi Management</p>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Sistem Biji Kopi Manajemen</p>
+                <div class="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 shadow-xs">
+                    <span class="relative flex h-2.5 w-2.5 items-center justify-center">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 blink-dot"></span>
+                    </span>
+                    <span class="text-[11px] font-semibold text-emerald-700 tracking-wide">Status Online</span>
+                </div>
             </div>
             <form id="login-form" onsubmit="processLogin(event)" class="space-y-4">
                 <div>
@@ -123,16 +251,22 @@
             <div class="flex items-center gap-3">
                 <input type="file" id="logo-upload" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
                 <div class="group relative cursor-pointer" onclick="document.getElementById('logo-upload').click()">
-                    <div id="logo-container" class="bg-brand-primary p-2 rounded-lg text-white shadow-lg shadow-brand-primary/20 w-10 h-10 flex items-center justify-center overflow-hidden">
-                        <i id="default-logo-icon" class="ph ph-coffee text-2xl"></i>
-                        <img id="custom-logo-img" src="" class="hidden w-full h-full object-cover">
+                    <div id="logo-container" class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-white/10 p-0.5 shadow-sm">
+                        <img id="custom-logo-img" src="/kapal_api_logo_sm.png" alt="Logo Kapal Api" class="w-full h-full object-contain">
                     </div>
                     <!-- Tooltip Hover -->
                     <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Ganti Logo</div>
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight tracking-wide text-white">SIBIKOM</h1>
-                    <p class="text-[10px] text-slate-400 font-medium">Biji Kopi Management</p>
+                    <p class="text-[10px] text-slate-300 font-medium leading-tight">Sistem Biji Kopi Manajemen</p>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <span class="relative flex h-2 w-2 items-center justify-center">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 blink-dot"></span>
+                        </span>
+                        <span class="text-[10px] font-semibold text-emerald-400 tracking-wide">Status Online</span>
+                    </div>
                 </div>
             </div>
             <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-white p-2 transition-colors"><i class="ph ph-x text-2xl"></i></button>
@@ -186,17 +320,51 @@
 
     <main class="flex-1 flex flex-col h-screen overflow-y-auto relative w-full bg-slate-50">
         <!-- Header -->
-        <header class="h-20 glass-header flex items-center justify-between px-6 lg:px-10 sticky top-0 z-30 shrink-0">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleDesktopMobileSidebar()" class="p-2 text-slate-500 hover:text-brand-primary hover:bg-slate-100 rounded-lg transition-colors shadow-sm"><i class="ph ph-list text-2xl"></i></button>
-                <h2 id="header-title" class="text-xl font-bold text-slate-800 tracking-tight line-clamp-1">Dashboard Utama</h2>
-            </div>
-            <div class="flex items-center gap-4 shrink-0">
-                <div class="text-right hidden sm:block">
-                    <p id="user-display-name" class="text-sm font-bold text-slate-700 leading-none">Admin</p>
-                    <p id="user-display-role" class="text-[11px] text-emerald-500 font-medium mt-1 flex items-center justify-end gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online</p>
+        <header class="h-20 glass-header flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-30 shrink-0">
+            <div class="flex items-center gap-2.5 sm:gap-3 lg:gap-4 flex-wrap">
+                <button onclick="toggleDesktopMobileSidebar()" class="p-2 text-slate-500 hover:text-brand-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shadow-sm cursor-pointer" title="Buka/Tutup Menu Sidebar"><i class="ph ph-list text-2xl"></i></button>
+                <h2 id="header-title" class="text-base sm:text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight line-clamp-1">Dashboard Utama</h2>
+                
+                <!-- Divider Pemisah -->
+                <div class="hidden md:block h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5"></div>
+
+                <!-- Widget Hari / Tanggal & Jam Digital -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <!-- Hari & Tanggal -->
+                    <div class="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 shadow-xs" title="Hari dan Tanggal Hari Ini">
+                        <i class="ph ph-calendar-blank text-brand-primary text-base"></i>
+                        <span id="header-live-date" class="text-xs font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">Memuat...</span>
+                    </div>
+
+                    <!-- Jam Digital Live -->
+                    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 shadow-xs" title="Jam Digital Real-time">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                        </span>
+                        <i class="ph ph-clock text-amber-500 text-sm"></i>
+                        <span id="header-live-clock" class="text-xs font-mono font-bold text-slate-800 dark:text-amber-400 tracking-wider">00:00:00</span>
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400">WIB</span>
+                    </div>
                 </div>
-                <button onclick="processLogout()" class="h-10 w-10 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 border border-red-100 shadow-sm transition-colors" title="Keluar dari Aplikasi">
+            </div>
+
+            <!-- Tombol Aksi Kanan: Mode Terang/Gelap, User Info, Logout -->
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <!-- Tombol Mode Terang / Gelap -->
+                <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-300 border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-200 flex items-center gap-1.5 cursor-pointer" title="Ganti Mode Terang / Gelap">
+                    <i id="theme-icon" class="ph ph-moon text-lg"></i>
+                    <span id="theme-text" class="text-xs font-semibold hidden md:inline">Mode Gelap</span>
+                </button>
+
+                <!-- Info User & Status Online -->
+                <div class="text-right hidden sm:block">
+                    <p id="user-display-name" class="text-sm font-bold text-slate-700 dark:text-slate-200 leading-none">Admin</p>
+                    <p id="user-display-role" class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1 flex items-center justify-end gap-1.5"><span class="relative flex h-2 w-2 items-center justify-center"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 blink-dot"></span></span> Online</p>
+                </div>
+
+                <!-- Tombol Logout -->
+                <button onclick="processLogout()" class="h-10 w-10 rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 flex items-center justify-center text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/50 shadow-sm transition-colors cursor-pointer" title="Keluar dari Aplikasi">
                     <i class="ph ph-sign-out text-lg font-bold"></i>
                 </button>
             </div>
@@ -871,7 +1039,7 @@
                     <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-200">
                         <div class="flex items-center gap-2">
                             <i class="ph ph-note-pencil text-xl text-indigo-600"></i>
-                            <h3 class="font-bold text-slate-800 text-base">Input Form Ceklist Warehouse (Sesuai Kolom Sheet)</h3>
+                            <h3 class="font-bold text-slate-800 text-base">Input Form Ceklist Warehouse</h3>
                         </div>
                         <span class="text-xs text-slate-500 bg-white px-2.5 py-1 rounded-full border border-slate-200 font-medium">Standar Inspeksi Gudang SJA3</span>
                     </div>
@@ -880,40 +1048,40 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom B]</span> Nama Warehouse Inspektor *
+                                    Nama Warehouse Inspektor
                                 </label>
-                                <input type="text" id="ceklist-petugas" required placeholder="Contoh: Arga" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                <input type="text" id="ceklist-petugas" placeholder="Opsional (contoh: Arga)" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom C]</span> Tanggal Inspeksi *
+                                    Tanggal Inspeksi *
                                 </label>
                                 <input type="date" id="ceklist-tgl" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom D]</span> Bagian
+                                    Bagian
                                 </label>
                                 <input type="text" id="ceklist-bagian" placeholder="Contoh: GBB / UPBM / Logistik" value="GBB" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom E]</span> Area
+                                    Area
                                 </label>
-                                <input type="text" id="ceklist-area" placeholder="Contoh: G. Krian / SJA 3" value="G. Krian" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                <input type="text" id="ceklist-area" placeholder="Opsional (contoh: G. Krian / SJA 3)" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom F]</span> Nomor Gudang
+                                    Nomor Gudang
                                 </label>
-                                <input type="text" id="ceklist-nomor-gudang" placeholder="Contoh: Nomor 5" value="Nomor 5" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                <input type="text" id="ceklist-nomor-gudang" placeholder="Opsional (contoh: Nomor 5)" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom G]</span> Kategori Audit
+                                    Kategori Audit
                                 </label>
                                 <select id="ceklist-kategori-audit" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                                     <option value="5 R">5 R (Ringkas, Rapi, Resik, Rawat, Rajin)</option>
@@ -927,7 +1095,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom H]</span> Tingkat Keparahan
+                                    Tingkat Keparahan
                                 </label>
                                 <select id="ceklist-keparahan" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                                     <option value="Low">Low (Rendah)</option>
@@ -938,7 +1106,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom O]</span> Status
+                                    Status
                                 </label>
                                 <select id="ceklist-status" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                                     <option value="Open">Open (Belum Selesai)</option>
@@ -951,49 +1119,49 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom K]</span> Diskripsi Temuan *
+                                    Diskripsi Temuan *
                                 </label>
                                 <textarea id="ceklist-deskripsi" required rows="2" placeholder="Tuliskan diskripsi temuan inspeksi warehouse..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500"></textarea>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom L]</span> Tindakan Perbaikan
+                                    Tindakan Perbaikan
                                 </label>
-                                <textarea id="ceklist-tindakan" rows="2" placeholder="Tindakan koreksi atau perbaikan yang direkomendasikan..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500"></textarea>
+                                <textarea id="ceklist-tindakan" rows="2" placeholder="Tindakan koreksi atau perbaikan yang direkomendasikan (dapat dikosongkan)..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500"></textarea>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom M]</span> PIC (Penanggung Jawab)
+                                    PIC (Penanggung Jawab)
                                 </label>
                                 <input type="text" id="ceklist-pic" placeholder="Contoh: Yolanda" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom N]</span> Target Selesai
+                                    Target Selesai
                                 </label>
                                 <input type="date" id="ceklist-target-selesai" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom I]</span> Link Dokumentasi Before (Foto 1)
+                                    Link Dokumentasi Before (Foto 1)
                                 </label>
                                 <input type="url" id="ceklist-foto-1" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    <span class="text-indigo-600 font-bold">[Kolom J]</span> Link Dokumentasi After (Foto 2)
+                                    Link Dokumentasi After (Foto 2)
                                 </label>
-                                <input type="url" id="ceklist-foto-2" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
+                                <input type="url" id="ceklist-foto-2" placeholder="https://drive.google.com/... (dapat dikosongkan)" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-indigo-500">
                             </div>
                         </div>
 
                         <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-slate-200 gap-3">
                             <div class="text-xs text-slate-500 flex items-center gap-1.5">
                                 <i class="ph ph-info text-base text-indigo-600"></i>
-                                <span>Kolom A (Waktu/Timestamp) di-generate otomatis saat data disimpan.</span>
+                                <span>Waktu / Timestamp di-generate otomatis saat data disimpan.</span>
                             </div>
                             <div class="flex gap-2 w-full sm:w-auto">
                                 <button type="button" onclick="toggleFormCeklist()" class="flex-1 sm:flex-none px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 transition-colors">Batal</button>
@@ -1034,15 +1202,12 @@
                                 <th class="px-3 py-3 text-center w-10">No</th>
                                 <th class="px-3 py-3 whitespace-nowrap">
                                     <div class="font-bold text-indigo-700">Waktu</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Kolom A (Timestamp)</div>
                                 </th>
                                 <th class="px-3 py-3 whitespace-nowrap">
                                     <div class="font-bold text-slate-800">Nama Warehouse Inspektor</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Kolom B</div>
                                 </th>
                                 <th class="px-3 py-3 whitespace-nowrap">
                                     <div class="font-bold text-slate-800">Tgl Inspeksi</div>
-                                    <div class="text-[10px] text-slate-400 font-normal">Kolom C</div>
                                 </th>
                                 <th class="px-3 py-3 whitespace-nowrap">Bagian & Area</th>
                                 <th class="px-3 py-3 text-center whitespace-nowrap">No Gudang</th>
@@ -1054,7 +1219,7 @@
                                 <th class="px-3 py-3 text-center whitespace-nowrap">Dokumentasi Before</th>
                                 <th class="px-3 py-3 text-center whitespace-nowrap">Status</th>
                                 <th class="px-3 py-3 text-center whitespace-nowrap">Dokumentasi After</th>
-                                <th class="px-3 py-3 text-center w-20">Aksi</th>
+                                <th class="px-3 py-3 text-center w-28 whitespace-nowrap">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="table-body-ceklist" class="divide-y divide-slate-200 bg-white">
@@ -1117,12 +1282,127 @@
                 <div id="modal-detail-ceklist-content" class="p-6 overflow-y-auto space-y-4 text-xs">
                     <!-- Populated dynamically -->
                 </div>
-                <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
-                    <button type="button" id="btn-print-detail-ceklist" onclick="printDetailCeklist()" class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <button type="button" id="btn-print-detail-ceklist" onclick="printDetailCeklist()" class="w-full sm:w-auto px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5">
                         <i class="ph ph-printer"></i> Cetak Dokumen Ceklist
                     </button>
-                    <button type="button" onclick="closeDetailCeklistModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold">Tutup</button>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button type="button" id="btn-edit-from-detail" onclick="openEditFromDetailModal()" class="flex-1 sm:flex-none px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                            <i class="ph ph-note-pencil"></i> Tindak Lanjut / Close Temuan
+                        </button>
+                        <button type="button" onclick="closeDetailCeklistModal()" class="flex-1 sm:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold">Tutup</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit / Close Temuan Ceklist Warehouse -->
+        <div id="modal-edit-ceklist" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[115] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-100">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
+                            <i class="ph ph-note-pencil text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">Tindak Lanjut & Close Temuan</h3>
+                            <p class="text-[11px] text-slate-500">Upload foto dokumentasi after dan update status penyelesaian temuan</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeEditCeklistModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+                
+                <form id="form-edit-ceklist" onsubmit="saveEditCeklist(event)" class="flex flex-col flex-1 overflow-hidden">
+                    <div class="p-6 overflow-y-auto space-y-4 text-xs">
+                        <input type="hidden" id="edit-ceklist-id">
+
+                        <!-- Ringkasan Temuan -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono font-bold text-slate-700" id="edit-badge-id">CW-XXXXX</span>
+                                <span id="edit-badge-status-current"></span>
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-slate-400 font-medium">Deskripsi Temuan:</div>
+                                <div class="font-semibold text-slate-800 mt-0.5" id="edit-display-deskripsi">-</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60 text-[11px] text-slate-500">
+                                <div>Inspektor: <strong class="text-slate-700" id="edit-display-petugas">-</strong></div>
+                                <div>Area / Gudang: <strong class="text-slate-700" id="edit-display-lokasi">-</strong></div>
+                            </div>
+                            <div id="edit-container-before-photo" class="hidden pt-1.5">
+                                <span class="text-[10px] text-slate-400 font-medium block mb-1">Foto Before:</span>
+                                <a id="edit-link-foto-before" href="#" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline">
+                                    <i class="ph ph-arrow-square-out"></i> Buka Foto Before
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Update Status -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                Status Penyelesaian <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="edit-ceklist-status" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-amber-500 font-semibold">
+                                <option value="Closed">Closed (Temuan Selesai)</option>
+                                <option value="In Progress">In Progress (Sedang Dikerjakan)</option>
+                                <option value="Open">Open (Belum Selesai)</option>
+                            </select>
+                        </div>
+
+                        <!-- Tindakan Perbaikan Realisasi -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                Tindakan Perbaikan / Keterangan Selesai
+                            </label>
+                            <textarea id="edit-ceklist-tindakan" rows="2" placeholder="Jelaskan tindakan koreksi yang telah dilakukan di lapangan..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-amber-500"></textarea>
+                        </div>
+
+                        <!-- Upload / Link Foto After -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-semibold text-slate-700">
+                                Dokumentasi Foto After (Bukti Penyelesaian Lapangan)
+                            </label>
+                            
+                            <!-- File input or Camera -->
+                            <div class="flex items-center gap-2">
+                                <label class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-300 border-dashed rounded-lg cursor-pointer transition-colors text-slate-600">
+                                    <i class="ph ph-camera text-base text-amber-600"></i>
+                                    <span class="text-xs font-medium" id="edit-label-upload-file">Upload / Ambil Foto After</span>
+                                    <input type="file" id="edit-input-file-after" accept="image/*" class="hidden" onchange="handleFotoAfterFileUpload(event)">
+                                </label>
+                            </div>
+
+                            <!-- Or Link input -->
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-medium mb-1">Atau masukkan Link URL Foto (Google Drive / Direct Link):</div>
+                                <input type="url" id="edit-ceklist-foto-2" oninput="handleFotoAfterUrlChange(this.value)" placeholder="https://drive.google.com/... atau URL foto" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none bg-white focus:border-amber-500">
+                            </div>
+
+                            <!-- Preview Foto After -->
+                            <div id="edit-preview-foto-after-container" class="hidden border border-slate-200 rounded-lg p-2.5 bg-slate-50">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[11px] font-semibold text-teal-700 flex items-center gap-1">
+                                        <i class="ph ph-check-circle"></i> Pratinjau Foto After
+                                    </span>
+                                    <button type="button" onclick="clearFotoAfterPreview()" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold">Hapus Foto</button>
+                                </div>
+                                <div class="w-full max-h-48 rounded-lg overflow-hidden border border-slate-200 bg-white flex items-center justify-center">
+                                    <img id="edit-preview-foto-after-img" src="" alt="Pratinjau Foto After" class="max-h-48 w-auto object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-end items-center gap-2">
+                        <button type="button" onclick="closeEditCeklistModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors">
+                            <i class="ph ph-check-circle text-base"></i> Simpan & Update Temuan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1655,39 +1935,26 @@ function testReadData() {
             reader.readAsDataURL(file);
         }
 
-        function applyCustomLogo(base64Data) {
-            const icon = document.getElementById('default-logo-icon');
-            const img = document.getElementById('custom-logo-img');
-            const container = document.getElementById('logo-container');
-            
-            const loginIcon = document.getElementById('login-default-icon');
-            const loginImg = document.getElementById('login-custom-img');
-            const loginContainer = document.getElementById('login-logo-container');
+        const DEFAULT_KAPAL_API_LOGO = '/kapal_api_logo_sm.png';
 
-            if (base64Data) {
-                icon.classList.add('hidden');
-                img.src = base64Data;
+        function applyCustomLogo(base64Data) {
+            const currentLogo = base64Data || DEFAULT_KAPAL_API_LOGO;
+            const img = document.getElementById('custom-logo-img');
+            const loginImg = document.getElementById('login-custom-img');
+
+            if (img) {
+                img.src = currentLogo;
                 img.classList.remove('hidden');
-                container.classList.remove('p-2', 'bg-brand-primary'); // Remove padding so image fits full box
-                
-                if (loginIcon) loginIcon.classList.add('hidden');
-                if (loginImg) { loginImg.src = base64Data; loginImg.classList.remove('hidden'); }
-                if (loginContainer) { loginContainer.classList.remove('bg-brand-primary/10'); loginContainer.classList.add('bg-transparent'); }
-            } else {
-                icon.classList.remove('hidden');
-                img.classList.add('hidden');
-                img.src = "";
-                container.classList.add('p-2', 'bg-brand-primary');
-                
-                if (loginIcon) loginIcon.classList.remove('hidden');
-                if (loginImg) { loginImg.classList.add('hidden'); loginImg.src = ""; }
-                if (loginContainer) { loginContainer.classList.remove('bg-transparent'); loginContainer.classList.add('bg-brand-primary/10'); }
+            }
+            if (loginImg) {
+                loginImg.src = currentLogo;
+                loginImg.classList.remove('hidden');
             }
         }
 
         function loadSavedLogo() {
             const savedLogo = localStorage.getItem('sibikom_custom_logo');
-            if (savedLogo) applyCustomLogo(savedLogo);
+            applyCustomLogo(savedLogo || DEFAULT_KAPAL_API_LOGO);
         }
 
         function showToast(msg, type = 'success') { 
@@ -2812,7 +3079,7 @@ function testReadData() {
                     foto1: "https://drive.google.com/open?id=1V2S6TNhQU44dBcY8Q_YxOADlSnbSfqpu", // Kolom I
                     foto2: "",                    // Kolom J
                     deskripsi: "Kunci",           // Kolom K
-                    tindakan: "Dipindah",         // Kolom L
+                    tindakan: "",                 // Kolom L (dikosongkan untuk status Open)
                     pic: "Yolanda",               // Kolom M
                     targetSelesai: "2026-09-22",  // Kolom N
                     status: "Open",               // Kolom O
@@ -3005,18 +3272,28 @@ function testReadData() {
                     console.warn("GVIZ direct fetch failed or restricted, checking local or fallback:", fetchErr);
                 }
 
+                const localUpdates = JSON.parse(localStorage.getItem('sibikom_ceklist_local_updates') || '{}');
+                const applyUpdates = (list) => list.map(item => localUpdates[item.id] ? { ...item, ...localUpdates[item.id] } : item);
+
                 if (sheetRows && sheetRows.length > 0) {
                     const localCreated = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
-                    allCeklistData = [...localCreated, ...sheetRows];
+                    allCeklistData = applyUpdates([...localCreated, ...sheetRows]);
                     localStorage.setItem('sibikom_checklist_warehouse_cached', JSON.stringify(sheetRows));
                 } else {
                     const cached = localStorage.getItem('sibikom_checklist_warehouse_cached');
                     const localCreated = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
                     if (cached) {
-                        allCeklistData = [...localCreated, ...JSON.parse(cached)];
+                        let parsedCached = JSON.parse(cached);
+                        parsedCached = parsedCached.map(item => {
+                            if (item.id === 'CW-1001' && item.tindakan === 'Dipindah') {
+                                return { ...item, tindakan: '-' };
+                            }
+                            return item;
+                        });
+                        allCeklistData = applyUpdates([...localCreated, ...parsedCached]);
                     } else {
                         const seed = getSeedCeklistData();
-                        allCeklistData = [...localCreated, ...seed];
+                        allCeklistData = applyUpdates([...localCreated, ...seed]);
                     }
                 }
 
@@ -3052,10 +3329,8 @@ function testReadData() {
                 formContainer.classList.remove('hidden');
                 btnText.innerText = 'Tutup Form';
                 document.getElementById('ceklist-tgl').value = new Date().toISOString().slice(0, 10);
-                const user = localStorage.getItem('sibikom_logged_user') || '';
-                if (user && !document.getElementById('ceklist-petugas').value) {
-                    document.getElementById('ceklist-petugas').value = user;
-                }
+                if (document.getElementById('ceklist-tindakan')) document.getElementById('ceklist-tindakan').value = '';
+                if (document.getElementById('ceklist-foto-2')) document.getElementById('ceklist-foto-2').value = '';
             } else {
                 formContainer.classList.add('hidden');
                 btnText.innerText = 'Input Inspeksi Baru';
@@ -3221,7 +3496,7 @@ function testReadData() {
                             <span class="font-mono text-[11px] font-semibold text-indigo-700 bg-indigo-50/70 px-1.5 py-0.5 rounded border border-indigo-100">${item.waktu}</span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <div class="font-bold text-slate-800 text-xs">${item.petugas}</div>
+                            <div class="font-bold text-slate-800 text-xs">${item.petugas || '-'}</div>
                             ${item.email ? `<div class="text-[10px] text-slate-400 truncate max-w-[140px]">${item.email}</div>` : ''}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap font-medium text-slate-700">
@@ -3265,6 +3540,9 @@ function testReadData() {
                                 <button type="button" onclick="showDetailCeklistWarehouse('${item.id}')" title="Lihat Detail Inspeksi" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors">
                                     <i class="ph ph-eye text-base"></i>
                                 </button>
+                                <button type="button" onclick="openEditCeklistModal('${item.id}')" title="Edit / Close Temuan (Upload Foto After)" class="p-1.5 bg-amber-50 text-amber-600 rounded-md hover:bg-amber-100 transition-colors">
+                                    <i class="ph ph-note-pencil text-base"></i>
+                                </button>
                                 <button type="button" onclick="deleteCeklistWarehouse('${item.id}')" title="Hapus Data Baris Ini" class="p-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">
                                     <i class="ph ph-trash text-base"></i>
                                 </button>
@@ -3298,7 +3576,7 @@ function testReadData() {
 
         function saveDataCeklistWarehouse(e) {
             e.preventDefault();
-            const petugas = document.getElementById('ceklist-petugas').value.trim();
+            const petugas = document.getElementById('ceklist-petugas').value.trim() || '-';
             const tgl = document.getElementById('ceklist-tgl').value;
             const bagian = document.getElementById('ceklist-bagian').value.trim() || 'GBB';
             const area = document.getElementById('ceklist-area').value.trim() || '-';
@@ -3313,8 +3591,8 @@ function testReadData() {
             const foto1 = document.getElementById('ceklist-foto-1').value.trim();
             const foto2 = document.getElementById('ceklist-foto-2').value.trim();
 
-            if (!tgl || !petugas || !deskripsi) {
-                showToast("Harap lengkapi nama petugas inspeksi, tanggal, dan deskripsi.", "error");
+            if (!tgl || !deskripsi) {
+                showToast("Harap lengkapi tanggal inspeksi dan deskripsi temuan.", "error");
                 return;
             }
 
@@ -3325,11 +3603,11 @@ function testReadData() {
             const newRecord = {
                 id,
                 waktu: nowWaktuStr,           // Kolom A
-                petugas,                      // Kolom B
+                petugas: petugas !== '-' ? petugas : '',  // Kolom B
                 tanggal: tgl,                 // Kolom C
                 bagian,                       // Kolom D
-                area,                         // Kolom E
-                nomorGudang,                  // Kolom F
+                area: area !== '-' ? area : '',           // Kolom E
+                nomorGudang: nomorGudang !== '-' ? nomorGudang : '', // Kolom F
                 kategoriAudit,                // Kolom G
                 tingkatKeparahan,             // Kolom H
                 foto1,                        // Kolom I
@@ -3348,7 +3626,7 @@ function testReadData() {
             localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
 
             allCeklistData.unshift(newRecord);
-            showToast(`Data Ceklist ${id} (${petugas}) berhasil disimpan!`, 'success');
+            showToast(`Data Ceklist ${id}${petugas && petugas !== '-' ? ` (${petugas})` : ''} berhasil disimpan!`, 'success');
 
             // Kirim ke Google Apps Script Web App jika URL tersedia
             const postUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : WEB_APP_URL;
@@ -3444,7 +3722,7 @@ function testReadData() {
                             ${record.foto1 ? `
                                 <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 flex items-center justify-between">
                                     <div class="truncate mr-2">
-                                        <div class="font-semibold text-xs text-slate-700">Dokumentasi Before (Kolom I)</div>
+                                        <div class="font-semibold text-xs text-slate-700">Dokumentasi Before</div>
                                         <div class="text-[11px] text-slate-400 truncate">${record.foto1}</div>
                                     </div>
                                     <a href="${record.foto1}" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shrink-0 flex items-center gap-1">
@@ -3455,7 +3733,7 @@ function testReadData() {
                             ${record.foto2 ? `
                                 <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 flex items-center justify-between">
                                     <div class="truncate mr-2">
-                                        <div class="font-semibold text-xs text-slate-700">Dokumentasi After (Kolom J)</div>
+                                        <div class="font-semibold text-xs text-slate-700">Dokumentasi After</div>
                                         <div class="text-[11px] text-slate-400 truncate">${record.foto2}</div>
                                     </div>
                                     <a href="${record.foto2}" target="_blank" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shrink-0 flex items-center gap-1">
@@ -3471,7 +3749,7 @@ function testReadData() {
             const contentHtml = `
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <div class="text-xs text-slate-400">ID & Waktu Terdaftar (Kolom A)</div>
+                        <div class="text-xs text-slate-400">ID & Waktu Terdaftar</div>
                         <div class="font-black text-slate-800 text-lg">${record.id} <span class="text-xs font-mono font-normal text-slate-500">(${record.waktu})</span></div>
                     </div>
                     <div>${badgeStatus}</div>
@@ -3479,50 +3757,50 @@ function testReadData() {
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white border border-slate-200 rounded-xl p-3.5">
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Nama Inspektor (Kolom B)</div>
-                        <div class="font-bold text-slate-800 text-xs mt-0.5">${record.petugas}</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Nama Inspektor</div>
+                        <div class="font-bold text-slate-800 text-xs mt-0.5">${record.petugas || '-'}</div>
                         ${record.email ? `<div class="text-[10px] text-slate-400 truncate">${record.email}</div>` : ''}
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Tanggal Inspeksi (Kolom C)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Tanggal Inspeksi</div>
                         <div class="font-semibold text-slate-800 text-xs mt-0.5">${formatSheetDate(record.tanggal)}</div>
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Bagian / Area (Kolom D/E)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Bagian / Area</div>
                         <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.bagian || '-'} / ${record.area || '-'}</div>
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Nomor Gudang (Kolom F)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Nomor Gudang</div>
                         <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.nomorGudang || '-'}</div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white border border-slate-200 rounded-xl p-3.5">
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Kategori Audit (Kolom G)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Kategori Audit</div>
                         <div class="font-bold text-slate-800 text-xs mt-0.5">${record.kategoriAudit || '-'}</div>
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Tingkat Keparahan (Kolom H)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Tingkat Keparahan</div>
                         <div class="mt-1">${badgeSeverity}</div>
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">PIC Temuan (Kolom M)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">PIC Temuan</div>
                         <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.pic || '-'}</div>
                     </div>
                     <div>
-                        <div class="text-[11px] text-slate-400 font-medium">Target Selesai (Kolom N)</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Target Selesai</div>
                         <div class="font-semibold text-slate-800 text-xs mt-0.5">${record.targetSelesai ? formatSheetDate(record.targetSelesai) : '-'}</div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                        <div class="font-bold text-slate-700 text-xs mb-1.5 flex items-center gap-1.5"><i class="ph ph-note text-indigo-600 text-base"></i> Diskripsi Temuan (Kolom K)</div>
+                        <div class="font-bold text-slate-700 text-xs mb-1.5 flex items-center gap-1.5"><i class="ph ph-note text-indigo-600 text-base"></i> Diskripsi Temuan</div>
                         <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-line">${record.deskripsi || '-'}</p>
                     </div>
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                        <div class="font-bold text-slate-700 text-xs mb-1.5 flex items-center gap-1.5"><i class="ph ph-wrench text-indigo-600 text-base"></i> Tindakan Perbaikan (Kolom L)</div>
+                        <div class="font-bold text-slate-700 text-xs mb-1.5 flex items-center gap-1.5"><i class="ph ph-wrench text-indigo-600 text-base"></i> Tindakan Perbaikan</div>
                         <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-line">${record.tindakan || '-'}</p>
                     </div>
                 </div>
@@ -3537,6 +3815,186 @@ function testReadData() {
         function closeDetailCeklistModal() {
             document.getElementById('modal-detail-ceklist').classList.add('hidden');
             currentActiveCeklistDetail = null;
+        }
+
+        function openEditCeklistModal(id) {
+            const record = allCeklistData.find(item => item.id === id);
+            if (!record) return;
+
+            document.getElementById('edit-ceklist-id').value = record.id;
+            document.getElementById('edit-badge-id').innerText = record.id;
+            document.getElementById('edit-display-deskripsi').innerText = record.deskripsi || '-';
+            document.getElementById('edit-display-petugas').innerText = record.petugas || '-';
+            document.getElementById('edit-display-lokasi').innerText = `${record.bagian || '-'} / ${record.area || '-'} (No: ${record.nomorGudang || '-'})`;
+
+            // Badge current status
+            const st = String(record.status || '').toLowerCase();
+            let currentStatusHtml = '';
+            if (st === 'open') {
+                currentStatusHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">Status Saat Ini: OPEN</span>';
+            } else if (st.includes('progress')) {
+                currentStatusHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">Status Saat Ini: IN PROGRESS</span>';
+            } else {
+                currentStatusHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Status Saat Ini: CLOSED</span>';
+            }
+            document.getElementById('edit-badge-status-current').innerHTML = currentStatusHtml;
+
+            // Foto Before Link if available
+            const beforeContainer = document.getElementById('edit-container-before-photo');
+            const beforeLink = document.getElementById('edit-link-foto-before');
+            if (record.foto1) {
+                beforeContainer.classList.remove('hidden');
+                beforeLink.href = record.foto1;
+            } else {
+                beforeContainer.classList.add('hidden');
+            }
+
+            // Set default new status to "Closed" if currently open/progress, or keep current
+            const statusSelect = document.getElementById('edit-ceklist-status');
+            if (st === 'open' || st.includes('progress')) {
+                statusSelect.value = 'Closed';
+            } else {
+                statusSelect.value = record.status || 'Closed';
+            }
+
+            // Set existing tindakan perbaikan
+            document.getElementById('edit-ceklist-tindakan').value = record.tindakan !== '-' ? (record.tindakan || '') : '';
+
+            // Set existing foto2 / after
+            const foto2Val = record.foto2 || '';
+            document.getElementById('edit-ceklist-foto-2').value = foto2Val;
+            const previewContainer = document.getElementById('edit-preview-foto-after-container');
+            const previewImg = document.getElementById('edit-preview-foto-after-img');
+            const fileLabel = document.getElementById('edit-label-upload-file');
+            fileLabel.innerText = 'Upload / Ambil Foto After';
+
+            if (foto2Val) {
+                previewImg.src = foto2Val;
+                previewContainer.classList.remove('hidden');
+            } else {
+                previewImg.src = '';
+                previewContainer.classList.add('hidden');
+            }
+
+            document.getElementById('modal-edit-ceklist').classList.remove('hidden');
+        }
+
+        function closeEditCeklistModal() {
+            document.getElementById('modal-edit-ceklist').classList.add('hidden');
+            document.getElementById('form-edit-ceklist').reset();
+            clearFotoAfterPreview();
+        }
+
+        function openEditFromDetailModal() {
+            if (currentActiveCeklistDetail) {
+                const id = currentActiveCeklistDetail.id;
+                closeDetailCeklistModal();
+                openEditCeklistModal(id);
+            }
+        }
+
+        function handleFotoAfterFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast("Ukuran foto maksimal 5 MB.", "error");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                document.getElementById('edit-preview-foto-after-img').src = dataUrl;
+                document.getElementById('edit-preview-foto-after-container').classList.remove('hidden');
+                document.getElementById('edit-ceklist-foto-2').value = dataUrl;
+                document.getElementById('edit-label-upload-file').innerText = file.name;
+                showToast("Foto After berhasil dimuat ke form!", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleFotoAfterUrlChange(url) {
+            const previewContainer = document.getElementById('edit-preview-foto-after-container');
+            const previewImg = document.getElementById('edit-preview-foto-after-img');
+            if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/'))) {
+                previewImg.src = url;
+                previewContainer.classList.remove('hidden');
+            } else if (!url) {
+                previewImg.src = '';
+                previewContainer.classList.add('hidden');
+            }
+        }
+
+        function clearFotoAfterPreview() {
+            document.getElementById('edit-preview-foto-after-img').src = '';
+            document.getElementById('edit-preview-foto-after-container').classList.add('hidden');
+            document.getElementById('edit-ceklist-foto-2').value = '';
+            document.getElementById('edit-input-file-after').value = '';
+            document.getElementById('edit-label-upload-file').innerText = 'Upload / Ambil Foto After';
+        }
+
+        function saveEditCeklist(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-ceklist-id').value;
+            const newStatus = document.getElementById('edit-ceklist-status').value;
+            const newTindakan = document.getElementById('edit-ceklist-tindakan').value.trim();
+            const newFoto2 = document.getElementById('edit-ceklist-foto-2').value.trim();
+
+            const idx = allCeklistData.findIndex(item => item.id === id);
+            if (idx === -1) {
+                showToast("Data temuan tidak ditemukan.", "error");
+                return;
+            }
+
+            const updatedRecord = {
+                ...allCeklistData[idx],
+                status: newStatus,
+                tindakan: newTindakan || allCeklistData[idx].tindakan || '-',
+                foto2: newFoto2 || allCeklistData[idx].foto2 || ''
+            };
+
+            allCeklistData[idx] = updatedRecord;
+
+            // Simpan perubahan ke sibikom_ceklist_local_updates
+            const localUpdates = JSON.parse(localStorage.getItem('sibikom_ceklist_local_updates') || '{}');
+            localUpdates[id] = {
+                status: newStatus,
+                tindakan: updatedRecord.tindakan,
+                foto2: updatedRecord.foto2
+            };
+            localStorage.setItem('sibikom_ceklist_local_updates', JSON.stringify(localUpdates));
+
+            // Jika ada di sibikom_ceklist_local_added, update juga
+            const localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
+            const addedIdx = localAdded.findIndex(item => item.id === id);
+            if (addedIdx !== -1) {
+                localAdded[addedIdx] = { ...localAdded[addedIdx], ...localUpdates[id] };
+                localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
+            }
+
+            // Sync update ke Google Apps Script Web App jika tersedia
+            const postUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : WEB_APP_URL;
+            if (postUrl) {
+                try {
+                    const postParams = new URLSearchParams();
+                    postParams.append('action', 'UPDATE_CEKLIST');
+                    postParams.append('id', id);
+                    postParams.append('status', newStatus);
+                    postParams.append('tindakan', updatedRecord.tindakan);
+                    postParams.append('foto2', updatedRecord.foto2);
+                    postParams.append('sheetName', ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE');
+                    fetch(postUrl, { method: 'POST', mode: 'no-cors', body: postParams }).catch(e => console.warn(e));
+                } catch(err) {
+                    console.warn("GAS update dispatch error:", err);
+                }
+            }
+
+            closeEditCeklistModal();
+            applyFilterAndSortCeklist();
+            updateCeklistStats();
+
+            showToast(`Temuan ${id} berhasil diperbarui (Status: ${newStatus})!`, 'success');
         }
 
         function printDetailCeklist() {
@@ -3593,11 +4051,11 @@ function testReadData() {
             }
 
             const headers = [
-                "ID", "Waktu (Kolom A)", "Nama Warehouse Inspektor (Kolom B)", "Tanggal Inspeksi (Kolom C)",
-                "Bagian (Kolom D)", "Area (Kolom E)", "Nomor Gudang (Kolom F)", "Kategori Audit (Kolom G)",
-                "Tingkat Keparahan (Kolom H)", "Dokumentasi Foto 1 (Kolom I)", "Dokumentasi Foto 2 (Kolom J)",
-                "Diskripsi Temuan (Kolom K)", "Tindakan Perbaikan (Kolom L)", "PIC (Kolom M)",
-                "Target Selesai (Kolom N)", "Status (Kolom O)"
+                "ID", "Waktu", "Nama Warehouse Inspektor", "Tanggal Inspeksi",
+                "Bagian", "Area", "Nomor Gudang", "Kategori Audit",
+                "Tingkat Keparahan", "Dokumentasi Foto 1", "Dokumentasi Foto 2",
+                "Diskripsi Temuan", "Tindakan Perbaikan", "PIC",
+                "Target Selesai", "Status"
             ];
 
             const rows = allCeklistData.map(d => [
@@ -3774,7 +4232,113 @@ function testReadData() {
             }; reader.readAsText(file);
         }
 
-        document.addEventListener('DOMContentLoaded', () => { checkLoginState(); loadSavedLogo(); });
+        // ================= MODE TERANG / GELAP (DARK MODE) =================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('sibikom_theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+            applyTheme(isDark ? 'dark' : 'light', false);
+        }
+
+        function applyTheme(theme, notify = true) {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            const btn = document.getElementById('theme-toggle-btn');
+            
+            if (theme === 'dark') {
+                html.classList.add('dark');
+                localStorage.setItem('sibikom_theme', 'dark');
+                if (icon) {
+                    icon.className = 'ph ph-sun text-lg text-amber-400';
+                }
+                if (text) {
+                    text.innerText = 'Mode Terang';
+                }
+                if (btn) {
+                    btn.setAttribute('title', 'Beralih ke Mode Terang');
+                }
+                if (notify && typeof showToast === 'function') {
+                    showToast('Mode Gelap diaktifkan', 'info');
+                }
+            } else {
+                html.classList.remove('dark');
+                localStorage.setItem('sibikom_theme', 'light');
+                if (icon) {
+                    icon.className = 'ph ph-moon text-lg text-slate-700';
+                }
+                if (text) {
+                    text.innerText = 'Mode Gelap';
+                }
+                if (btn) {
+                    btn.setAttribute('title', 'Beralih ke Mode Gelap');
+                }
+                if (notify && typeof showToast === 'function') {
+                    showToast('Mode Terang diaktifkan', 'info');
+                }
+            }
+
+            // Perbarui warna grid & label grafik Chart.js jika ada
+            try {
+                if (typeof chartObjMasuk !== 'undefined' && chartObjMasuk && chartObjMasuk.options) {
+                    chartObjMasuk.options.scales.x.ticks.color = theme === 'dark' ? '#94a3b8' : '#64748b';
+                    chartObjMasuk.options.scales.y.ticks.color = theme === 'dark' ? '#94a3b8' : '#64748b';
+                    chartObjMasuk.options.scales.x.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                    chartObjMasuk.options.scales.y.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                    chartObjMasuk.update();
+                }
+                if (typeof chartObjKeluar !== 'undefined' && chartObjKeluar && chartObjKeluar.options) {
+                    chartObjKeluar.options.scales.x.ticks.color = theme === 'dark' ? '#94a3b8' : '#64748b';
+                    chartObjKeluar.options.scales.y.ticks.color = theme === 'dark' ? '#94a3b8' : '#64748b';
+                    chartObjKeluar.options.scales.x.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                    chartObjKeluar.options.scales.y.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                    chartObjKeluar.update();
+                }
+            } catch(e) {}
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.contains('dark');
+            applyTheme(isDark ? 'light' : 'dark', true);
+        }
+
+        // ================= WIDGET HARI, TANGGAL & JAM DIGITAL =================
+        function updateLiveClockAndDate() {
+            const now = new Date();
+            
+            // Nama Hari dan Bulan Bahasa Indonesia
+            const hariNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const bulanNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            const hari = hariNames[now.getDay()];
+            const tanggal = String(now.getDate()).padStart(2, '0');
+            const bulan = bulanNames[now.getMonth()];
+            const tahun = now.getFullYear();
+            
+            const dateStr = `${hari}, ${tanggal} ${bulan} ${tahun}`;
+            const dateEl = document.getElementById('header-live-date');
+            if (dateEl && dateEl.innerText !== dateStr) {
+                dateEl.innerText = dateStr;
+            }
+            
+            // Jam Digital Real-time
+            const jam = String(now.getHours()).padStart(2, '0');
+            const menit = String(now.getMinutes()).padStart(2, '0');
+            const detik = String(now.getSeconds()).padStart(2, '0');
+            
+            const clockEl = document.getElementById('header-live-clock');
+            if (clockEl) {
+                clockEl.innerText = `${jam}:${menit}:${detik}`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { 
+            initTheme(); 
+            updateLiveClockAndDate(); 
+            setInterval(updateLiveClockAndDate, 1000); 
+            checkLoginState(); 
+            loadSavedLogo(); 
+        });
     </script>
 </body>
 </html>
