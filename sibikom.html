@@ -491,24 +491,47 @@
 
                     <!-- Tabel Sesuai Foto -->
                     <div class="overflow-x-auto w-full">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-slate-100 dark:bg-slate-800/90 border-b border-slate-300 dark:border-slate-700 font-bold">
+                        <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                            <!-- Header Tabel dengan Background yang Sedikit Dibedakan untuk Ilustrasi Mata -->
+                            <thead class="border-b-2 border-slate-300 dark:border-slate-700 font-bold text-xs uppercase tracking-wider">
                                 <tr>
-                                    <th class="px-6 py-3.5 border-r border-slate-200 dark:border-slate-700 font-sans text-slate-900 dark:text-white">Gudang</th>
-                                    <th class="px-6 py-3.5 text-right border-r border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-300 font-sans font-bold">Kopi biji 18 (Kg)</th>
-                                    <th class="px-6 py-3.5 text-right border-r border-slate-200 dark:border-slate-700 text-emerald-700 dark:text-emerald-300 font-sans font-bold">Kopi biji 19 (Kg)</th>
-                                    <th class="px-6 py-3.5 text-right font-extrabold text-slate-950 dark:text-white font-sans">Total</th>
+                                    <th class="px-6 py-4 bg-slate-200/90 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-r border-slate-300 dark:border-slate-700 font-sans">
+                                        <div class="flex items-center gap-2">
+                                            <i class="ph ph-buildings text-slate-500 dark:text-slate-400 text-base"></i>
+                                            <span>Gudang</span>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-4 text-right bg-sky-100/90 dark:bg-sky-950/70 text-sky-900 dark:text-sky-300 border-r border-sky-200 dark:border-sky-900/60 font-sans font-bold">
+                                        <div class="inline-flex items-center gap-1.5 justify-end">
+                                            <span class="w-2 h-2 rounded-full bg-sky-500 shadow-xs"></span>
+                                            <span>Kopi biji 18 (Kg)</span>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-4 text-right bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border-r border-emerald-200 dark:border-emerald-900/60 font-sans font-bold">
+                                        <div class="inline-flex items-center gap-1.5 justify-end">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-xs"></span>
+                                            <span>Kopi biji 19 (Kg)</span>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-4 text-right bg-indigo-100/80 dark:bg-slate-800/95 text-indigo-950 dark:text-amber-300 font-sans font-extrabold">
+                                        <div class="inline-flex items-center gap-1.5 justify-end">
+                                            <i class="ph ph-calculator text-amber-500 text-sm"></i>
+                                            <span>Total (Kg)</span>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="table-summary-kapasitas-gudang" class="divide-y divide-slate-200 dark:divide-slate-800 font-mono text-sm bg-white dark:bg-slate-900">
                                 <tr><td colspan="4" class="text-center py-6 text-slate-400 font-sans">Tekan Segarkan Data...</td></tr>
                             </tbody>
-                            <tfoot id="tfoot-summary-kapasitas-gudang" class="bg-slate-100 dark:bg-slate-800 border-t-2 border-slate-300 dark:border-slate-700 font-bold font-mono text-sm">
+                            <tfoot id="tfoot-summary-kapasitas-gudang" class="border-t-2 border-slate-300 dark:border-slate-700 font-bold font-mono text-sm">
                                 <tr>
-                                    <td class="px-6 py-3.5 font-extrabold uppercase text-slate-900 dark:text-white border-r border-slate-300 dark:border-slate-700 font-sans tracking-wide">total</td>
-                                    <td class="px-6 py-3.5 text-right font-bold border-r border-slate-300 dark:border-slate-700 text-sky-700 dark:text-sky-300 font-mono text-base" id="foot-total-18">0,00</td>
-                                    <td class="px-6 py-3.5 text-right font-bold border-r border-slate-300 dark:border-slate-700 text-emerald-700 dark:text-emerald-300 font-mono text-base" id="foot-total-19">0,00</td>
-                                    <td class="px-6 py-3.5 text-right font-black text-slate-950 dark:text-amber-300 font-mono text-base sm:text-lg" id="foot-total-all">0,00</td>
+                                    <td class="px-6 py-4 font-extrabold uppercase bg-slate-200/90 dark:bg-slate-800 text-slate-900 dark:text-white border-r border-slate-300 dark:border-slate-700 font-sans tracking-wide">
+                                        TOTAL
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-bold bg-sky-50/80 dark:bg-sky-950/40 border-r border-sky-200 dark:border-sky-900/40 text-sky-800 dark:text-sky-300 font-mono text-base" id="foot-total-18">0,00</td>
+                                    <td class="px-6 py-4 text-right font-bold bg-emerald-50/80 dark:bg-emerald-950/40 border-r border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300 font-mono text-base" id="foot-total-19">0,00</td>
+                                    <td class="px-6 py-4 text-right font-black bg-amber-100/80 dark:bg-amber-950/60 text-slate-950 dark:text-amber-300 font-mono text-base sm:text-lg" id="foot-total-all">0,00</td>
                                 </tr>
                             </tfoot>
                         </table>
