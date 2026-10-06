@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIBIKOM - Sistem Biji Kopi Manajemen</title>
-    <meta name="description" content="SIBIKOM - Sistem Biji Kopi Manajemen">
-    <meta property="og:title" content="SIBIKOM - Sistem Biji Kopi Manajemen">
-    <meta property="og:description" content="SIBIKOM - Sistem Biji Kopi Manajemen">
+    <title>Portal Procurement - SJA</title>
+    <meta name="description" content="Portal Procurement SJA - Sistem Manajemen Pembelian">
+    <meta property="og:title" content="Portal Procurement - SJA">
+    <meta property="og:description" content="Portal Procurement SJA - Sistem Manajemen Pembelian">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -357,6 +357,12 @@
 
             <!-- Tombol Aksi Kanan: Mode Terang/Gelap, User Info, Logout -->
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <!-- Tombol Google Sheet & Code.gs Sync (Hanya Mode Super Admin) -->
+                <button id="btn-header-gsheet-sync" onclick="openModalAppsScriptGlobal()" class="hidden p-2 sm:px-3 sm:py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-sm transition-all duration-200 items-center gap-1.5 cursor-pointer" title="Konfigurasi Sinkronisasi Google Sheet & Apps Script Code.gs (Super Admin)">
+                    <i class="ph ph-google-logo text-lg text-emerald-600"></i>
+                    <span class="text-xs font-semibold hidden lg:inline">Google Sheet Sync</span>
+                </button>
+
                 <!-- Tombol Mode Terang / Gelap -->
                 <button onclick="toggleDarkMode()" id="theme-toggle-btn" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-300 border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-200 flex items-center gap-1.5 cursor-pointer" title="Ganti Mode Terang / Gelap">
                     <i id="theme-icon" class="ph ph-moon text-lg"></i>
@@ -584,7 +590,15 @@
                 <div class="mt-12 border-t border-slate-200 pt-8">
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <h3 class="text-lg font-bold text-slate-800">Riwayat Data Permintaan UPBM</h3>
-                        <button type="button" onclick="fetchRiwayatPermintaan()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"><i class="ph ph-arrows-clockwise text-lg" id="icon-sync-riwayat-permintaan"></i> Segarkan Data</button>
+                        <div class="flex items-center gap-2">
+                            <!-- Tombol Konfigurasi Google Sheet & Code.gs (Hanya Tampil di Mode Superadmin) -->
+                            <button id="btn-appscript-upbm" type="button" onclick="openModalAppsScriptGlobal()" class="hidden items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 px-3.5 py-2 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer" title="Konfigurasi Google Apps Script & Sinkronisasi 2 Arah (Super Admin)">
+                                <i class="ph ph-google-logo text-base text-emerald-600"></i> Hubungkan Google Sheet & Code.gs
+                            </button>
+                            <button type="button" onclick="fetchRiwayatPermintaan()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors cursor-pointer">
+                                <i class="ph ph-arrows-clockwise text-lg" id="icon-sync-riwayat-permintaan"></i> Segarkan Data
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-200 rounded-xl">
                         <table class="w-full text-left text-sm text-slate-600 whitespace-nowrap">
@@ -1742,7 +1756,7 @@ function doPost(e) {
 function readSheetData(sheet) {
   var lastRow = sheet.getLastRow();
   var lastCol = Math.max(sheet.getLastColumn(), 16);
-  if (lastRow < 2) return [];
+  if (lastRow &lt; 2) return [];
 
   var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
   var result = [];
@@ -1894,11 +1908,146 @@ function testReadData() {
                 </div>
             </div>
         </div>
+
+        <!-- Modal Global Integrasi Google Sheet & Code.gs (Komunikasi 2 Arah) -->
+        <div id="modal-appscript-global" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[130] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-100">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 font-bold">
+                            <i class="ph ph-google-logo text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base sm:text-lg text-white">Integrasi Google Sheet & Backend Code.gs</h3>
+                            <p class="text-xs text-slate-300">Sinkronisasi 2 Arah: Tambah, Edit, Hapus & Baca Data Real-Time</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeModalAppsScriptGlobal()" class="text-slate-400 hover:text-white text-xl p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 overflow-y-auto space-y-5 text-xs text-slate-700">
+                    <!-- Status Notifikasi / Alert Ping Test -->
+                    <div id="ping-status-alert" class="hidden p-3.5 rounded-xl border flex items-start gap-2.5">
+                        <i id="ping-status-icon" class="ph ph-info text-xl shrink-0 mt-0.5"></i>
+                        <div class="flex-1">
+                            <h4 id="ping-status-title" class="font-bold text-xs">Status Koneksi</h4>
+                            <p id="ping-status-message" class="text-[11px] mt-0.5 leading-relaxed">Menunggu tes koneksi...</p>
+                        </div>
+                    </div>
+
+                    <!-- Konfigurasi URL Web App & Spreadsheet ID -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                                <i class="ph ph-sliders text-indigo-600 text-base"></i> Konfigurasi Endpoint Google Apps Script
+                            </h4>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Tersimpan di Browser</span>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">
+                                Google Apps Script Web App URL (doGet & doPost)
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="text" id="input-global-webapp-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 px-3.5 py-2.5 text-xs font-mono rounded-lg border border-slate-300 outline-none focus:border-indigo-600 bg-white shadow-xs">
+                                <button type="button" onclick="testPingAppsScript()" id="btn-ping-test" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-semibold flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer shadow-xs">
+                                    <i class="ph ph-lightning text-amber-400"></i> Tes Koneksi (Ping)
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-1">URL ini dipanggil saat Anda menambah, mengedit, atau menghapus data pada sistem SIBIKOM.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Google Spreadsheet ID</label>
+                                <input type="text" id="input-global-sheet-id" placeholder="12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 outline-none focus:border-indigo-600 bg-white">
+                                <p class="text-[10px] text-slate-400 mt-0.5">ID unik dari URL Spreadsheet Anda.</p>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button type="button" onclick="saveConfigAppsScriptGlobal()" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+                                    <i class="ph ph-floppy-disk text-base"></i> Simpan Konfigurasi
+                                </button>
+                                <button type="button" onclick="resetConfigAppsScriptGlobal()" class="px-3 py-2 border border-slate-300 text-slate-600 hover:bg-slate-200/60 rounded-lg text-xs font-medium transition-colors cursor-pointer shrink-0" title="Kembalikan ke Default">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Petunjuk Instalasi Apps Script 2-Arah -->
+                    <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4 space-y-2">
+                        <div class="font-bold text-indigo-950 text-xs flex items-center gap-1.5">
+                            <i class="ph ph-info text-indigo-600 text-base"></i> Cara Memasang / Memperbarui Code.gs di Google Spreadsheet:
+                        </div>
+                        <ol class="list-decimal list-inside space-y-1 text-slate-600 leading-relaxed text-[11px] pl-1">
+                            <li>Buka Google Spreadsheet SIBIKOM Anda.</li>
+                            <li>Buka menu <strong>Ekstensi (Extensions)</strong> &gt; <strong>Apps Script</strong>.</li>
+                            <li>Hapus seluruh isi file <strong>Code.gs</strong> yang lama, lalu klik tombol <strong>"Salin Seluruh Kode Code.gs"</strong> di bawah dan tempelkan (paste).</li>
+                            <li>Klik tombol <strong>Simpan (Save / Ikon Disket)</strong>.</li>
+                            <li>Klik tombol biru <strong>Terapkan (Deploy)</strong> &gt; <strong>Penerapan baru (New deployment)</strong>.</li>
+                            <li>Pilih jenis <strong>Aplikasi Web (Web App)</strong>:
+                                <ul class="list-disc list-inside pl-4 mt-0.5 space-y-0.5 font-medium text-slate-700">
+                                    <li>Jalankan sebagai: <strong>Saya (Me / Akun email Anda)</strong></li>
+                                    <li>Yang memiliki akses: <strong>Siapa saja (Anyone)</strong> (PENTING agar aplikasi web bisa berkomunikasi)</li>
+                                </ul>
+                            </li>
+                            <li>Klik <strong>Terapkan (Deploy)</strong>, setujui izin otorisasi (Review Permissions), lalu salin <strong>URL Aplikasi Web</strong> yang diberikan.</li>
+                            <li>Tempelkan URL tersebut ke kolom <strong>Google Apps Script Web App URL</strong> di atas, lalu klik <strong>"Simpan Konfigurasi"</strong>!</li>
+                        </ol>
+                    </div>
+
+                    <!-- Kotak Kode Code.gs Lengkap -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="ph ph-code text-indigo-600 text-base"></i> Kode Google Apps Script Siap Pakai (Code.gs)
+                            </label>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="downloadCodeGsFile()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
+                                    <i class="ph ph-download-simple"></i> Unduh File Code.gs
+                                </button>
+                                <button type="button" onclick="copyCodeGsToClipboard()" id="btn-copy-code-gs" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+                                    <i class="ph ph-copy"></i> Salin Kode Code.gs
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
+                            <pre class="p-4 text-[11px] font-mono text-emerald-400 overflow-x-auto max-h-72 leading-relaxed selection:bg-indigo-700" id="code-gs-display-block">Memuat kode Code.gs...</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <span class="text-[11px] text-slate-500">Mendukung Tambah, Edit Baris & Hapus Baris Otomatis</span>
+                    <button type="button" onclick="closeModalAppsScriptGlobal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer">
+                        Selesai / Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6-ZoJW-LMgZEaq30BICkG285RxY_U3ly9t_H5MYy9I0s8Yh6WqOdqnH3qVmowYqqp/exec"; 
-        const GVIZ_URL_BASE = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/gviz/tq?tqx=out:json&headers=1";
+        const DEFAULT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6-ZoJW-LMgZEaq30BICkG285RxY_U3ly9t_H5MYy9I0s8Yh6WqOdqnH3qVmowYqqp/exec"; 
+        const DEFAULT_SPREADSHEET_ID = "12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk";
+
+        function getWebAppUrl() {
+            return (localStorage.getItem('sibikom_web_app_url') || DEFAULT_WEB_APP_URL).trim();
+        }
+
+        function getSpreadsheetId() {
+            return (localStorage.getItem('sibikom_spreadsheet_id') || DEFAULT_SPREADSHEET_ID).trim();
+        }
+
+        function getGvizBaseUrl() {
+            const sId = getSpreadsheetId();
+            return `https://docs.google.com/spreadsheets/d/${sId}/gviz/tq?tqx=out:json&headers=1`;
+        }
+
+        let WEB_APP_URL = getWebAppUrl();
+        let GVIZ_URL_BASE = getGvizBaseUrl();
 
         // Fitur Login System
         const USERS_DB = {
@@ -1998,6 +2147,19 @@ function testReadData() {
             
             const err = document.getElementById('login-error');
             if (err) err.classList.add('hidden');
+
+            const appScriptUpbmBtn = document.getElementById('btn-appscript-upbm');
+            const headerGsheetSyncBtn = document.getElementById('btn-header-gsheet-sync');
+            if (appScriptUpbmBtn) {
+                appScriptUpbmBtn.classList.add('hidden');
+                appScriptUpbmBtn.classList.remove('flex', 'inline-flex');
+                appScriptUpbmBtn.style.display = 'none';
+            }
+            if (headerGsheetSyncBtn) {
+                headerGsheetSyncBtn.classList.add('hidden');
+                headerGsheetSyncBtn.classList.remove('flex', 'inline-flex');
+                headerGsheetSyncBtn.style.display = 'none';
+            }
             
             const overlay = document.getElementById('login-overlay');
             if (overlay) overlay.classList.remove('hidden');
@@ -2018,6 +2180,8 @@ function testReadData() {
             const configSheetBtn = document.getElementById('btn-config-sheet-ceklist');
             const appScriptBtn = document.getElementById('btn-appscript-ceklist');
             const gviewSheetLink = document.getElementById('link-gview-sheet');
+            const appScriptUpbmBtn = document.getElementById('btn-appscript-upbm');
+            const headerGsheetSyncBtn = document.getElementById('btn-header-gsheet-sync');
 
             if (mainDashSheetLink) {
                 if (!isSuperAdmin) mainDashSheetLink.style.display = 'none';
@@ -2034,6 +2198,28 @@ function testReadData() {
             if (gviewSheetLink) {
                 if (!isSuperAdmin) gviewSheetLink.style.display = 'none';
                 else gviewSheetLink.style.display = '';
+            }
+            if (appScriptUpbmBtn) {
+                if (!isSuperAdmin) {
+                    appScriptUpbmBtn.classList.add('hidden');
+                    appScriptUpbmBtn.classList.remove('flex', 'inline-flex');
+                    appScriptUpbmBtn.style.display = 'none';
+                } else {
+                    appScriptUpbmBtn.classList.remove('hidden');
+                    appScriptUpbmBtn.classList.add('inline-flex');
+                    appScriptUpbmBtn.style.display = 'inline-flex';
+                }
+            }
+            if (headerGsheetSyncBtn) {
+                if (!isSuperAdmin) {
+                    headerGsheetSyncBtn.classList.add('hidden');
+                    headerGsheetSyncBtn.classList.remove('flex', 'inline-flex');
+                    headerGsheetSyncBtn.style.display = 'none';
+                } else {
+                    headerGsheetSyncBtn.classList.remove('hidden');
+                    headerGsheetSyncBtn.classList.add('inline-flex');
+                    headerGsheetSyncBtn.style.display = 'inline-flex';
+                }
             }
 
             if (userObj.role === 'SuperAdmin') {
@@ -2133,6 +2319,17 @@ function testReadData() {
             }
             let str = String(dateString); return str.includes("T") ? str.split("T")[0] : str;
         }
+        function parseGvizDate(dateString) {
+            if (!dateString) return null;
+            if (typeof dateString === 'string' && dateString.includes("Date")) {
+                let ext = dateString.match(/\d+/g);
+                if (ext && ext.length >= 3) {
+                    return new Date(parseInt(ext[0]), parseInt(ext[1]), parseInt(ext[2]));
+                }
+            }
+            let d = new Date(dateString);
+            return isNaN(d.getTime()) ? null : d;
+        }
         function formatSheetTime(timeString) {
             if (!timeString) return "-";
             if (typeof timeString === 'string' && timeString.includes("Date")) {
@@ -2158,7 +2355,7 @@ function testReadData() {
         }
 
         async function fetchJSONData(sheetName) {
-            const cacheBuster = new Date().getTime(); const url = `${GVIZ_URL_BASE}&sheet=${sheetName}&_nocache=${cacheBuster}`;
+            const cacheBuster = new Date().getTime(); const url = `${getGvizBaseUrl()}&sheet=${sheetName}&_nocache=${cacheBuster}`;
             try {
                 const response = await fetch(url); const text = await response.text();
                 const startIdx = text.indexOf('{'); const endIdx = text.lastIndexOf('}') + 1;
@@ -2536,7 +2733,7 @@ function testReadData() {
                 if (!cp.has('SISA_PERMINTAAN_KG')) cp.append('SISA_PERMINTAAN_KG', qVal);
                 if (!cp.has('PERSEN_REALISASI')) cp.append('PERSEN_REALISASI', '0');
             }
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: cp }).then(() => { overlay.classList.add('hidden'); showToast(`Data terkirim!`, 'success'); form.reset(); if (targetSheet === 'FORM_PERMINTAAN_UPBM') { toggleManualUnit(); document.getElementById('req-id-permintaan').value = ''; setTimeout(() => fetchRiwayatPermintaan(), 2000); } }).catch(error => { overlay.classList.add('hidden'); showToast(`Gagal mengirim data.`, 'error'); console.error(error); });
+            fetch(getWebAppUrl(), { method: 'POST', mode: 'no-cors', body: cp }).then(() => { overlay.classList.add('hidden'); showToast(`Data terkirim ke Google Sheet!`, 'success'); form.reset(); if (targetSheet === 'FORM_PERMINTAAN_UPBM') { toggleManualUnit(); document.getElementById('req-id-permintaan').value = ''; setTimeout(() => fetchRiwayatPermintaan(), 2000); } }).catch(error => { overlay.classList.add('hidden'); showToast(`Gagal mengirim data.`, 'error'); console.error(error); });
         }
 
         let allRiwayatPermintaan = []; let filteredPermintaan = []; let pagePermintaan = 1; let filtersPermintaan = { TANGGAL_PERMINTAAN: '', ID_PERMINTAAN: '', PEMINTA: '', UNIT: '', JENIS_KOPI: '' }; let sortPermintaan = { column: null, direction: 'desc' };
@@ -2553,7 +2750,8 @@ function testReadData() {
             const tbody = document.getElementById('table-body-riwayat-permintaan'); if (filteredPermintaan.length === 0) { tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">Tidak ada data.</td></tr>`; document.getElementById('page-info-permintaan').innerText = "0 - 0"; return; }
             let s = (pagePermintaan - 1) * 10; let e = s + 10; let html = "";
             filteredPermintaan.slice(s, e).forEach(r => { 
-                let idReq = findValue(r,'ID_PERMINTAAN'); 
+                let idReq = findValue(r,'ID_PERMINTAAN') || r['ID_PERMINTAAN'] || (r._raw && r._raw[0]) || ""; 
+                let safeId = String(idReq || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 let qNet = parseNilaiAngka(findValue(r,'QTY_PERMINTAAN_NETTO_KG'));
                 let tReal = parseNilaiAngka(findValue(r,'TOTAL_REALISASI_KG')||findValue(r,'TOTAL_REALISASI'));
                 let sisaCalc = Math.max(0, qNet - tReal);
@@ -2567,10 +2765,10 @@ function testReadData() {
                     <td class="px-4 py-3 text-right font-bold text-emerald-600">${formatAngkaId(tReal)}</td>
                     <td class="px-4 py-3 text-right font-bold text-amber-600">${formatAngkaId(sisaCalc)}</td>
                     <td class="px-4 py-3 text-center whitespace-nowrap">
-                        <button type="button" onclick="openEditPermintaan('${idReq}')" title="Edit Permintaan" class="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors mr-1">
+                        <button type="button" onclick="openEditPermintaan('${safeId}')" title="Edit Permintaan" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200">
                             <i class="ph ph-pencil-simple text-sm"></i>
                         </button>
-                        <button type="button" onclick="deleteDataPermintaan('${idReq}')" title="Hapus Permintaan" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors">
+                        <button type="button" onclick="deleteDataPermintaan('${safeId}')" title="Hapus Permintaan" class="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200">
                             <i class="ph ph-trash text-sm"></i>
                         </button>
                     </td>
@@ -2582,9 +2780,13 @@ function testReadData() {
         function nextPagePermintaan() { if ((pagePermintaan * 10) < filteredPermintaan.length) { pagePermintaan++; renderTablePermintaanHistory(); } }
 
         function openEditPermintaan(idReq) {
-            const item = allRiwayatPermintaan.find(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === String(idReq).trim());
+            idReq = String(idReq || '').trim();
+            const item = allRiwayatPermintaan.find(r => {
+                const curId = String(findValue(r, 'ID_PERMINTAAN') || r['ID_PERMINTAAN'] || (r._raw && r._raw[0]) || '').trim();
+                return curId === idReq;
+            });
             if (!item) {
-                showToast('Data permintaan tidak ditemukan.', 'error');
+                showToast('Data permintaan ID ' + idReq + ' tidak ditemukan.', 'error');
                 return;
             }
             
@@ -2592,28 +2794,28 @@ function testReadData() {
             document.getElementById('edit-req-id').value = idReq;
             
             let rawTgl = findValue(item, 'TANGGAL_PERMINTAAN');
-            let dateStr = "";
-            if (rawTgl) {
-                let d = new Date(rawTgl);
-                if (!isNaN(d.getTime())) {
-                    dateStr = d.toISOString().split('T')[0];
-                } else if (String(rawTgl).includes('/')) {
-                    let parts = String(rawTgl).split('/');
-                    if (parts.length === 3) {
-                        let p0 = parts[0].padStart(2, '0');
-                        let p1 = parts[1].padStart(2, '0');
-                        let p2 = parts[2];
-                        if (p2.length === 4) dateStr = `${p2}-${p0}-${p1}`;
-                    }
+            let dateStr = formatSheetDate(rawTgl);
+            if (!dateStr || dateStr.includes('/')) {
+                let parts = String(rawTgl).split('/');
+                if (parts.length === 3) {
+                    let p0 = parts[0].padStart(2, '0');
+                    let p1 = parts[1].padStart(2, '0');
+                    let p2 = parts[2];
+                    if (p2.length === 4) dateStr = `${p2}-${p1}-${p0}`;
                 }
             }
-            if (!dateStr) dateStr = new Date().toISOString().split('T')[0];
+            if (!dateStr || dateStr.length < 10) dateStr = new Date().toISOString().split('T')[0];
             document.getElementById('edit-req-tgl').value = dateStr;
-            document.getElementById('edit-req-jam').value = findValue(item, 'JAM_PERMINTAAN') || "08:00";
+
+            let rawJam = findValue(item, 'JAM_PERMINTAAN');
+            let jamStr = formatSheetTime(rawJam) || "08:00";
+            if (jamStr.length > 5) jamStr = jamStr.slice(0, 5);
+            document.getElementById('edit-req-jam').value = jamStr;
+
             document.getElementById('edit-req-shift').value = findValue(item, 'SHIFT') || "SHIFT 1";
             document.getElementById('edit-req-peminta').value = findValue(item, 'PEMINTA') || "Operator UPBM";
             document.getElementById('edit-req-unit').value = findValue(item, 'UNIT') || "UPBM";
-            document.getElementById('edit-req-jenis-kopi').value = findValue(item, 'JENIS_KOPI') || "18";
+            document.getElementById('edit-req-jenis-kopi').value = String(findValue(item, 'JENIS_KOPI') || "18").trim();
             document.getElementById('edit-req-prioritas').value = findValue(item, 'PRIORITAS') || "Normal";
             document.getElementById('edit-req-qty').value = parseNilaiAngka(findValue(item, 'QTY_PERMINTAAN_NETTO_KG')) || "";
 
@@ -2627,7 +2829,10 @@ function testReadData() {
         function submitEditPermintaan(e) {
             e.preventDefault();
             const idReq = document.getElementById('edit-req-id-original').value.trim();
-            if (!idReq) return;
+            if (!idReq) {
+                showToast('ID Permintaan tidak valid.', 'error');
+                return;
+            }
 
             const tgl = document.getElementById('edit-req-tgl').value;
             const jam = document.getElementById('edit-req-jam').value;
@@ -2639,7 +2844,7 @@ function testReadData() {
             const qty = parseFloat(document.getElementById('edit-req-qty').value) || 0;
 
             let realisasi = 0;
-            const existingItem = allRiwayatPermintaan.find(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
+            const existingItem = allRiwayatPermintaan.find(r => String(findValue(r, 'ID_PERMINTAAN') || r['ID_PERMINTAAN'] || '').trim() === idReq);
             if (existingItem) {
                 realisasi = parseNilaiAngka(findValue(existingItem, 'TOTAL_REALISASI_KG') || findValue(existingItem, 'TOTAL_REALISASI'));
             }
@@ -2647,8 +2852,8 @@ function testReadData() {
             let stBaru = sisa <= 0 ? 'COMPLETED' : (realisasi > 0 ? 'PARTIAL' : 'OPEN');
             let persenBaru = qty > 0 ? (realisasi / qty) : 0;
 
-            // 1. Optimistic Update pada data lokal di browser
-            const itemIndex = allRiwayatPermintaan.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
+            // 1. Optimistic Update lokal seketika
+            const itemIndex = allRiwayatPermintaan.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || r['ID_PERMINTAAN'] || '').trim() === idReq);
             if (itemIndex !== -1) {
                 allRiwayatPermintaan[itemIndex]['TANGGAL_PERMINTAAN'] = tgl;
                 allRiwayatPermintaan[itemIndex]['JAM_PERMINTAAN'] = jam;
@@ -2660,14 +2865,13 @@ function testReadData() {
                 allRiwayatPermintaan[itemIndex]['QTY_PERMINTAAN_NETTO_KG'] = qty;
                 allRiwayatPermintaan[itemIndex]['TOTAL_REALISASI_KG'] = realisasi;
                 allRiwayatPermintaan[itemIndex]['SISA_PERMINTAAN_KG'] = sisa;
-                allRiwayatPermintaan[itemIndex]['SISA_PERMINTAAN'] = sisa;
                 allRiwayatPermintaan[itemIndex]['STATUS_PERMINTAAN'] = stBaru;
                 allRiwayatPermintaan[itemIndex]['PERSEN_REALISASI'] = persenBaru;
                 applyFilterAndSortPermintaan();
             }
 
             if (typeof rekapPermintaanData !== 'undefined' && Array.isArray(rekapPermintaanData)) {
-                const rIndex = rekapPermintaanData.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() === idReq);
+                const rIndex = rekapPermintaanData.findIndex(r => String(findValue(r, 'ID_PERMINTAAN') || r['ID_PERMINTAAN'] || '').trim() === idReq);
                 if (rIndex !== -1) {
                     rekapPermintaanData[rIndex]['TANGGAL_PERMINTAAN'] = tgl;
                     rekapPermintaanData[rIndex]['JAM_PERMINTAAN'] = jam;
@@ -2679,7 +2883,6 @@ function testReadData() {
                     rekapPermintaanData[rIndex]['QTY_PERMINTAAN_NETTO_KG'] = qty;
                     rekapPermintaanData[rIndex]['TOTAL_REALISASI_KG'] = realisasi;
                     rekapPermintaanData[rIndex]['SISA_PERMINTAAN_KG'] = sisa;
-                    rekapPermintaanData[rIndex]['SISA_PERMINTAAN'] = sisa;
                     rekapPermintaanData[rIndex]['STATUS_PERMINTAAN'] = stBaru;
                     rekapPermintaanData[rIndex]['PERSEN_REALISASI'] = persenBaru;
                     if (typeof applyFilterAndSortPermintaanDash === 'function') {
@@ -2707,24 +2910,26 @@ function testReadData() {
             fd.append('UNIT', unit);
             fd.append('JENIS_KOPI', jenisKopi);
             fd.append('PRIORITAS', prioritas);
-            fd.append('QTY_PERMINTAAN_NETTO_KG', qty.toString().replace('.', ','));
-            fd.append('TOTAL_REALISASI_KG', realisasi.toString().replace('.', ','));
-            fd.append('SISA_PERMINTAAN_KG', sisa.toString().replace('.', ','));
+            fd.append('QTY_PERMINTAAN_NETTO_KG', qty.toString());
+            fd.append('TOTAL_REALISASI_KG', realisasi.toString());
+            fd.append('SISA_PERMINTAAN_KG', sisa.toString());
             fd.append('STATUS_PERMINTAAN', stBaru);
-            fd.append('PERSEN_REALISASI', persenBaru.toString().replace('.', ','));
+            fd.append('PERSEN_REALISASI', persenBaru.toString());
 
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
+            const targetUrl = getWebAppUrl();
+            fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
                 ov.classList.add('hidden');
                 ov.querySelector('p').innerText = "Memproses Data...";
-                showToast(`Data ID ${idReq} berhasil diperbarui di Google Sheet!`, 'success');
+                showToast(`Perubahan ID ${idReq} berhasil disimpan & disinkronkan ke Google Sheet!`, 'success');
                 setTimeout(() => {
                     fetchRiwayatPermintaan();
-                    syncMainDashboard();
-                }, 2500);
+                    if (typeof syncMainDashboard === 'function') syncMainDashboard();
+                }, 2000);
             }).catch(err => {
                 ov.classList.add('hidden');
                 ov.querySelector('p').innerText = "Memproses Data...";
-                showToast('Gagal mengirim update ke Google Sheet.', 'error');
+                console.error("Error editing permintaan:", err);
+                showToast('Gagal mengirim update ke Google Sheet. Periksa koneksi atau URL Apps Script.', 'error');
             });
         }
 
@@ -3412,7 +3617,8 @@ function testReadData() {
                 fd.append('ID_PERMINTAAN', tId);
             }
 
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: fd }).then(() => { 
+            const targetUrl = getWebAppUrl();
+            fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => { 
                 ov.classList.add('hidden'); 
                 ov.querySelector('p').innerText = "Memproses Data..."; 
                 showToast(`Data ID ${tId} berhasil dihapus dari aplikasi & Google Sheet!`, 'success'); 
@@ -3421,12 +3627,13 @@ function testReadData() {
                     if(tSh==='INPUT_TRANSAKSI_KELUAR') fetchRiwayatPengeluaran(); 
                     if(tSh==='FORM_PERMINTAAN_UPBM') fetchRiwayatPermintaan(); 
                     if(tSh==='INPUT_PO_SUPPLIER') fetchRiwayatPO(); 
-                    syncMainDashboard(); 
-                }, 2500); 
+                    if(typeof syncMainDashboard === 'function') syncMainDashboard(); 
+                }, 2000); 
             }).catch(e => { 
                 ov.classList.add('hidden'); 
                 ov.querySelector('p').innerText = "Memproses Data..."; 
-                showToast(`Gagal menghapus data dari Google Sheet.`, 'error'); 
+                console.error("Delete error:", e);
+                showToast(`Gagal menghapus data dari Google Sheet. Periksa koneksi Apps Script.`, 'error'); 
             });
         });
 
@@ -4815,6 +5022,194 @@ function testReadData() {
             if (clockEl) {
                 clockEl.innerText = `${jam}:${menit}:${detik}`;
             }
+        }
+
+        // ================= MODAL GLOBAL GOOGLE APPS SCRIPT & CODE.GS =================
+        let cachedCodeGsText = "";
+
+        async function loadCodeGsText() {
+            if (cachedCodeGsText) return cachedCodeGsText;
+            try {
+                const res = await fetch('/Code.gs');
+                if (res.ok) {
+                    cachedCodeGsText = await res.text();
+                    return cachedCodeGsText;
+                }
+            } catch (e) {
+                console.error("Gagal membaca /Code.gs:", e);
+            }
+            return "";
+        }
+
+        async function openModalAppsScriptGlobal() {
+            const savedUser = sessionStorage.getItem('sibikom_session_user');
+            const found = findUser(savedUser);
+            if (!found || found.user.role !== 'SuperAdmin') {
+                showToast('Fitur konfigurasi Google Sheet & Code.gs hanya dapat diakses dalam mode Super Admin.', 'warning');
+                return;
+            }
+
+            const modal = document.getElementById('modal-appscript-global');
+            if (!modal) return;
+
+            const urlInput = document.getElementById('input-global-webapp-url');
+            const sheetIdInput = document.getElementById('input-global-sheet-id');
+            const codeBlock = document.getElementById('code-gs-display-block');
+
+            if (urlInput) urlInput.value = getWebAppUrl();
+            if (sheetIdInput) sheetIdInput.value = getSpreadsheetId();
+
+            modal.classList.remove('hidden');
+
+            if (codeBlock) {
+                codeBlock.innerText = "Memuat kode Code.gs...";
+                const text = await loadCodeGsText();
+                if (text) {
+                    codeBlock.innerText = text;
+                } else {
+                    codeBlock.innerText = "// Silakan unduh file Code.gs atau salin dari tombol Unduh File.";
+                }
+            }
+        }
+
+        function closeModalAppsScriptGlobal() {
+            const modal = document.getElementById('modal-appscript-global');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function saveConfigAppsScriptGlobal() {
+            const urlInput = document.getElementById('input-global-webapp-url');
+            const sheetIdInput = document.getElementById('input-global-sheet-id');
+
+            if (!urlInput || !sheetIdInput) return;
+
+            let newUrl = urlInput.value.trim();
+            let newSheetId = sheetIdInput.value.trim();
+
+            if (newSheetId.includes('/d/')) {
+                const match = newSheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if (match && match[1]) newSheetId = match[1];
+            }
+
+            if (newUrl) {
+                localStorage.setItem('sibikom_web_app_url', newUrl);
+                WEB_APP_URL = newUrl;
+            }
+            if (newSheetId) {
+                localStorage.setItem('sibikom_spreadsheet_id', newSheetId);
+                GVIZ_URL_BASE = getGvizBaseUrl();
+            }
+
+            showToast("Konfigurasi Google Apps Script & Sheet berhasil disimpan!", "success");
+            testPingAppsScript();
+        }
+
+        function resetConfigAppsScriptGlobal() {
+            localStorage.removeItem('sibikom_web_app_url');
+            localStorage.removeItem('sibikom_spreadsheet_id');
+            WEB_APP_URL = DEFAULT_WEB_APP_URL;
+            GVIZ_URL_BASE = getGvizBaseUrl();
+
+            const urlInput = document.getElementById('input-global-webapp-url');
+            const sheetIdInput = document.getElementById('input-global-sheet-id');
+            if (urlInput) urlInput.value = DEFAULT_WEB_APP_URL;
+            if (sheetIdInput) sheetIdInput.value = DEFAULT_SPREADSHEET_ID;
+
+            showToast("Pengaturan dikembalikan ke default bawaan.", "info");
+        }
+
+        async function testPingAppsScript() {
+            const alertBox = document.getElementById('ping-status-alert');
+            const icon = document.getElementById('ping-status-icon');
+            const title = document.getElementById('ping-status-title');
+            const msg = document.getElementById('ping-status-message');
+            const btn = document.getElementById('btn-ping-test');
+
+            const currentUrl = (document.getElementById('input-global-webapp-url').value || getWebAppUrl()).trim();
+            if (!currentUrl) {
+                showToast("Masukkan URL Google Apps Script terlebih dahulu.", "error");
+                return;
+            }
+
+            if (btn) btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-amber-400"></i> Menguji...';
+            if (alertBox) {
+                alertBox.classList.remove('hidden');
+                alertBox.className = "p-3.5 rounded-xl border flex items-start gap-2.5 bg-blue-50 border-blue-200 text-blue-800";
+                if (icon) icon.className = "ph ph-spinner-gap animate-spin text-xl text-blue-600 mt-0.5";
+                if (title) title.innerText = "Menguji Koneksi...";
+                if (msg) msg.innerText = "Mengirim sinyal GET ping ke Google Apps Script...";
+            }
+
+            try {
+                const pingUrl = `${currentUrl}${currentUrl.includes('?') ? '&' : '?'}action=ping&_t=${Date.now()}`;
+                const res = await fetch(pingUrl);
+                const text = await res.text();
+                let json = null;
+                try { json = JSON.parse(text); } catch (e) {}
+
+                if (json && json.status === 'success') {
+                    if (alertBox) {
+                        alertBox.className = "p-3.5 rounded-xl border flex items-start gap-2.5 bg-emerald-50 border-emerald-200 text-emerald-900";
+                        if (icon) icon.className = "ph ph-check-circle text-xl text-emerald-600 mt-0.5";
+                        if (title) title.innerText = "Koneksi 2-Arah Terhubung & Berhasil!";
+                        if (msg) msg.innerText = `Terhubung ke Spreadsheet: "${json.spreadsheetName || '-'}" pada ${json.timestamp || 'Real-time'}. Fungsi Tambah, Edit & Hapus aktif.`;
+                    }
+                    showToast("Koneksi ke Google Apps Script berhasil!", "success");
+                } else if (json && json.message) {
+                    if (alertBox) {
+                        alertBox.className = "p-3.5 rounded-xl border flex items-start gap-2.5 bg-amber-50 border-amber-200 text-amber-900";
+                        if (icon) icon.className = "ph ph-warning text-xl text-amber-600 mt-0.5";
+                        if (title) title.innerText = "Respon Diterima tapi Ada Catatan";
+                        if (msg) msg.innerText = json.message;
+                    }
+                } else {
+                    if (alertBox) {
+                        alertBox.className = "p-3.5 rounded-xl border flex items-start gap-2.5 bg-emerald-50 border-emerald-200 text-emerald-900";
+                        if (icon) icon.className = "ph ph-check-circle text-xl text-emerald-600 mt-0.5";
+                        if (title) title.innerText = "Web App Merespon";
+                        if (msg) msg.innerText = "Google Apps Script aktif merespon permintaan HTTP.";
+                    }
+                }
+            } catch (err) {
+                console.error("Ping Error:", err);
+                if (alertBox) {
+                    alertBox.className = "p-3.5 rounded-xl border flex items-start gap-2.5 bg-amber-50 border-amber-200 text-amber-900";
+                    if (icon) icon.className = "ph ph-warning-circle text-xl text-amber-600 mt-0.5";
+                    if (title) title.innerText = "Cek URL & Izin Web App";
+                    if (msg) msg.innerText = "Tidak dapat terhubung langsung via GET (mungkin karena CORS atau deployment perlu diatur 'Siapa saja / Anyone'). Pastikan Web App di-deploy dengan akses Anyone.";
+                }
+            } finally {
+                if (btn) btn.innerHTML = '<i class="ph ph-lightning text-amber-400"></i> Tes Koneksi (Ping)';
+            }
+        }
+
+        async function copyCodeGsToClipboard() {
+            const btn = document.getElementById('btn-copy-code-gs');
+            const text = await loadCodeGsText();
+            if (!text) {
+                showToast("Kode Code.gs tidak tersedia.", "error");
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast("Kode Code.gs berhasil disalin ke clipboard!", "success");
+                if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<i class="ph ph-check"></i> Tersalin!';
+                    btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+                    setTimeout(() => {
+                        btn.innerHTML = original;
+                        btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
+                    }, 2000);
+                }
+            } catch (e) {
+                showToast("Gagal menyalin otomatis, silakan pilih teks kode lalu tekan Ctrl+C.", "info");
+            }
+        }
+
+        function downloadCodeGsFile() {
+            window.location.href = '/Code.gs';
         }
 
         document.addEventListener('DOMContentLoaded', () => { 
