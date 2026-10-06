@@ -439,6 +439,82 @@
                     </div>
                 </div>
 
+                <!-- DASHBOARD SUMMARY KAPASITAS GUDANG (SJA 3, G. Krian, G.137) -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-card border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
+                    <div class="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/80 dark:bg-slate-800/60">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-6 bg-brand-primary rounded-full"></div>
+                                <h4 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Summary Kapasitas Gudang</h4>
+                                <span class="text-xs bg-slate-200/90 dark:bg-slate-700/80 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 px-2.5 py-0.5 rounded-md font-semibold">SJA 3 · G. Krian · G. 137</span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">Perhitungan sisa stok aktual: <span class="font-bold text-slate-800 dark:text-emerald-300">Penerimaan dikurangi Pengeluaran</span> untuk jenis kopi 18 dan 19.</p>
+                        </div>
+                        <div class="flex items-center gap-2 self-start md:self-auto">
+                            <span id="badge-periode-kapasitas-gudang" class="text-xs text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 shadow-2xs">
+                                <i class="ph ph-calendar-check text-brand-primary dark:text-emerald-400 text-sm"></i>
+                                <span>Semua Periode (Akumulatif)</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Mini KPI Overview -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 sm:p-6 bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800">
+                        <div class="bg-white dark:bg-slate-800/90 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gudang SJA 3</p>
+                                <h5 class="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5 font-mono" id="sum-kpi-sja3">0,00 <span class="text-xs text-slate-400 dark:text-slate-400 font-sans font-normal">Kg</span></h5>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-300 flex items-center justify-center text-xl font-bold border border-sky-200 dark:border-sky-800">
+                                <i class="ph ph-warehouse"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800/90 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gudang Krian</p>
+                                <h5 class="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5 font-mono" id="sum-kpi-krian">0,00 <span class="text-xs text-slate-400 dark:text-slate-400 font-sans font-normal">Kg</span></h5>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center text-xl font-bold border border-emerald-200 dark:border-emerald-800">
+                                <i class="ph ph-warehouse"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800/90 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gudang 137</p>
+                                <h5 class="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5 font-mono" id="sum-kpi-137">0,00 <span class="text-xs text-slate-400 dark:text-slate-400 font-sans font-normal">Kg</span></h5>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-300 flex items-center justify-center text-xl font-bold border border-amber-200 dark:border-amber-800">
+                                <i class="ph ph-warehouse"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Sesuai Foto -->
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-100 dark:bg-slate-800/90 border-b border-slate-300 dark:border-slate-700 font-bold">
+                                <tr>
+                                    <th class="px-6 py-3.5 border-r border-slate-200 dark:border-slate-700 font-sans text-slate-900 dark:text-white">Gudang</th>
+                                    <th class="px-6 py-3.5 text-right border-r border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-300 font-sans font-bold">Kopi biji 18 (Kg)</th>
+                                    <th class="px-6 py-3.5 text-right border-r border-slate-200 dark:border-slate-700 text-emerald-700 dark:text-emerald-300 font-sans font-bold">Kopi biji 19 (Kg)</th>
+                                    <th class="px-6 py-3.5 text-right font-extrabold text-slate-950 dark:text-white font-sans">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-summary-kapasitas-gudang" class="divide-y divide-slate-200 dark:divide-slate-800 font-mono text-sm bg-white dark:bg-slate-900">
+                                <tr><td colspan="4" class="text-center py-6 text-slate-400 font-sans">Tekan Segarkan Data...</td></tr>
+                            </tbody>
+                            <tfoot id="tfoot-summary-kapasitas-gudang" class="bg-slate-100 dark:bg-slate-800 border-t-2 border-slate-300 dark:border-slate-700 font-bold font-mono text-sm">
+                                <tr>
+                                    <td class="px-6 py-3.5 font-extrabold uppercase text-slate-900 dark:text-white border-r border-slate-300 dark:border-slate-700 font-sans tracking-wide">total</td>
+                                    <td class="px-6 py-3.5 text-right font-bold border-r border-slate-300 dark:border-slate-700 text-sky-700 dark:text-sky-300 font-mono text-base" id="foot-total-18">0,00</td>
+                                    <td class="px-6 py-3.5 text-right font-bold border-r border-slate-300 dark:border-slate-700 text-emerald-700 dark:text-emerald-300 font-mono text-base" id="foot-total-19">0,00</td>
+                                    <td class="px-6 py-3.5 text-right font-black text-slate-950 dark:text-amber-300 font-mono text-base sm:text-lg" id="foot-total-all">0,00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-6 mb-8">
                     <!-- Charts -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2471,6 +2547,7 @@ function testReadData() {
             dashDataFiltered = [...fMasuk].reverse(); applyDashTableSearch(); 
             dashKeluarDataFiltered = [...fKeluar].reverse(); applyDashKeluarTableSearch();
             updateDashboardChart(fMasuk, fKeluar, valTahun, valBulan);
+            renderSummaryKapasitasGudang(fMasuk, fKeluar);
         }
 
         function applyDashTableSearch() {
@@ -2619,11 +2696,174 @@ function testReadData() {
             chartObjKeluar = new Chart(ctxK, { type: 'line', data: { labels: labels, datasets: [ { label: 'Total Keluar (Kg)', data: keys.map(k => agg[k].k), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.15)', borderWidth: 2, fill: true, pointRadius: 3, tension: 0.2 } ]}, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return 'Keluar: ' + formatAngkaId(c.raw) + ' Kg'; } } } }, scales: { y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' } }, x: { grid: { display: false } } } } });
         }
 
+        function renderSummaryKapasitasGudang(fMasuk, fKeluar) {
+            const tbody = document.getElementById('table-summary-kapasitas-gudang');
+            if (!tbody) return;
+
+            const mData = fMasuk || globalDataMasuk || [];
+            const kData = fKeluar || globalDataKeluar || [];
+
+            // Update badge periode
+            const badgePeriode = document.getElementById('badge-periode-kapasitas-gudang');
+            const filTahun = document.getElementById('filter-tahun');
+            const filBulan = document.getElementById('filter-bulan');
+            const valTahun = filTahun ? filTahun.value : 'all';
+            const valBulan = filBulan ? filBulan.value : 'all';
+            if (badgePeriode) {
+                if (valTahun === 'all') {
+                    badgePeriode.innerHTML = `<i class="ph ph-calendar-check text-brand-primary text-sm"></i><span>Semua Periode (Akumulatif)</span>`;
+                } else if (valBulan === 'all') {
+                    badgePeriode.innerHTML = `<i class="ph ph-calendar-check text-brand-primary text-sm"></i><span>Tahun ${valTahun}</span>`;
+                } else {
+                    badgePeriode.innerHTML = `<i class="ph ph-calendar-check text-brand-primary text-sm"></i><span>${getMonthNameShort(valBulan)} ${valTahun}</span>`;
+                }
+            }
+
+            // Map all lots from Penerimaan
+            const lotMasukMap = {};
+            (globalDataMasuk || []).forEach(row => {
+                const idLot = String(findValue(row, 'ID_LOT') || '').trim();
+                if (idLot) {
+                    lotMasukMap[idLot] = {
+                        gudang: findValue(row, 'GUDANG'),
+                        jenisKopi: findValue(row, 'JENIS_KOPI'),
+                        idLokasi: findValue(row, 'ID_LOKASI')
+                    };
+                }
+            });
+
+            function normalizeGudangNama(val, idLot, idLokasi) {
+                let str = String(val || '').toUpperCase().trim();
+                if (!str && idLot) str = String(idLot).toUpperCase();
+                if (!str && idLokasi) str = String(idLokasi).toUpperCase();
+
+                if (str.includes('SJA')) return 'SJA 3';
+                if (str.includes('KRIAN')) return 'Krian';
+                if (str.includes('137')) return '137';
+                return 'Lainnya';
+            }
+
+            function normalizeJenisKopiTipe(val, idLot) {
+                let str = String(val || '').trim();
+                if (str.startsWith('18') || str.includes('18')) return '18';
+                if (str.startsWith('19') || str.includes('19')) return '19';
+                if (idLot) {
+                    let lotStr = String(idLot);
+                    if (lotStr.includes('18')) return '18';
+                    if (lotStr.includes('19')) return '19';
+                }
+                return '';
+            }
+
+            const stats = {
+                'SJA 3': { masuk18: 0, keluar18: 0, masuk19: 0, keluar19: 0 },
+                'Krian': { masuk18: 0, keluar18: 0, masuk19: 0, keluar19: 0 },
+                '137': { masuk18: 0, keluar18: 0, masuk19: 0, keluar19: 0 }
+            };
+
+            // 1. Akumulasi Penerimaan Kopi
+            mData.forEach(row => {
+                const gRaw = findValue(row, 'GUDANG');
+                const jRaw = findValue(row, 'JENIS_KOPI');
+                const idLot = findValue(row, 'ID_LOT');
+                const idLokasi = findValue(row, 'ID_LOKASI');
+                const netto = parseNilaiAngka(findValue(row, 'BERAT NETTO (Kg)') || findValue(row, 'BERAT_NETTO') || (row._raw && row._raw.length >= 14 ? row._raw[13] : "0"));
+
+                const gKey = normalizeGudangNama(gRaw, idLot, idLokasi);
+                const jKey = normalizeJenisKopiTipe(jRaw, idLot);
+
+                if (stats[gKey]) {
+                    if (jKey === '18') stats[gKey].masuk18 += netto;
+                    else if (jKey === '19') stats[gKey].masuk19 += netto;
+                }
+            });
+
+            // 2. Akumulasi Pengeluaran Kopi
+            kData.forEach(row => {
+                const idLot = String(findValue(row, 'ID_LOT') || '').trim();
+                const lotInfo = lotMasukMap[idLot] || {};
+
+                const gRaw = findValue(row, 'GUDANG') || lotInfo.gudang;
+                const jRaw = findValue(row, 'JENIS_KOPI') || lotInfo.jenisKopi;
+                const idLokasi = findValue(row, 'ID_LOKASI') || lotInfo.idLokasi;
+                const kgKeluar = parseNilaiAngka(findValue(row, 'KG_KELUAR') || findValue(row, 'KG KELUAR'));
+
+                const gKey = normalizeGudangNama(gRaw, idLot, idLokasi);
+                const jKey = normalizeJenisKopiTipe(jRaw, idLot);
+
+                if (stats[gKey]) {
+                    if (jKey === '18') stats[gKey].keluar18 += kgKeluar;
+                    else if (jKey === '19') stats[gKey].keluar19 += kgKeluar;
+                }
+            });
+
+            const rowsConfig = [
+                { key: 'SJA 3', label: 'SJA 3' },
+                { key: 'Krian', label: 'Krian' },
+                { key: '137', label: '137' }
+            ];
+
+            let totalGrand18 = 0;
+            let totalGrand19 = 0;
+            let totalGrandAll = 0;
+
+            let html = '';
+            rowsConfig.forEach(cfg => {
+                const item = stats[cfg.key];
+                const sisa18 = Math.max(0, item.masuk18 - item.keluar18);
+                const sisa19 = Math.max(0, item.masuk19 - item.keluar19);
+                const totalGudang = sisa18 + sisa19;
+
+                totalGrand18 += sisa18;
+                totalGrand19 += sisa19;
+                totalGrandAll += totalGudang;
+
+                // Update Mini KPI
+                const kpiId = cfg.key === 'SJA 3' ? 'sum-kpi-sja3' : (cfg.key === 'Krian' ? 'sum-kpi-krian' : 'sum-kpi-137');
+                const kpiElem = document.getElementById(kpiId);
+                if (kpiElem) {
+                    kpiElem.innerHTML = `${formatAngkaId(totalGudang)} <span class="text-xs text-slate-400 font-sans font-normal">Kg</span>`;
+                }
+
+                const str18 = sisa18 > 0 ? formatAngkaId(sisa18) : '-';
+                const str19 = sisa19 > 0 ? formatAngkaId(sisa19) : '-';
+                const strTot = totalGudang > 0 ? formatAngkaId(totalGudang) : '-';
+
+                const cls18 = sisa18 > 0 
+                    ? "text-sky-600 dark:text-sky-300 font-bold font-mono" 
+                    : "text-slate-400 dark:text-slate-500 font-normal font-mono";
+                const cls19 = sisa19 > 0 
+                    ? "text-emerald-600 dark:text-emerald-300 font-bold font-mono" 
+                    : "text-slate-400 dark:text-slate-500 font-normal font-mono";
+                const clsTot = totalGudang > 0 
+                    ? "text-slate-950 dark:text-white font-extrabold font-mono" 
+                    : "text-slate-400 dark:text-slate-500 font-normal font-mono";
+
+                html += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-800 font-sans flex items-center gap-2.5">
+                        <i class="ph ph-warehouse text-slate-400 dark:text-slate-400 text-base"></i> ${cfg.label}
+                    </td>
+                    <td class="px-6 py-4 text-right border-r border-slate-200 dark:border-slate-800 ${cls18}">${str18}</td>
+                    <td class="px-6 py-4 text-right border-r border-slate-200 dark:border-slate-800 ${cls19}">${str19}</td>
+                    <td class="px-6 py-4 text-right ${clsTot}">${strTot}</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
+
+            const f18 = document.getElementById('foot-total-18');
+            const f19 = document.getElementById('foot-total-19');
+            const fAll = document.getElementById('foot-total-all');
+            if (f18) f18.innerText = formatAngkaId(totalGrand18);
+            if (f19) f19.innerText = formatAngkaId(totalGrand19);
+            if (fAll) fAll.innerText = formatAngkaId(totalGrandAll);
+        }
+
         function syncMainDashboard() {
             const ic = document.getElementById('icon-sync-main'); if(ic) ic.classList.add('animate-spin');
             Promise.all([fetchJSONData('INPUT_PENERIMAAN_KOPI'), fetchJSONData('INPUT_TRANSAKSI_KELUAR'), fetchJSONData('INPUT_PO_SUPPLIER')]).then(([dM, dK, dPO]) => {
                 globalDataMasuk = dM.filter(r => findValue(r, 'TANGGAL_MASUK')); globalDataKeluar = dK.filter(r => findValue(r, 'TANGGAL_KELUAR'));
-                populateDashboardFilter(); applyDashboardFilter(); buildSummaryData(); loadDashboardPO(dPO);
+                populateDashboardFilter(); applyDashboardFilter(); buildSummaryData(); loadDashboardPO(dPO); renderSummaryKapasitasGudang();
             }).finally(() => { if(ic) ic.classList.remove('animate-spin'); });
         }
 
