@@ -1489,6 +1489,262 @@
             </div>
         </div>
 
+        <!-- Modal Edit Penerimaan Kopi -->
+        <div id="modal-edit-penerimaan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                            <i class="ph ph-pencil-simple text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Edit Data Penerimaan Kopi</h3>
+                            <p class="text-xs text-slate-500">Perbarui data penerimaan & sinkronkan otomatis ke Google Sheet</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeEditPenerimaanModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                        <i class="ph ph-x text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="form-edit-penerimaan" onsubmit="submitEditPenerimaan(event)" class="space-y-4 pt-4 overflow-y-auto pr-1">
+                    <input type="hidden" id="edit-pen-id-original" name="id">
+                    
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Lot (Kunci Utama)</label>
+                            <input type="text" id="edit-pen-id-lot" name="ID_LOT" readonly class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-100 text-slate-600 font-bold outline-none cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Masuk</label>
+                            <input type="date" id="edit-pen-tgl-masuk" name="TANGGAL_MASUK" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Gudang</label>
+                            <select id="edit-pen-gudang" name="GUDANG" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="SJA 3">SJA 3</option>
+                                <option value="G. Krian">G. Krian</option>
+                                <option value="137">137</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Lot</label>
+                            <input type="text" id="edit-pen-no-lot" name="NO_LOT" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Palet</label>
+                            <input type="text" id="edit-pen-no-palet" name="NO_PALET" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none uppercase">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Lokasi</label>
+                            <input type="text" id="edit-pen-id-lokasi" name="ID_LOKASI" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Surat Jalan</label>
+                            <input type="text" id="edit-pen-surat-jalan" name="SURAT_JALAN" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Kopi</label>
+                            <select id="edit-pen-jenis-kopi" name="JENIS_KOPI" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="18">18</option>
+                                <option value="19">19</option>
+                                <option value="Robusta">Robusta</option>
+                                <option value="Arabika">Arabika</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Supplier</label>
+                            <input type="text" id="edit-pen-supplier" name="SUPPLIER" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. PO</label>
+                            <input type="text" id="edit-pen-no-po" name="NO_PO" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Polisi</label>
+                            <input type="text" id="edit-pen-no-pol" name="NO_POL" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kadar Air (%)</label>
+                            <input type="text" id="edit-pen-kadar-air" name="KADAR_AIR" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Karung Masuk</label>
+                            <input type="number" id="edit-pen-karung" name="KARUNG_MASUK" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pallet Ksg (Kg)</label>
+                            <input type="number" step="0.01" id="edit-pen-berat-pallet" name="BERAT_PALLET_KOSONG" oninput="hitungEditNettoPenerimaan()" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Bruto (Kg)</label>
+                            <input type="number" step="0.01" id="edit-pen-berat-bruto" name="BERAT_BRUTO" oninput="hitungEditNettoPenerimaan()" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                        </div>
+                        <div class="col-span-3">
+                            <label class="block text-xs font-semibold text-emerald-800 mb-1">BERAT NETTO (Kg)</label>
+                            <input type="number" step="0.01" id="edit-pen-berat-netto" name="BERAT_NETTO" readonly class="w-full px-3 py-2 text-xs rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 font-bold outline-none cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Mutu</label>
+                            <select id="edit-pen-status-mutu" name="STATUS_MUTU" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="PASS">PASS</option>
+                                <option value="HOLD">HOLD</option>
+                                <option value="REJECT">REJECT</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan</label>
+                            <input type="text" id="edit-pen-keterangan" name="KETERANGAN" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none" placeholder="Catatan opsional...">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 shrink-0">
+                        <button type="button" onclick="closeEditPenerimaanModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                            <i class="ph ph-check text-sm"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Edit Pengeluaran Kopi -->
+        <div id="modal-edit-pengeluaran" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                            <i class="ph ph-pencil-simple text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Edit Data Pengeluaran Kopi</h3>
+                            <p class="text-xs text-slate-500">Perbarui data transaksi keluar & sinkronkan ke Google Sheet</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeEditPengeluaranModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                        <i class="ph ph-x text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="form-edit-pengeluaran" onsubmit="submitEditPengeluaran(event)" class="space-y-4 pt-4 overflow-y-auto pr-1">
+                    <input type="hidden" id="edit-kel-id-original" name="id">
+                    
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Keluar (Kunci Utama)</label>
+                            <input type="text" id="edit-kel-id" name="ID_KELUAR" readonly class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-100 text-slate-600 font-bold outline-none cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Keluar</label>
+                            <input type="date" id="edit-kel-tgl" name="TANGGAL_KELUAR" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Keluar</label>
+                            <input type="time" id="edit-kel-jam" name="JAM_KELUAR" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Shift</label>
+                            <select id="edit-kel-shift" name="SHIFT_KELUAR" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="SHIFT 1">SHIFT 1</option>
+                                <option value="SHIFT 2">SHIFT 2</option>
+                                <option value="SHIFT 3">SHIFT 3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Permintaan</label>
+                            <input type="text" id="edit-kel-id-req" name="ID_PERMINTAAN" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tujuan</label>
+                            <select id="edit-kel-tujuan" name="TUJUAN" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="UPBM">UPBM</option>
+                                <option value="PRODUKSI">PRODUKSI</option>
+                                <option value="REJECT">REJECT</option>
+                                <option value="LAINNYA">LAINNYA</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Lot</label>
+                            <input type="text" id="edit-kel-id-lot" name="ID_LOT" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Lokasi</label>
+                            <input type="text" id="edit-kel-id-lokasi" name="ID_LOKASI" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Palet</label>
+                            <input type="text" id="edit-kel-no-palet" name="NO_PALET" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none uppercase">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Kopi</label>
+                            <select id="edit-kel-jenis-kopi" name="JENIS_KOPI" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                <option value="18">18</option>
+                                <option value="19">19</option>
+                                <option value="Robusta">Robusta</option>
+                                <option value="Arabika">Arabika</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Karung Keluar</label>
+                            <input type="number" id="edit-kel-karung" name="KARUNG_KELUAR" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kg Keluar</label>
+                            <input type="number" step="0.01" id="edit-kel-kg" name="KG_KELUAR" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-800">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Status FIFO</label>
+                        <select id="edit-kel-status-fifo" name="STATUS_FIFO" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                            <option value="Sesuai FIFO">Sesuai FIFO</option>
+                            <option value="Pelanggaran FIFO">Pelanggaran FIFO</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 shrink-0">
+                        <button type="button" onclick="closeEditPengeluaranModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                            <i class="ph ph-check text-sm"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Modal Detail Ceklist Warehouse -->
         <div id="modal-detail-ceklist" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
@@ -3196,6 +3452,325 @@ function testReadData() {
             });
         }
 
+        // ================= EDIT PENERIMAAN KOPI =================
+        function hitungEditNettoPenerimaan() {
+            const bP = parseFloat(document.getElementById('edit-pen-berat-pallet').value) || 0;
+            const bB = parseFloat(document.getElementById('edit-pen-berat-bruto').value) || 0;
+            const bN = Math.max(0, bB - bP);
+            const elNetto = document.getElementById('edit-pen-berat-netto');
+            if (elNetto) elNetto.value = bN.toFixed(2);
+        }
+
+        function openEditPenerimaan(idLot) {
+            if (!idLot) return;
+            const item = (allRiwPen || []).find(r => String(findValue(r, 'ID_LOT') || r['ID_LOT'] || '').trim() === String(idLot).trim());
+            if (!item) {
+                showToast('Data penerimaan ID Lot ' + idLot + ' tidak ditemukan.', 'error');
+                return;
+            }
+
+            document.getElementById('edit-pen-id-original').value = idLot;
+            document.getElementById('edit-pen-id-lot').value = idLot;
+
+            let rawTgl = findValue(item, 'TANGGAL_MASUK');
+            let dateStr = "";
+            if (rawTgl) {
+                if (typeof rawTgl === 'string' && rawTgl.includes('-') && rawTgl.length === 10) {
+                    dateStr = rawTgl;
+                } else {
+                    let d = new Date(rawTgl);
+                    if (!isNaN(d.getTime())) {
+                        dateStr = d.toISOString().split('T')[0];
+                    } else {
+                        let parts = String(rawTgl).split(/[/.-]/);
+                        if (parts.length === 3) {
+                            if (parts[2].length === 4) dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                            else if (parts[0].length === 4) dateStr = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                        }
+                    }
+                }
+            }
+            if (!dateStr || dateStr.length < 10) dateStr = new Date().toISOString().split('T')[0];
+            document.getElementById('edit-pen-tgl-masuk').value = dateStr;
+
+            document.getElementById('edit-pen-gudang').value = findValue(item, 'GUDANG') || "SJA 3";
+            document.getElementById('edit-pen-no-lot').value = findValue(item, 'NO_LOT') || "";
+            document.getElementById('edit-pen-no-palet').value = findValue(item, 'NO_PALET') || "";
+            document.getElementById('edit-pen-id-lokasi').value = findValue(item, 'ID_LOKASI') || "";
+            document.getElementById('edit-pen-surat-jalan').value = findValue(item, 'SURAT_JALAN') || "";
+            document.getElementById('edit-pen-jenis-kopi').value = String(findValue(item, 'JENIS_KOPI') || "18").trim();
+            document.getElementById('edit-pen-supplier').value = findValue(item, 'SUPPLIER') || "";
+            document.getElementById('edit-pen-no-po').value = findValue(item, 'NO_PO') || "";
+            document.getElementById('edit-pen-no-pol').value = findValue(item, 'NO_POL') || "";
+            document.getElementById('edit-pen-kadar-air').value = findValue(item, 'KADAR_AIR') || "";
+            document.getElementById('edit-pen-karung').value = findValue(item, 'KARUNG_MASUK') || "";
+
+            const bP = parseNilaiAngka(findValue(item, 'BERAT_PALLET_KOSONG')) || 0;
+            const bB = parseNilaiAngka(findValue(item, 'BERAT_BRUTO') || findValue(item, 'BERAT BRUTO (Kg)')) || 0;
+            const bN = parseNilaiAngka(findValue(item, 'BERAT_NETTO') || findValue(item, 'BERAT NETTO (Kg)')) || Math.max(0, bB - bP);
+            document.getElementById('edit-pen-berat-pallet').value = bP || 0;
+            document.getElementById('edit-pen-berat-bruto').value = bB || 0;
+            document.getElementById('edit-pen-berat-netto').value = bN.toFixed(2);
+
+            let stMutu = getStatusMutu(item);
+            if (stMutu && stMutu.toUpperCase().includes('HOLD')) stMutu = 'HOLD';
+            else if (stMutu && stMutu.toUpperCase().includes('REJECT')) stMutu = 'REJECT';
+            else stMutu = 'PASS';
+            document.getElementById('edit-pen-status-mutu').value = stMutu;
+            document.getElementById('edit-pen-keterangan').value = findValue(item, 'KETERANGAN') || "";
+
+            document.getElementById('modal-edit-penerimaan').classList.remove('hidden');
+        }
+
+        function closeEditPenerimaanModal() {
+            document.getElementById('modal-edit-penerimaan').classList.add('hidden');
+        }
+
+        function submitEditPenerimaan(e) {
+            e.preventDefault();
+            const idLot = document.getElementById('edit-pen-id-original').value.trim();
+            if (!idLot) {
+                showToast('ID Lot tidak valid.', 'error');
+                return;
+            }
+
+            const tM = document.getElementById('edit-pen-tgl-masuk').value;
+            const g = document.getElementById('edit-pen-gudang').value;
+            const nl = document.getElementById('edit-pen-no-lot').value.trim();
+            const np = document.getElementById('edit-pen-no-palet').value.trim().toUpperCase();
+            const lok = document.getElementById('edit-pen-id-lokasi').value.trim();
+            const sj = document.getElementById('edit-pen-surat-jalan').value.trim();
+            const jk = document.getElementById('edit-pen-jenis-kopi').value;
+            const sp = document.getElementById('edit-pen-supplier').value.trim();
+            const noPo = document.getElementById('edit-pen-no-po').value.trim();
+            const noPol = document.getElementById('edit-pen-no-pol').value.trim();
+            const ka = document.getElementById('edit-pen-kadar-air').value.trim();
+            const karung = document.getElementById('edit-pen-karung').value;
+            const bPallet = parseFloat(document.getElementById('edit-pen-berat-pallet').value) || 0;
+            const bBruto = parseFloat(document.getElementById('edit-pen-berat-bruto').value) || 0;
+            const bNetto = Math.max(0, bBruto - bPallet);
+            const statusMutu = document.getElementById('edit-pen-status-mutu').value;
+            const keterangan = document.getElementById('edit-pen-keterangan').value.trim();
+
+            // Optimistic update lokal
+            if (Array.isArray(allRiwPen)) {
+                const idx = allRiwPen.findIndex(r => String(findValue(r, 'ID_LOT') || r['ID_LOT'] || '').trim() === idLot);
+                if (idx !== -1) {
+                    allRiwPen[idx]['TANGGAL_MASUK'] = tM;
+                    allRiwPen[idx]['GUDANG'] = g;
+                    allRiwPen[idx]['NO_LOT'] = nl;
+                    allRiwPen[idx]['NO_PALET'] = np;
+                    allRiwPen[idx]['ID_LOKASI'] = lok;
+                    allRiwPen[idx]['SURAT_JALAN'] = sj;
+                    allRiwPen[idx]['JENIS_KOPI'] = jk;
+                    allRiwPen[idx]['SUPPLIER'] = sp;
+                    allRiwPen[idx]['NO_PO'] = noPo;
+                    allRiwPen[idx]['NO_POL'] = noPol;
+                    allRiwPen[idx]['KADAR_AIR'] = ka;
+                    allRiwPen[idx]['KARUNG_MASUK'] = karung;
+                    allRiwPen[idx]['BERAT_PALLET_KOSONG'] = bPallet;
+                    allRiwPen[idx]['BERAT_BRUTO'] = bBruto;
+                    allRiwPen[idx]['BERAT BRUTO (Kg)'] = bBruto;
+                    allRiwPen[idx]['BERAT_NETTO'] = bNetto;
+                    allRiwPen[idx]['BERAT NETTO (Kg)'] = bNetto;
+                    allRiwPen[idx]['STATUS_MUTU'] = statusMutu;
+                    allRiwPen[idx]['KETERANGAN'] = keterangan;
+                    applyFilSorPen();
+                }
+            }
+
+            closeEditPenerimaanModal();
+            const ov = document.getElementById('loading-overlay');
+            ov.classList.remove('hidden');
+            ov.querySelector('p').innerText = "Menyimpan Perubahan Penerimaan ke Google Sheet...";
+
+            const fd = new URLSearchParams();
+            fd.append('action', 'edit');
+            fd.append('sheetName', 'INPUT_PENERIMAAN_KOPI');
+            fd.append('columnName', 'ID_LOT');
+            fd.append('id', idLot);
+            fd.append('ID_LOT', idLot);
+            fd.append('TANGGAL_MASUK', tM);
+            fd.append('GUDANG', g);
+            fd.append('NO_LOT', nl);
+            fd.append('NO_PALET', np);
+            fd.append('ID_LOKASI', lok);
+            fd.append('SURAT_JALAN', sj);
+            fd.append('JENIS_KOPI', jk);
+            fd.append('SUPPLIER', sp);
+            fd.append('NO_PO', noPo);
+            fd.append('NO_POL', noPol);
+            fd.append('KADAR_AIR', ka);
+            fd.append('KARUNG_MASUK', karung);
+            fd.append('BERAT_PALLET_KOSONG', bPallet.toString().replace('.', ','));
+            fd.append('BERAT_BRUTO', bBruto.toString().replace('.', ','));
+            fd.append('BERAT BRUTO (Kg)', bBruto.toString().replace('.', ','));
+            fd.append('BERAT_NETTO', bNetto.toString().replace('.', ','));
+            fd.append('BERAT NETTO (Kg)', bNetto.toString().replace('.', ','));
+            fd.append('STATUS_MUTU', statusMutu);
+            fd.append('KETERANGAN', keterangan);
+
+            const targetUrl = getWebAppUrl();
+            fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                showToast(`Perubahan ID Lot ${idLot} berhasil disimpan & disinkronkan ke Google Sheet!`, 'success');
+                setTimeout(() => {
+                    fetchRiwayatPenerimaan();
+                    if (typeof syncMainDashboard === 'function') syncMainDashboard();
+                }, 2000);
+            }).catch(err => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                console.error("Error editing penerimaan:", err);
+                showToast('Gagal mengirim update ke Google Sheet. Periksa koneksi Apps Script.', 'error');
+            });
+        }
+
+        // ================= EDIT PENGELUARAN KOPI =================
+        function openEditPengeluaran(idKeluar) {
+            if (!idKeluar) return;
+            const item = (allRiwKel || []).find(r => String(findValue(r, 'ID_KELUAR') || r['ID_KELUAR'] || '').trim() === String(idKeluar).trim());
+            if (!item) {
+                showToast('Data pengeluaran ID ' + idKeluar + ' tidak ditemukan.', 'error');
+                return;
+            }
+
+            document.getElementById('edit-kel-id-original').value = idKeluar;
+            document.getElementById('edit-kel-id').value = idKeluar;
+
+            let rawTgl = findValue(item, 'TANGGAL_KELUAR');
+            let dateStr = "";
+            if (rawTgl) {
+                if (typeof rawTgl === 'string' && rawTgl.includes('-') && rawTgl.length === 10) {
+                    dateStr = rawTgl;
+                } else {
+                    let d = new Date(rawTgl);
+                    if (!isNaN(d.getTime())) {
+                        dateStr = d.toISOString().split('T')[0];
+                    } else {
+                        let parts = String(rawTgl).split(/[/.-]/);
+                        if (parts.length === 3) {
+                            if (parts[2].length === 4) dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                            else if (parts[0].length === 4) dateStr = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                        }
+                    }
+                }
+            }
+            if (!dateStr || dateStr.length < 10) dateStr = new Date().toISOString().split('T')[0];
+            document.getElementById('edit-kel-tgl').value = dateStr;
+
+            let rawJam = findValue(item, 'JAM_KELUAR');
+            let jamStr = formatSheetTime(rawJam) || "08:00";
+            if (jamStr.length > 5) jamStr = jamStr.slice(0, 5);
+            document.getElementById('edit-kel-jam').value = jamStr;
+
+            document.getElementById('edit-kel-shift').value = findValue(item, 'SHIFT_KELUAR') || "SHIFT 1";
+            document.getElementById('edit-kel-id-req').value = findValue(item, 'ID_PERMINTAAN') || "";
+            document.getElementById('edit-kel-tujuan').value = findValue(item, 'TUJUAN') || "UPBM";
+            document.getElementById('edit-kel-id-lot').value = findValue(item, 'ID_LOT') || "";
+            document.getElementById('edit-kel-id-lokasi').value = findValue(item, 'ID_LOKASI') || "";
+            document.getElementById('edit-kel-no-palet').value = findValue(item, 'NO_PALET') || "";
+            document.getElementById('edit-kel-jenis-kopi').value = String(findValue(item, 'JENIS_KOPI') || "18").trim();
+            document.getElementById('edit-kel-karung').value = findValue(item, 'KARUNG_KELUAR') || "";
+
+            const kg = parseNilaiAngka(findValue(item, 'KG_KELUAR') || findValue(item, 'KG KELUAR')) || 0;
+            document.getElementById('edit-kel-kg').value = kg;
+
+            let stFifo = findValue(item, 'STATUS_FIFO') || "Sesuai FIFO";
+            document.getElementById('edit-kel-status-fifo').value = stFifo.includes('Pelanggaran') ? 'Pelanggaran FIFO' : 'Sesuai FIFO';
+
+            document.getElementById('modal-edit-pengeluaran').classList.remove('hidden');
+        }
+
+        function closeEditPengeluaranModal() {
+            document.getElementById('modal-edit-pengeluaran').classList.add('hidden');
+        }
+
+        function submitEditPengeluaran(e) {
+            e.preventDefault();
+            const idKeluar = document.getElementById('edit-kel-id-original').value.trim();
+            if (!idKeluar) {
+                showToast('ID Keluar tidak valid.', 'error');
+                return;
+            }
+
+            const tK = document.getElementById('edit-kel-tgl').value;
+            const jK = document.getElementById('edit-kel-jam').value;
+            const sK = document.getElementById('edit-kel-shift').value;
+            const idReq = document.getElementById('edit-kel-id-req').value.trim();
+            const tu = document.getElementById('edit-kel-tujuan').value;
+            const idLot = document.getElementById('edit-kel-id-lot').value.trim();
+            const lok = document.getElementById('edit-kel-id-lokasi').value.trim();
+            const np = document.getElementById('edit-kel-no-palet').value.trim().toUpperCase();
+            const jk = document.getElementById('edit-kel-jenis-kopi').value;
+            const karung = document.getElementById('edit-kel-karung').value;
+            const kg = parseFloat(document.getElementById('edit-kel-kg').value) || 0;
+            const statusFifo = document.getElementById('edit-kel-status-fifo').value;
+
+            // Optimistic update lokal
+            if (Array.isArray(allRiwKel)) {
+                const idx = allRiwKel.findIndex(r => String(findValue(r, 'ID_KELUAR') || r['ID_KELUAR'] || '').trim() === idKeluar);
+                if (idx !== -1) {
+                    allRiwKel[idx]['TANGGAL_KELUAR'] = tK;
+                    allRiwKel[idx]['JAM_KELUAR'] = jK;
+                    allRiwKel[idx]['SHIFT_KELUAR'] = sK;
+                    allRiwKel[idx]['ID_PERMINTAAN'] = idReq;
+                    allRiwKel[idx]['TUJUAN'] = tu;
+                    allRiwKel[idx]['ID_LOT'] = idLot;
+                    allRiwKel[idx]['ID_LOKASI'] = lok;
+                    allRiwKel[idx]['NO_PALET'] = np;
+                    allRiwKel[idx]['JENIS_KOPI'] = jk;
+                    allRiwKel[idx]['KARUNG_KELUAR'] = karung;
+                    allRiwKel[idx]['KG_KELUAR'] = kg;
+                    allRiwKel[idx]['KG KELUAR'] = kg;
+                    allRiwKel[idx]['STATUS_FIFO'] = statusFifo;
+                    applyFilSorKel();
+                }
+            }
+
+            closeEditPengeluaranModal();
+            const ov = document.getElementById('loading-overlay');
+            ov.classList.remove('hidden');
+            ov.querySelector('p').innerText = "Menyimpan Perubahan Pengeluaran ke Google Sheet...";
+
+            const fd = new URLSearchParams();
+            fd.append('action', 'edit');
+            fd.append('sheetName', 'INPUT_TRANSAKSI_KELUAR');
+            fd.append('columnName', 'ID_KELUAR');
+            fd.append('id', idKeluar);
+            fd.append('ID_KELUAR', idKeluar);
+            fd.append('TANGGAL_KELUAR', tK);
+            fd.append('JAM_KELUAR', jK);
+            fd.append('SHIFT_KELUAR', sK);
+            fd.append('ID_PERMINTAAN', idReq);
+            fd.append('TUJUAN', tu);
+            fd.append('ID_LOT', idLot);
+            fd.append('ID_LOKASI', lok);
+            fd.append('NO_PALET', np);
+            fd.append('JENIS_KOPI', jk);
+            fd.append('KARUNG_KELUAR', karung);
+            fd.append('KG_KELUAR', kg.toString().replace('.', ','));
+            fd.append('KG KELUAR', kg.toString().replace('.', ','));
+            fd.append('STATUS_FIFO', statusFifo);
+
+            const targetUrl = getWebAppUrl();
+            fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                showToast(`Perubahan ID Keluar ${idKeluar} berhasil disimpan & disinkronkan ke Google Sheet!`, 'success');
+                setTimeout(() => {
+                    fetchRiwayatPengeluaran();
+                    if (typeof syncMainDashboard === 'function') syncMainDashboard();
+                }, 2000);
+            }).catch(err => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                console.error("Error editing pengeluaran:", err);
+                showToast('Gagal mengirim update ke Google Sheet. Periksa koneksi Apps Script.', 'error');
+            });
+        }
+
         function toggleManualJenisKopiPO() { const sel = document.getElementById('select-jenis-kopi-po'); const inp = document.getElementById('input-jenis-kopi-po-manual'); if (sel.value === 'Lainnya') { inp.classList.remove('hidden'); inp.setAttribute('name', 'JENIS_KOPI'); inp.setAttribute('required', 'true'); sel.removeAttribute('name'); inp.focus(); } else { inp.classList.add('hidden'); inp.removeAttribute('name'); inp.removeAttribute('required'); sel.setAttribute('name', 'JENIS_KOPI'); inp.value = ''; } }
         function submitFormPO(e) { e.preventDefault(); const frm = e.target; const over = document.getElementById('loading-overlay'); over.classList.remove('hidden'); const fd = new FormData(frm); fd.append('sheetName', 'INPUT_PO_SUPPLIER'); const cp = new URLSearchParams(); for (const [k, v] of fd.entries()) { cp.append(k, typeof v === 'string' ? v.trim() : v); } fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: cp }).then(() => { over.classList.add('hidden'); showToast(`Data PO tersimpan!`, 'success'); frm.reset(); setTimeout(() => fetchRiwayatPO(), 1500); }).catch(e => { over.classList.add('hidden'); showToast(`Gagal Menyimpan.`, 'error'); }); }
         
@@ -3348,7 +3923,24 @@ function testReadData() {
                 let st = String(stRaw).toUpperCase().trim();
                 let sc = st.includes('PASS')?'bg-emerald-50 text-emerald-700 border border-emerald-200':st.includes('REJECT')?'bg-red-50 text-red-700 border border-red-200':st.includes('HOLD')?'bg-amber-50 text-amber-700 border border-amber-200':'bg-slate-50 text-slate-600 border border-slate-200';
                 let id=findValue(r,'ID_LOT'); let nt=parseNilaiAngka(findValue(r,'BERAT NETTO (Kg)')||findValue(r,'BERAT_NETTO')||(r._raw&&r._raw.length>=14?r._raw[13]:"0"));
-                ht += `<tr class="hover:bg-slate-50 transition-colors"><td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_MASUK'))}</td><td class="px-5 py-3 font-medium text-slate-900">${id||"-"}</td><td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'SURAT_JALAN')||"-"}</td><td class="px-5 py-3">${findValue(r,'JENIS_KOPI')||"-"}</td><td class="px-5 py-3">${findValue(r,'SUPPLIER')||"-"}</td><td class="px-5 py-3">${findValue(r,'NO_PO')||"-"}</td><td class="px-5 py-3 text-right font-bold text-slate-700">${formatAngkaId(nt)}</td><td class="px-5 py-3 text-center"><span class="px-3 py-1 rounded-md text-xs font-semibold ${sc}">${st||"-"}</span></td><td class="px-5 py-3 text-center"><button type="button" onclick="deleteData('${id}')" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors"><i class="ph ph-trash"></i></button></td></tr>`;
+                ht += `<tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_MASUK'))}</td>
+                    <td class="px-5 py-3 font-medium text-slate-900">${id||"-"}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'SURAT_JALAN')||"-"}</td>
+                    <td class="px-5 py-3">${findValue(r,'JENIS_KOPI')||"-"}</td>
+                    <td class="px-5 py-3">${findValue(r,'SUPPLIER')||"-"}</td>
+                    <td class="px-5 py-3">${findValue(r,'NO_PO')||"-"}</td>
+                    <td class="px-5 py-3 text-right font-bold text-slate-700">${formatAngkaId(nt)}</td>
+                    <td class="px-5 py-3 text-center"><span class="px-3 py-1 rounded-md text-xs font-semibold ${sc}">${st||"-"}</span></td>
+                    <td class="px-5 py-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="openEditPenerimaan('${id}')" title="Edit Penerimaan" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200">
+                            <i class="ph ph-pencil-simple text-sm"></i>
+                        </button>
+                        <button type="button" onclick="deleteData('${id}')" title="Hapus Penerimaan" class="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200">
+                            <i class="ph ph-trash text-sm"></i>
+                        </button>
+                    </td>
+                </tr>`;
             });
             tb.innerHTML = ht; document.getElementById('page-info').innerText=`${s+1} - ${e>fPen.length?fPen.length:e}`; document.getElementById('total-info').innerText=fPen.length; document.getElementById('btn-prev').disabled=pPen===1; document.getElementById('btn-next').disabled=e>=fPen.length;
         }
@@ -3555,7 +4147,23 @@ function testReadData() {
                 let kg=formatAngkaId(parseNilaiAngka(findValue(r,'KG_KELUAR')||findValue(r,'KG KELUAR'))); 
                 let stFifo = String(findValue(r,'STATUS_FIFO') || "").toUpperCase();
                 let badgeFifo = (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN')) ? '<span class="px-2 py-1 bg-red-100 text-red-700 font-bold rounded text-[10px]">PELANGGARAN</span>' : (stFifo ? '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px]">SESUAI</span>' : '-');
-                ht += `<tr class="hover:bg-amber-50/50 transition-colors"><td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td><td class="px-5 py-3 font-medium text-amber-700">${ik||"-"}</td><td class="px-5 py-3">${findValue(r,'ID_PERMINTAAN')||"-"}</td><td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'ID_LOT')||"-"}</td><td class="px-5 py-3">${findValue(r,'TUJUAN')||"-"}</td><td class="px-5 py-3">${badgeFifo}</td><td class="px-5 py-3 text-right font-bold text-slate-700">${kg}</td><td class="px-5 py-3 text-center"><button type="button" onclick="deleteDataPengeluaran('${ik}')" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors"><i class="ph ph-trash"></i></button></td></tr>`; 
+                ht += `<tr class="hover:bg-amber-50/50 transition-colors">
+                    <td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td>
+                    <td class="px-5 py-3 font-medium text-amber-700">${ik||"-"}</td>
+                    <td class="px-5 py-3">${findValue(r,'ID_PERMINTAAN')||"-"}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'ID_LOT')||"-"}</td>
+                    <td class="px-5 py-3">${findValue(r,'TUJUAN')||"-"}</td>
+                    <td class="px-5 py-3">${badgeFifo}</td>
+                    <td class="px-5 py-3 text-right font-bold text-slate-700">${kg}</td>
+                    <td class="px-5 py-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="openEditPengeluaran('${ik}')" title="Edit Pengeluaran" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200">
+                            <i class="ph ph-pencil-simple text-sm"></i>
+                        </button>
+                        <button type="button" onclick="deleteDataPengeluaran('${ik}')" title="Hapus Pengeluaran" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200">
+                            <i class="ph ph-trash text-sm"></i>
+                        </button>
+                    </td>
+                </tr>`; 
             });
             tb.innerHTML = ht; document.getElementById('page-info-pengeluaran').innerText=`${s+1} - ${e>fKel.length?fKel.length:e}`; document.getElementById('total-info-pengeluaran').innerText=fKel.length; document.getElementById('btn-prev-pengeluaran').disabled=pKel===1; document.getElementById('btn-next-pengeluaran').disabled=e>=fKel.length;
         }
@@ -3856,11 +4464,11 @@ function testReadData() {
                     }
                 }
             } else if (tSh === 'INPUT_PENERIMAAN_KOPI') {
-                allRiwayatData = allRiwayatData.filter(r => String(findValue(r, 'ID_LOT') || '').trim() !== String(tId).trim());
-                applyFilterAndSort();
+                allRiwPen = allRiwPen.filter(r => String(findValue(r, 'ID_LOT') || '').trim() !== String(tId).trim());
+                applyFilSorPen();
             } else if (tSh === 'INPUT_TRANSAKSI_KELUAR') {
                 allRiwKel = allRiwKel.filter(r => String(findValue(r, 'ID_KELUAR') || '').trim() !== String(tId).trim());
-                applyFilterAndSortKel();
+                applyFilSorKel();
             } else if (tSh === 'INPUT_PO_SUPPLIER') {
                 allRiwayatPO = allRiwayatPO.filter(r => String(findValue(r, 'NO_PO') || '').trim() !== String(tId).trim());
                 applyFilterAndSortPO();
@@ -4958,43 +5566,53 @@ function testReadData() {
                 window.print();
                 return;
             }
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Laporan Inspeksi Ceklist Warehouse - ${currentActiveCeklistDetail.id}</title>
-                    <script src="https://cdn.tailwindcss.com"></` + `script>
-                    <style>body { font-family: sans-serif; padding: 24px; color: #1e293b; }</style>
-                </head>
-                <body>
-                    <div class="border-b-2 border-slate-800 pb-4 mb-6 flex justify-between items-center">
-                        <div>
-                            <h2 class="text-2xl font-bold">SIBIKOM - DATA CEKLIST WAREHOUSE</h2>
-                            <p class="text-sm text-slate-500">PT SANTOSA JAYA ABADI 3 (SJA3) - DEPT. SUPPLY CHAIN & GUDANG</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs text-slate-500">Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
-                        </div>
-                    </div>
-                    ${content}
-                    <div class="mt-12 pt-6 border-t border-slate-200 grid grid-cols-2 text-center text-xs">
-                        <div>
-                            <p>Warehouse Inspector</p>
-                            <div class="h-16"></div>
-                            <p class="font-bold underline">${currentActiveCeklistDetail.petugas}</p>
-                        </div>
-                        <div>
-                            <p>Supervisor / Kepala Gudang</p>
-                            <div class="h-16"></div>
-                            <p class="font-bold underline">( ....................................... )</p>
-                        </div>
-                    </div>
-                    <script>
-                        window.onload = function() { window.print(); }
-                    </` + `script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            const printDoc = printWindow.document;
+            printDoc.open();
+            printDoc.write(`<!DOCTYPE html>
+<html>
+<head>
+    <title>Laporan Inspeksi Ceklist Warehouse - ${currentActiveCeklistDetail.id}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #1e293b; line-height: 1.5; }
+        .header-print { border-bottom: 2px solid #1e293b; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .footer-sign { margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-size: 12px; }
+        .sign-space { height: 60px; }
+    </style>
+</head>
+<body>
+    <div class="header-print">
+        <div>
+            <h2 style="font-size: 20px; font-weight: bold; margin: 0 0 4px 0;">SIBIKOM - DATA CEKLIST WAREHOUSE</h2>
+            <p style="font-size: 13px; color: #64748b; margin: 0;">PT SANTOSA JAYA ABADI 3 (SJA3) - DEPT. SUPPLY CHAIN & GUDANG</p>
+        </div>
+        <div style="text-align: right;">
+            <p style="font-size: 11px; color: #64748b; margin: 0;">Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+        </div>
+    </div>
+    ${content}
+    <div class="footer-sign">
+        <div>
+            <p>Warehouse Inspector</p>
+            <div class="sign-space"></div>
+            <p style="font-weight: bold; text-decoration: underline;">${currentActiveCeklistDetail.petugas}</p>
+        </div>
+        <div>
+            <p>Supervisor / Kepala Gudang</p>
+            <div class="sign-space"></div>
+            <p style="font-weight: bold; text-decoration: underline;">( ....................................... )</p>
+        </div>
+    </div>
+</body>
+</html>`);
+            printDoc.close();
+            setTimeout(() => {
+                try {
+                    printWindow.focus();
+                    printWindow.print();
+                } catch (e) {
+                    console.error('Print error:', e);
+                }
+            }, 300);
         }
 
         function exportCeklistCSV() {
