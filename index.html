@@ -357,6 +357,12 @@
 
             <!-- Tombol Aksi Kanan: Mode Terang/Gelap, User Info, Logout -->
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <!-- Tombol Showcase / Contoh Tampilan Dinamis -->
+                <button id="btn-header-dynamic-demo" onclick="openDynamicShowcaseModal('penerimaan')" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 dark:from-indigo-950/50 dark:to-purple-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/90 dark:border-indigo-800 shadow-xs transition-all duration-200 flex items-center gap-1.5 cursor-pointer" title="Lihat Contoh & Uji Coba Tampilan Dinamis (Live Sandbox)">
+                    <i class="ph ph-sparkle text-amber-500 text-lg"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Contoh Dinamis</span>
+                </button>
+
                 <!-- Tombol Google Sheet & Code.gs Sync (Hanya Mode Super Admin) -->
                 <button id="btn-header-gsheet-sync" onclick="openModalAppsScriptGlobal()" class="hidden p-2 sm:px-3 sm:py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-sm transition-all duration-200 items-center gap-1.5 cursor-pointer" title="Konfigurasi Sinkronisasi Google Sheet & Apps Script Code.gs (Super Admin)">
                     <i class="ph ph-google-logo text-lg text-emerald-600"></i>
@@ -914,7 +920,15 @@
                 </form>
 
                 <div class="mt-10 border-t border-slate-200 pt-8">
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6"><h3 class="text-lg font-bold text-slate-800">Riwayat Data Penerimaan</h3><button onclick="fetchRiwayatPenerimaan()" class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"><i class="ph ph-arrows-clockwise text-lg" id="icon-sync-riwayat"></i> Segarkan Data</button></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-bold text-slate-800">Riwayat Data Penerimaan</h3>
+                            <button type="button" onclick="openDynamicShowcaseModal('penerimaan')" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer shadow-2xs">
+                                <i class="ph ph-sparkle text-amber-500 text-sm"></i> Contoh Dinamis
+                            </button>
+                        </div>
+                        <button onclick="fetchRiwayatPenerimaan()" class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"><i class="ph ph-arrows-clockwise text-lg" id="icon-sync-riwayat"></i> Segarkan Data</button>
+                    </div>
                     <div class="overflow-x-auto border border-slate-200 rounded-xl">
                         <table class="w-full text-left text-sm text-slate-600 whitespace-nowrap">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-700">
@@ -995,7 +1009,15 @@
                 </form>
 
                 <div class="mt-10 border-t border-slate-200 pt-8">
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6"><h3 class="text-lg font-bold text-slate-800">Riwayat Data Pengeluaran</h3><button type="button" onclick="fetchRiwayatPengeluaran()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"><i class="ph ph-arrows-clockwise text-lg" id="icon-sync-riwayat-pengeluaran"></i> Segarkan Data</button></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-bold text-slate-800">Riwayat Data Pengeluaran</h3>
+                            <button type="button" onclick="openDynamicShowcaseModal('pengeluaran')" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer shadow-2xs">
+                                <i class="ph ph-sparkle text-amber-500 text-sm"></i> Contoh Dinamis
+                            </button>
+                        </div>
+                        <button type="button" onclick="fetchRiwayatPengeluaran()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"><i class="ph ph-arrows-clockwise text-lg" id="icon-sync-riwayat-pengeluaran"></i> Segarkan Data</button>
+                    </div>
                     <div class="overflow-x-auto border border-slate-200 rounded-xl">
                         <table class="w-full text-left text-sm text-slate-600 whitespace-nowrap">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-700">
@@ -1742,6 +1764,308 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal Showcase & Simulasi Contoh Tampilan Dinamis -->
+        <div id="modal-dynamic-showcase" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[130] flex items-center justify-center p-3 sm:p-5">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+                <!-- Header Modal -->
+                <div class="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/30 text-amber-300 flex items-center justify-center border border-indigo-400/30 text-xl shadow-inner">
+                            <i class="ph ph-sparkle"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-base sm:text-lg tracking-tight">Showcase & Contoh Tampilan Dinamis</h3>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-slate-900 uppercase">Live Sandbox</span>
+                            </div>
+                            <p class="text-xs text-slate-300">Uji coba langsung fitur edit, kalkulasi live, dan hapus sebelum diterapkan</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeDynamicShowcaseModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer">
+                        <i class="ph ph-x text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Tabs Switcher -->
+                <div class="flex border-b border-slate-200 bg-slate-50 px-6 pt-3 gap-2 shrink-0 overflow-x-auto">
+                    <button type="button" id="tab-btn-showcase-penerimaan" onclick="switchShowcaseTab('penerimaan')" class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-2 border-indigo-600 text-indigo-700 bg-white shadow-xs">
+                        <i class="ph ph-download-simple text-base"></i> 1. Contoh Penerimaan (BKM)
+                    </button>
+                    <button type="button" id="tab-btn-showcase-pengeluaran" onclick="switchShowcaseTab('pengeluaran')" class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2">
+                        <i class="ph ph-upload-simple text-base"></i> 2. Contoh Pengeluaran (BKM)
+                    </button>
+                    <button type="button" id="tab-btn-showcase-compare" onclick="switchShowcaseTab('compare')" class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2">
+                        <i class="ph ph-scales text-base"></i> 3. Perbandingan Sistem
+                    </button>
+                </div>
+
+                <!-- Modal Content Scrollable -->
+                <div class="p-6 overflow-y-auto space-y-6 flex-1 text-slate-700 text-xs">
+                    <!-- Tab Panel 1: Penerimaan -->
+                    <div id="showcase-panel-penerimaan" class="space-y-5">
+                        <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                            <i class="ph ph-info text-blue-600 text-xl shrink-0 mt-0.5"></i>
+                            <div class="text-xs text-blue-900 leading-relaxed">
+                                <p class="font-bold">Simulasi Interaktif Penerimaan Kopi:</p>
+                                <p>Coba klik tombol <strong>Edit (biru)</strong> atau <strong>Hapus (merah)</strong> pada tabel contoh di bawah ini. Anda dapat menguji cara kerja auto-kalkulasi Netto, live status badge, dan konfirmasi dinamis tanpa memengaruhi data asli Google Sheet.</p>
+                            </div>
+                        </div>
+
+                        <!-- Live Demo Table Penerimaan -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+                            <div class="bg-slate-100/80 px-4 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                                <span class="font-bold text-slate-700 text-xs flex items-center gap-1.5"><i class="ph ph-table text-indigo-600"></i> Tabel Contoh Data Penerimaan</span>
+                                <button type="button" onclick="demoResetPenerimaan()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 cursor-pointer">
+                                    <i class="ph ph-arrows-counter-clockwise"></i> Reset Data Contoh
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs whitespace-nowrap">
+                                    <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-4 py-2.5">Tgl Masuk</th>
+                                            <th class="px-4 py-2.5">ID Lot</th>
+                                            <th class="px-4 py-2.5">Surat Jalan</th>
+                                            <th class="px-4 py-2.5">Jenis Kopi</th>
+                                            <th class="px-4 py-2.5">Supplier</th>
+                                            <th class="px-4 py-2.5 text-right">Netto (Kg)</th>
+                                            <th class="px-4 py-2.5 text-center">Status Mutu</th>
+                                            <th class="px-4 py-2.5 text-center">Tombol Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="demo-table-penerimaan-body" class="divide-y divide-slate-100 bg-white">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Edit Box for Demo -->
+                        <div id="demo-editor-box" class="hidden bg-slate-50 border-2 border-indigo-200 rounded-xl p-5 space-y-4 animate-in fade-in duration-200">
+                            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                                    <h4 class="font-bold text-slate-800 text-xs">Simulasi Form Edit Dinamis: <span id="demo-edit-target-id" class="text-indigo-600 font-mono"></span></h4>
+                                </div>
+                                <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">Live Calculator Aktif</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Berat Bruto (Kg)</label>
+                                    <input type="number" id="demo-input-bruto" oninput="demoHitungNetto()" step="1" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-indigo-600 outline-none bg-white font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Berat Pallet Kosong (Kg)</label>
+                                    <input type="number" id="demo-input-pallet" oninput="demoHitungNetto()" step="1" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-indigo-600 outline-none bg-white font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-emerald-700 mb-1">Netto (Dihitung Otomatis)</label>
+                                    <div class="w-full px-3 py-2 text-xs rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-black flex items-center justify-between">
+                                        <span id="demo-display-netto">0.00</span>
+                                        <span class="text-[10px] text-emerald-600 font-normal">Kg</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Status Mutu</label>
+                                    <select id="demo-select-mutu" onchange="demoUpdateMutuBadge()" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-indigo-600 outline-none bg-white font-semibold">
+                                        <option value="PASS">PASS (Lolos Mutu)</option>
+                                        <option value="HOLD">HOLD (Karantina Mutu)</option>
+                                        <option value="REJECT">REJECT (Tolak)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pratinjau Badge Warna</label>
+                                    <div id="demo-badge-preview-container" class="pt-1.5">
+                                        <span id="demo-badge-preview" class="px-3 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">PASS</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                                <span class="text-[11px] text-slate-500">Angka Netto otomatis disinkronkan saat disimpan</span>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="document.getElementById('demo-editor-box').classList.add('hidden')" class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg cursor-pointer">Batal</button>
+                                    <button type="button" onclick="demoSimpanPerubahanPenerimaan()" class="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                        <i class="ph ph-check"></i> Terapkan ke Tabel Demo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Toast Demo -->
+                        <div id="demo-toast-banner" class="hidden p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between animate-in fade-in">
+                            <div class="flex items-center gap-2">
+                                <i class="ph ph-check-circle text-emerald-600 text-lg"></i>
+                                <span id="demo-toast-msg" class="font-medium text-xs">Perubahan berhasil disimulasikan!</span>
+                            </div>
+                            <button type="button" id="demo-btn-undo" onclick="demoUndoLastAction()" class="hidden px-2.5 py-1 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 rounded text-xs font-bold shadow-xs cursor-pointer">
+                                ↺ Batalkan (Undo)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Panel 2: Pengeluaran -->
+                    <div id="showcase-panel-pengeluaran" class="hidden space-y-5">
+                        <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                            <i class="ph ph-info text-amber-600 text-xl shrink-0 mt-0.5"></i>
+                            <div class="text-xs text-amber-900 leading-relaxed">
+                                <p class="font-bold">Simulasi Interaktif Pengeluaran Kopi (BKM):</p>
+                                <p>Pada data pengeluaran, Anda dapat mengoreksi <strong>Kg Keluar</strong>, <strong>Tujuan Pengiriman</strong>, maupun <strong>Evaluasi Status FIFO</strong>. Begitu diedit, data langsung terupdate tanpa perlu reload halaman.</p>
+                            </div>
+                        </div>
+
+                        <!-- Live Demo Table Pengeluaran -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+                            <div class="bg-slate-100/80 px-4 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                                <span class="font-bold text-slate-700 text-xs flex items-center gap-1.5"><i class="ph ph-table text-amber-600"></i> Tabel Contoh Data Pengeluaran</span>
+                                <button type="button" onclick="demoResetPengeluaran()" class="text-xs text-amber-600 hover:text-amber-800 font-semibold flex items-center gap-1 cursor-pointer">
+                                    <i class="ph ph-arrows-counter-clockwise"></i> Reset Data Contoh
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs whitespace-nowrap">
+                                    <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-4 py-2.5">Tgl Keluar</th>
+                                            <th class="px-4 py-2.5">ID Keluar</th>
+                                            <th class="px-4 py-2.5">ID Permintaan</th>
+                                            <th class="px-4 py-2.5">ID Lot Sumber</th>
+                                            <th class="px-4 py-2.5">Tujuan</th>
+                                            <th class="px-4 py-2.5 text-center">Status FIFO</th>
+                                            <th class="px-4 py-2.5 text-right">Kg Keluar</th>
+                                            <th class="px-4 py-2.5 text-center">Tombol Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="demo-table-pengeluaran-body" class="divide-y divide-slate-100 bg-white">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Edit Box for Pengeluaran Demo -->
+                        <div id="demo-editor-box-keluar" class="hidden bg-slate-50 border-2 border-amber-200 rounded-xl p-5 space-y-4 animate-in fade-in duration-200">
+                            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    <h4 class="font-bold text-slate-800 text-xs">Simulasi Form Edit Pengeluaran: <span id="demo-edit-kel-target-id" class="text-amber-700 font-mono"></span></h4>
+                                </div>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Pengeluaran Dinamis</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tujuan Pengiriman</label>
+                                    <select id="demo-input-tujuan" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-amber-500 outline-none bg-white font-semibold">
+                                        <option value="UPBM">UPBM (Roasting)</option>
+                                        <option value="PRODUKSI">PRODUKSI</option>
+                                        <option value="REJECT">REJECT</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Kg Keluar (Hasil Timbang)</label>
+                                    <input type="number" id="demo-input-kg-keluar" step="1" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-amber-500 outline-none bg-white font-bold text-slate-900">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Status FIFO</label>
+                                    <select id="demo-select-fifo" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-amber-500 outline-none bg-white font-semibold">
+                                        <option value="SESUAI">SESUAI (Sesuai Urutan)</option>
+                                        <option value="PELANGGARAN">PELANGGARAN (Melompati Lot)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                                <span class="text-[11px] text-slate-500">Mencegah salah input tanpa perlu mengutak-atik spreadsheet manual</span>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="document.getElementById('demo-editor-box-keluar').classList.add('hidden')" class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg cursor-pointer">Batal</button>
+                                    <button type="button" onclick="demoSimpanPerubahanPengeluaran()" class="px-4 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                        <i class="ph ph-check"></i> Terapkan ke Tabel Demo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Panel 3: Compare -->
+                    <div id="showcase-panel-compare" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Card Sebelum -->
+                            <div class="bg-rose-50/50 border border-rose-200 rounded-2xl p-5 space-y-3">
+                                <div class="flex items-center gap-2 text-rose-700 font-bold text-sm border-b border-rose-200 pb-2">
+                                    <i class="ph ph-x-circle text-xl"></i>
+                                    <h4>Tampilan Sebelumnya (Statis)</h4>
+                                </div>
+                                <ul class="space-y-2.5 text-slate-700 text-xs leading-relaxed">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-500 font-bold">✕</span>
+                                        <span><strong>Hanya ada 1 tombol (Hapus):</strong> Tidak tersedia tombol edit pada kolom aksi Penerimaan & Pengeluaran.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-500 font-bold">✕</span>
+                                        <span><strong>Koreksi manual rumit:</strong> Jika terjadi kesalahan ketik surat jalan, berat, atau nomor PO, user terpaksa membuka file Google Sheet secara terpisah.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-500 font-bold">✕</span>
+                                        <span><strong>Keterbatasan Sinkronisasi:</strong> Hapus data terkadang gagal menghapus baris di Google Sheet akibat perbedaan nama kolom variabel.</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Card Sesudah -->
+                            <div class="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-5 space-y-3">
+                                <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm border-b border-emerald-200 pb-2">
+                                    <i class="ph ph-check-circle text-xl"></i>
+                                    <h4>Tampilan Baru (Dinamis & Interaktif)</h4>
+                                </div>
+                                <ul class="space-y-2.5 text-slate-800 text-xs leading-relaxed">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 font-bold">✓</span>
+                                        <span><strong>Tombol Edit & Hapus Lengkap:</strong> Tersedia berdampingan di kolom Aksi dengan ikon pensil biru & ikon sampah merah yang rapi.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 font-bold">✓</span>
+                                        <span><strong>Formulir Terisi Otomatis (Pre-filled):</strong> Mengklik tombol edit langsung membuka popup dengan data baris tersebut siap disesuaikan.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 font-bold">✓</span>
+                                        <span><strong>Auto-kalkulasi Netto Real-time:</strong> Saat mengubah Berat Bruto atau Pallet Kosong, angka Netto langsung diperbarui seketika.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 font-bold">✓</span>
+                                        <span><strong>Pencocokan Kolom Cerdas (Apps Script):</strong> Mendukung format spasi maupun underscore (`ID_LOT` / `ID LOT`), sehingga baris di Google Sheet terupdate atau terhapus secara akurat.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 font-bold">✓</span>
+                                        <span><strong>Optimistic UI:</strong> Tabel terupdate instan tanpa jeda loading, disusul sinkronisasi latar belakang ke spreadsheet.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Modal -->
+                <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-2 shrink-0">
+                    <span class="text-[11px] text-slate-500 flex items-center gap-1.5">
+                        <i class="ph ph-shield-check text-emerald-600 text-sm"></i> Mekanisme sistem ini telah disamakan dengan modul UPBM
+                    </span>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button type="button" onclick="closeDynamicShowcaseModal()" class="w-full sm:w-auto px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-200/60 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
+                            Tutup Contoh
+                        </button>
+                        <button type="button" onclick="applyShowcaseAndGoToTab('gudang-penerimaan')" class="w-full sm:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="ph ph-check text-sm"></i> Buka Data Penerimaan Asli
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -3921,22 +4245,22 @@ function testReadData() {
             fPen.slice(s,e).forEach(r => {
                 let stRaw = getStatusMutu(r);
                 let st = String(stRaw).toUpperCase().trim();
-                let sc = st.includes('PASS')?'bg-emerald-50 text-emerald-700 border border-emerald-200':st.includes('REJECT')?'bg-red-50 text-red-700 border border-red-200':st.includes('HOLD')?'bg-amber-50 text-amber-700 border border-amber-200':'bg-slate-50 text-slate-600 border border-slate-200';
+                let sc = st.includes('PASS')?'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800':st.includes('REJECT')?'bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-800':st.includes('HOLD')?'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800':'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
                 let id=findValue(r,'ID_LOT'); let nt=parseNilaiAngka(findValue(r,'BERAT NETTO (Kg)')||findValue(r,'BERAT_NETTO')||(r._raw&&r._raw.length>=14?r._raw[13]:"0"));
-                ht += `<tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_MASUK'))}</td>
-                    <td class="px-5 py-3 font-medium text-slate-900">${id||"-"}</td>
-                    <td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'SURAT_JALAN')||"-"}</td>
-                    <td class="px-5 py-3">${findValue(r,'JENIS_KOPI')||"-"}</td>
-                    <td class="px-5 py-3">${findValue(r,'SUPPLIER')||"-"}</td>
-                    <td class="px-5 py-3">${findValue(r,'NO_PO')||"-"}</td>
-                    <td class="px-5 py-3 text-right font-bold text-slate-700">${formatAngkaId(nt)}</td>
+                ht += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td class="px-5 py-3 font-medium text-slate-700 dark:text-slate-200">${formatSheetDate(findValue(r,'TANGGAL_MASUK'))}</td>
+                    <td class="px-5 py-3 font-bold font-mono text-indigo-700 dark:text-sky-300 tracking-wide">${id||"-"}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">${findValue(r,'SURAT_JALAN')||"-"}</td>
+                    <td class="px-5 py-3 text-slate-700 dark:text-slate-300">${findValue(r,'JENIS_KOPI')||"-"}</td>
+                    <td class="px-5 py-3 text-slate-700 dark:text-slate-300">${findValue(r,'SUPPLIER')||"-"}</td>
+                    <td class="px-5 py-3 text-slate-700 dark:text-slate-300 font-mono">${findValue(r,'NO_PO')||"-"}</td>
+                    <td class="px-5 py-3 text-right font-black text-slate-900 dark:text-emerald-400 font-mono">${formatAngkaId(nt)}</td>
                     <td class="px-5 py-3 text-center"><span class="px-3 py-1 rounded-md text-xs font-semibold ${sc}">${st||"-"}</span></td>
                     <td class="px-5 py-3 text-center whitespace-nowrap">
-                        <button type="button" onclick="openEditPenerimaan('${id}')" title="Edit Penerimaan" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200">
+                        <button type="button" onclick="openEditPenerimaan('${id}')" title="Edit Penerimaan" class="p-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200 dark:border-blue-800">
                             <i class="ph ph-pencil-simple text-sm"></i>
                         </button>
-                        <button type="button" onclick="deleteData('${id}')" title="Hapus Penerimaan" class="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200">
+                        <button type="button" onclick="deleteData('${id}')" title="Hapus Penerimaan" class="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900 text-red-500 dark:text-red-300 rounded-lg transition-colors cursor-pointer shadow-xs border border-red-200 dark:border-red-800">
                             <i class="ph ph-trash text-sm"></i>
                         </button>
                     </td>
@@ -4146,20 +4470,20 @@ function testReadData() {
                 let ik=findValue(r,'ID_KELUAR'); 
                 let kg=formatAngkaId(parseNilaiAngka(findValue(r,'KG_KELUAR')||findValue(r,'KG KELUAR'))); 
                 let stFifo = String(findValue(r,'STATUS_FIFO') || "").toUpperCase();
-                let badgeFifo = (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN')) ? '<span class="px-2 py-1 bg-red-100 text-red-700 font-bold rounded text-[10px]">PELANGGARAN</span>' : (stFifo ? '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px]">SESUAI</span>' : '-');
-                ht += `<tr class="hover:bg-amber-50/50 transition-colors">
-                    <td class="px-5 py-3">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td>
-                    <td class="px-5 py-3 font-medium text-amber-700">${ik||"-"}</td>
-                    <td class="px-5 py-3">${findValue(r,'ID_PERMINTAAN')||"-"}</td>
-                    <td class="px-5 py-3 font-semibold text-slate-700">${findValue(r,'ID_LOT')||"-"}</td>
-                    <td class="px-5 py-3">${findValue(r,'TUJUAN')||"-"}</td>
-                    <td class="px-5 py-3">${badgeFifo}</td>
-                    <td class="px-5 py-3 text-right font-bold text-slate-700">${kg}</td>
+                let badgeFifo = (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN')) ? '<span class="px-2 py-1 bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold rounded text-[10px] border border-red-200 dark:border-red-800">PELANGGARAN</span>' : (stFifo ? '<span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold rounded text-[10px] border border-emerald-200 dark:border-emerald-800">SESUAI</span>' : '-');
+                ht += `<tr class="hover:bg-amber-50/50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td class="px-5 py-3 font-medium text-slate-700 dark:text-slate-200">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td>
+                    <td class="px-5 py-3 font-bold font-mono text-amber-700 dark:text-amber-400">${ik||"-"}</td>
+                    <td class="px-5 py-3 text-slate-700 dark:text-slate-300">${findValue(r,'ID_PERMINTAAN')||"-"}</td>
+                    <td class="px-5 py-3 font-bold font-mono text-indigo-700 dark:text-sky-300 tracking-wide">${findValue(r,'ID_LOT')||"-"}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-800 dark:text-slate-200">${findValue(r,'TUJUAN')||"-"}</td>
+                    <td class="px-5 py-3 text-center">${badgeFifo}</td>
+                    <td class="px-5 py-3 text-right font-black text-slate-900 dark:text-amber-300 font-mono">${kg}</td>
                     <td class="px-5 py-3 text-center whitespace-nowrap">
-                        <button type="button" onclick="openEditPengeluaran('${ik}')" title="Edit Pengeluaran" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200">
+                        <button type="button" onclick="openEditPengeluaran('${ik}')" title="Edit Pengeluaran" class="p-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200 dark:border-blue-800">
                             <i class="ph ph-pencil-simple text-sm"></i>
                         </button>
-                        <button type="button" onclick="deleteDataPengeluaran('${ik}')" title="Hapus Pengeluaran" class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200">
+                        <button type="button" onclick="deleteDataPengeluaran('${ik}')" title="Hapus Pengeluaran" class="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900 text-red-500 dark:text-red-300 rounded transition-colors cursor-pointer shadow-xs border border-red-200 dark:border-red-800">
                             <i class="ph ph-trash text-sm"></i>
                         </button>
                     </td>
@@ -6091,6 +6415,302 @@ function testReadData() {
 
         function downloadCodeGsFile() {
             window.location.href = '/Code.gs';
+        }
+
+        // ==========================================
+        // DYNAMIC SHOWCASE & SANDBOX SIMULATOR
+        // ==========================================
+        let demoPenerimaanData = [
+            { id: 'SJA3-202610-001-P01', tgl: '2026-10-06', sj: 'SJ-SUPP-8821', jenis: 'ROBUSTA FLORES GRADE 1', supplier: 'PT KOPI NUSANTARA JAYA', bruto: 1050, pallet: 50, netto: 1000, mutu: 'PASS' },
+            { id: 'SJA3-202610-002-P02', tgl: '2026-10-06', sj: 'SJ-SUPP-8822', jenis: 'ARABICA GAYO SPECIALTY', supplier: 'KOPERASI GAYO ORGANIK', bruto: 945, pallet: 45, netto: 900, mutu: 'HOLD' },
+            { id: 'SJA3-202610-003-P03', tgl: '2026-10-07', sj: 'SJ-SUPP-8823', jenis: 'ROBUSTA LAMPUNG ASALAN', supplier: 'CV SUMBER MAKMUR', bruto: 1260, pallet: 60, netto: 1200, mutu: 'PASS' }
+        ];
+        let demoPenerimaanBackup = JSON.parse(JSON.stringify(demoPenerimaanData));
+        let demoLastDeletedPenerimaan = null;
+
+        let demoPengeluaranData = [
+            { idKeluar: 'OUT-202610-001', reqId: 'REQ-ROAST-401', lotId: 'SJA3-202610-001-P01', tgl: '2026-10-06', tujuan: 'UPBM', kgKeluar: 1000, fifo: 'SESUAI' },
+            { idKeluar: 'OUT-202610-002', reqId: 'REQ-PROD-402', lotId: 'SJA3-202610-002-P02', tgl: '2026-10-07', tujuan: 'PRODUKSI', kgKeluar: 450, fifo: 'PELANGGARAN' },
+            { idKeluar: 'OUT-202610-003', reqId: 'REQ-ROAST-403', lotId: 'SJA3-202610-003-P03', tgl: '2026-10-07', tujuan: 'UPBM', kgKeluar: 600, fifo: 'SESUAI' }
+        ];
+        let demoPengeluaranBackup = JSON.parse(JSON.stringify(demoPengeluaranData));
+
+        function openDynamicShowcaseModal(tab = 'penerimaan') {
+            const modal = document.getElementById('modal-dynamic-showcase');
+            if (modal) modal.classList.remove('hidden');
+            switchShowcaseTab(tab);
+            renderDemoPenerimaan();
+            renderDemoPengeluaran();
+        }
+
+        function closeDynamicShowcaseModal() {
+            const modal = document.getElementById('modal-dynamic-showcase');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function switchShowcaseTab(tab) {
+            const tabs = ['penerimaan', 'pengeluaran', 'compare'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-showcase-${t}`);
+                const panel = document.getElementById(`showcase-panel-${t}`);
+                if (btn && panel) {
+                    if (t === tab) {
+                        btn.className = "px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-2 border-indigo-600 text-indigo-700 bg-white shadow-xs cursor-pointer";
+                        panel.classList.remove('hidden');
+                    } else {
+                        btn.className = "px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 cursor-pointer";
+                        panel.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        function renderDemoPenerimaan() {
+            const tbody = document.getElementById('demo-table-penerimaan-body');
+            if (!tbody) return;
+            if (demoPenerimaanData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">Data contoh kosong. Klik 'Reset Data Contoh' untuk memuat kembali.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            demoPenerimaanData.forEach(item => {
+                let badgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                if (item.mutu === 'PASS') badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                else if (item.mutu === 'HOLD') badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                else if (item.mutu === 'REJECT') badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+
+                html += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-slate-600 dark:text-slate-300">${item.tgl}</td>
+                    <td class="px-4 py-2.5 font-bold font-mono text-indigo-700 dark:text-sky-300 tracking-wide">${item.id}</td>
+                    <td class="px-4 py-2.5 text-slate-700 dark:text-slate-200">${item.sj}</td>
+                    <td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">${item.jenis}</td>
+                    <td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">${item.supplier}</td>
+                    <td class="px-4 py-2.5 text-right font-black text-slate-900 dark:text-emerald-400 font-mono">${formatAngkaId(item.netto)}</td>
+                    <td class="px-4 py-2.5 text-center">
+                        <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold border ${badgeClass}">${item.mutu}</span>
+                    </td>
+                    <td class="px-4 py-2.5 text-center whitespace-nowrap">
+                        <button type="button" onclick="demoOpenEditPenerimaan('${item.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200" title="Simulasi Edit">
+                            <i class="ph ph-pencil-simple text-sm"></i>
+                        </button>
+                        <button type="button" onclick="demoHapusPenerimaan('${item.id}')" class="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200" title="Simulasi Hapus">
+                            <i class="ph ph-trash text-sm"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        let currentDemoEditingId = null;
+        function demoOpenEditPenerimaan(id) {
+            const item = demoPenerimaanData.find(x => x.id === id);
+            if (!item) return;
+            currentDemoEditingId = id;
+            const targetEl = document.getElementById('demo-edit-target-id');
+            if (targetEl) targetEl.innerText = id;
+            const brutoEl = document.getElementById('demo-input-bruto');
+            if (brutoEl) brutoEl.value = item.bruto;
+            const palletEl = document.getElementById('demo-input-pallet');
+            if (palletEl) palletEl.value = item.pallet;
+            const mutuEl = document.getElementById('demo-select-mutu');
+            if (mutuEl) mutuEl.value = item.mutu;
+            demoHitungNetto();
+            demoUpdateMutuBadge();
+            const box = document.getElementById('demo-editor-box');
+            if (box) box.classList.remove('hidden');
+        }
+
+        function demoHitungNetto() {
+            const brutoInput = document.getElementById('demo-input-bruto');
+            const palletInput = document.getElementById('demo-input-pallet');
+            const nettoDisplay = document.getElementById('demo-display-netto');
+            if (!brutoInput || !palletInput || !nettoDisplay) return;
+
+            const bruto = parseFloat(brutoInput.value) || 0;
+            const pallet = parseFloat(palletInput.value) || 0;
+            const netto = Math.max(0, bruto - pallet);
+            nettoDisplay.innerText = formatAngkaId(netto);
+        }
+
+        function demoUpdateMutuBadge() {
+            const selectEl = document.getElementById('demo-select-mutu');
+            const badge = document.getElementById('demo-badge-preview');
+            if (!selectEl || !badge) return;
+            const mutu = selectEl.value;
+            badge.innerText = mutu;
+            if (mutu === 'PASS') {
+                badge.className = "px-3 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+            } else if (mutu === 'HOLD') {
+                badge.className = "px-3 py-1 rounded-md text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200";
+            } else {
+                badge.className = "px-3 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200";
+            }
+        }
+
+        function demoSimpanPerubahanPenerimaan() {
+            if (!currentDemoEditingId) return;
+            const item = demoPenerimaanData.find(x => x.id === currentDemoEditingId);
+            if (!item) return;
+
+            const bruto = parseFloat(document.getElementById('demo-input-bruto').value) || 0;
+            const pallet = parseFloat(document.getElementById('demo-input-pallet').value) || 0;
+            const mutu = document.getElementById('demo-select-mutu').value;
+
+            item.bruto = bruto;
+            item.pallet = pallet;
+            item.netto = Math.max(0, bruto - pallet);
+            item.mutu = mutu;
+
+            const box = document.getElementById('demo-editor-box');
+            if (box) box.classList.add('hidden');
+            renderDemoPenerimaan();
+            showDemoToast(`Perubahan Lot ${currentDemoEditingId} berhasil disimpan ke tabel contoh! (Netto terhitung otomatis: ${formatAngkaId(item.netto)} Kg)`);
+        }
+
+        function demoHapusPenerimaan(id) {
+            const idx = demoPenerimaanData.findIndex(x => x.id === id);
+            if (idx === -1) return;
+            demoLastDeletedPenerimaan = demoPenerimaanData[idx];
+            demoPenerimaanData.splice(idx, 1);
+            if (currentDemoEditingId === id) {
+                const box = document.getElementById('demo-editor-box');
+                if (box) box.classList.add('hidden');
+            }
+            renderDemoPenerimaan();
+            showDemoToast(`Data Lot ${id} berhasil dihapus dari tabel simulasi!`, true);
+        }
+
+        function demoUndoLastAction() {
+            if (demoLastDeletedPenerimaan) {
+                demoPenerimaanData.push(demoLastDeletedPenerimaan);
+                demoLastDeletedPenerimaan = null;
+                renderDemoPenerimaan();
+                showDemoToast(`Penghapusan dibatalkan (Undo berhasil)!`);
+                const undoBtn = document.getElementById('demo-btn-undo');
+                if (undoBtn) undoBtn.classList.add('hidden');
+            }
+        }
+
+        function demoResetPenerimaan() {
+            demoPenerimaanData = JSON.parse(JSON.stringify(demoPenerimaanBackup));
+            renderDemoPenerimaan();
+            const box = document.getElementById('demo-editor-box');
+            if (box) box.classList.add('hidden');
+            showDemoToast("Data contoh Penerimaan berhasil di-reset ke kondisi awal.");
+        }
+
+        function showDemoToast(msg, canUndo = false) {
+            const banner = document.getElementById('demo-toast-banner');
+            const msgEl = document.getElementById('demo-toast-msg');
+            const undoBtn = document.getElementById('demo-btn-undo');
+            if (!banner || !msgEl) return;
+
+            msgEl.innerText = msg;
+            if (undoBtn) {
+                if (canUndo) undoBtn.classList.remove('hidden');
+                else undoBtn.classList.add('hidden');
+            }
+            banner.classList.remove('hidden');
+            setTimeout(() => {
+                if (!canUndo) banner.classList.add('hidden');
+            }, 4500);
+        }
+
+        // Pengeluaran Demo Functions
+        function renderDemoPengeluaran() {
+            const tbody = document.getElementById('demo-table-pengeluaran-body');
+            if (!tbody) return;
+            if (demoPengeluaranData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">Data contoh kosong. Klik 'Reset Data Contoh' untuk memuat kembali.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            demoPengeluaranData.forEach(item => {
+                const badgeFifo = item.fifo === 'SESUAI'
+                    ? '<span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">SESUAI</span>'
+                    : '<span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">PELANGGARAN</span>';
+
+                html += `<tr class="hover:bg-amber-50/40 dark:hover:bg-slate-800/60 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-slate-600 dark:text-slate-300">${item.tgl}</td>
+                    <td class="px-4 py-2.5 font-bold font-mono text-amber-700 dark:text-amber-400">${item.idKeluar}</td>
+                    <td class="px-4 py-2.5 text-slate-700 dark:text-slate-300 font-semibold">${item.reqId}</td>
+                    <td class="px-4 py-2.5 text-indigo-700 dark:text-sky-300 font-mono font-bold tracking-wide">${item.lotId}</td>
+                    <td class="px-4 py-2.5 text-slate-800 dark:text-slate-200 font-bold">${item.tujuan}</td>
+                    <td class="px-4 py-2.5 text-center">${badgeFifo}</td>
+                    <td class="px-4 py-2.5 text-right font-black text-slate-900 dark:text-amber-300 font-mono">${formatAngkaId(item.kgKeluar)}</td>
+                    <td class="px-4 py-2.5 text-center whitespace-nowrap">
+                        <button type="button" onclick="demoOpenEditPengeluaran('${item.idKeluar}')" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors mr-1 cursor-pointer shadow-xs border border-blue-200" title="Simulasi Edit">
+                            <i class="ph ph-pencil-simple text-sm"></i>
+                        </button>
+                        <button type="button" onclick="demoHapusPengeluaran('${item.idKeluar}')" class="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors cursor-pointer shadow-xs border border-red-200" title="Simulasi Hapus">
+                            <i class="ph ph-trash text-sm"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        let currentDemoEditingKeluarId = null;
+        function demoOpenEditPengeluaran(idKeluar) {
+            const item = demoPengeluaranData.find(x => x.idKeluar === idKeluar);
+            if (!item) return;
+            currentDemoEditingKeluarId = idKeluar;
+            const targetEl = document.getElementById('demo-edit-kel-target-id');
+            if (targetEl) targetEl.innerText = idKeluar;
+            const tujuanEl = document.getElementById('demo-input-tujuan');
+            if (tujuanEl) tujuanEl.value = item.tujuan;
+            const kgEl = document.getElementById('demo-input-kg-keluar');
+            if (kgEl) kgEl.value = item.kgKeluar;
+            const fifoEl = document.getElementById('demo-select-fifo');
+            if (fifoEl) fifoEl.value = item.fifo;
+            const box = document.getElementById('demo-editor-box-keluar');
+            if (box) box.classList.remove('hidden');
+        }
+
+        function demoSimpanPerubahanPengeluaran() {
+            if (!currentDemoEditingKeluarId) return;
+            const item = demoPengeluaranData.find(x => x.idKeluar === currentDemoEditingKeluarId);
+            if (!item) return;
+
+            item.tujuan = document.getElementById('demo-input-tujuan').value;
+            item.kgKeluar = parseFloat(document.getElementById('demo-input-kg-keluar').value) || 0;
+            item.fifo = document.getElementById('demo-select-fifo').value;
+
+            const box = document.getElementById('demo-editor-box-keluar');
+            if (box) box.classList.add('hidden');
+            renderDemoPengeluaran();
+            showToast(`Perubahan data keluar ${currentDemoEditingKeluarId} berhasil diperbarui di simulasi!`, "success");
+        }
+
+        function demoHapusPengeluaran(idKeluar) {
+            const idx = demoPengeluaranData.findIndex(x => x.idKeluar === idKeluar);
+            if (idx === -1) return;
+            demoPengeluaranData.splice(idx, 1);
+            if (currentDemoEditingKeluarId === idKeluar) {
+                const box = document.getElementById('demo-editor-box-keluar');
+                if (box) box.classList.add('hidden');
+            }
+            renderDemoPengeluaran();
+            showToast(`Data pengeluaran ${idKeluar} berhasil dihapus dari simulasi!`, "info");
+        }
+
+        function demoResetPengeluaran() {
+            demoPengeluaranData = JSON.parse(JSON.stringify(demoPengeluaranBackup));
+            renderDemoPengeluaran();
+            const box = document.getElementById('demo-editor-box-keluar');
+            if (box) box.classList.add('hidden');
+            showToast("Data contoh Pengeluaran berhasil di-reset ke kondisi awal.", "info");
+        }
+
+        function applyShowcaseAndGoToTab(tabId) {
+            closeDynamicShowcaseModal();
+            if (typeof switchTab === 'function') {
+                switchTab(tabId);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => { 
