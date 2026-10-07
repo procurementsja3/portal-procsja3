@@ -4484,23 +4484,49 @@ function testReadData() {
             const fd = new URLSearchParams(); 
             fd.append('action', 'delete');
             fd.append('sheetName', tSh === 'LOCAL_CHECKLIST' ? (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE') : tSh); 
-            fd.append('columnName', tCol); 
-            fd.append('id', tId); 
-            fd.append(tCol, tId);
-            if (tCol === 'ID_PERMINTAAN') {
-                fd.append('ID_PERMINTAAN', tId);
-            }
-            if (dItem) {
-                if (dItem._rowNumber) fd.append('rowNumber', dItem._rowNumber);
-                if (dItem.waktu) fd.append('timestamp', dItem.waktu);
-                if (dItem.deskripsi) fd.append('deskripsi', dItem.deskripsi);
-                if (dItem.petugas) fd.append('petugas', dItem.petugas);
-            }
 
             let targetUrl = getWebAppUrl();
-            if (tSh === 'DATA_CEKLIST_WAREHOUSE' || tSh === 'LOCAL_CHECKLIST' || tSh === (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE')) {
-                if (ceklistSheetId && ceklistSheetId.includes('script.google.com')) {
-                    targetUrl = ceklistSheetId;
+            const isCeklist = (tSh === 'DATA_CEKLIST_WAREHOUSE' || tSh === 'LOCAL_CHECKLIST' || tSh === (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE'));
+
+            if (isCeklist) {
+                const targetKey = (dItem && dItem.waktu) ? dItem.waktu : tId;
+                fd.append('columnName', 'Timestamp'); 
+                fd.append('id', targetKey); 
+                fd.append('targetId', targetKey);
+                fd.append('Timestamp', targetKey);
+                fd.append('timestamp', targetKey);
+                fd.append('waktu', targetKey);
+                if (deleteConfig.rawId) fd.append('cwId', deleteConfig.rawId);
+                if (dItem) {
+                    if (dItem._rowNumber) {
+                        fd.append('rowNumber', dItem._rowNumber);
+                        fd.append('rowIndex', dItem._rowNumber);
+                    }
+                    if (dItem.deskripsi) {
+                        fd.append('deskripsi', dItem.deskripsi);
+                        fd.append('diskripsiTemuan', dItem.deskripsi);
+                    }
+                    if (dItem.petugas) {
+                        fd.append('petugas', dItem.petugas);
+                        fd.append('namaWarehouseInspektor', dItem.petugas);
+                    }
+                }
+                const spId = getCeklistSpreadsheetId();
+                if (spId) {
+                    fd.append('spreadsheetId', spId);
+                    fd.append('sheetId', spId);
+                }
+                targetUrl = getCeklistWebAppUrl();
+            } else {
+                fd.append('columnName', tCol); 
+                fd.append('id', tId); 
+                fd.append(tCol, tId);
+                if (tCol === 'ID_PERMINTAAN') {
+                    fd.append('ID_PERMINTAAN', tId);
+                }
+                if (dItem && dItem._rowNumber) {
+                    fd.append('rowNumber', dItem._rowNumber);
+                    fd.append('rowIndex', dItem._rowNumber);
                 }
             }
 
@@ -4527,12 +4553,40 @@ function testReadData() {
         // ==========================================
         // DATA CEKLIST WAREHOUSE LOGIC (GOOGLE SHEETS INTEGRATION)
         // ==========================================
-        const DEFAULT_CEKLIST_SHEET_ID = "https://script.google.com/macros/s/AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm/exec";
+        const DEFAULT_CEKLIST_SHEET_ID = "14NqLsXnIPgsUGcT8RZ-ykmJErR";
         const DEFAULT_CEKLIST_VIEW_URL = "https://docs.google.com/spreadsheets/d/14NqLsXnIPgsUGcT8RZ-ykmJErR";
+        
+        // Bersihkan jika ada nilai lama yang menyimpan script dummy yang salah
+        const STALE_DUMMY_URL = "https://script.google.com/macros/s/AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm/exec";
+        if (localStorage.getItem('sibikom_ceklist_sheet_id') === STALE_DUMMY_URL) {
+            localStorage.setItem('sibikom_ceklist_sheet_id', DEFAULT_CEKLIST_SHEET_ID);
+        }
+
         let ceklistSheetId = localStorage.getItem('sibikom_ceklist_sheet_id') || DEFAULT_CEKLIST_SHEET_ID;
         let ceklistSheetTab = localStorage.getItem('sibikom_ceklist_sheet_tab') || 'DATA_CEKLIST_WAREHOUSE';
         let ceklistSheetViewUrl = localStorage.getItem('sibikom_ceklist_sheet_view_url') || DEFAULT_CEKLIST_VIEW_URL;
         let ceklistAutoSyncTimer = null;
+
+        function getCeklistSpreadsheetId() {
+            let val = (localStorage.getItem('sibikom_ceklist_sheet_id') || ceklistSheetId || '').trim();
+            if (!val || val.includes('script.google.com')) {
+                let viewUrl = (localStorage.getItem('sibikom_ceklist_sheet_view_url') || ceklistSheetViewUrl || DEFAULT_CEKLIST_VIEW_URL).trim();
+                let match = viewUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+                if (match && match[1]) return match[1];
+                return '14NqLsXnIPgsUGcT8RZ-ykmJErR';
+            }
+            let match = val.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (match && match[1]) return match[1];
+            return val;
+        }
+
+        function getCeklistWebAppUrl() {
+            let val = (localStorage.getItem('sibikom_ceklist_sheet_id') || ceklistSheetId || '').trim();
+            if (val && val.includes('script.google.com/macros/s/') && !val.includes('AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm')) {
+                return val;
+            }
+            return getWebAppUrl();
+        }
 
         let allCeklistData = [];
         let filteredCeklistData = [];
@@ -4662,6 +4716,21 @@ function testReadData() {
                     return String(c[colIdx].f !== undefined && c[colIdx].f !== null ? c[colIdx].f : (c[colIdx].v !== undefined && c[colIdx].v !== null ? c[colIdx].v : '')).trim();
                 };
 
+                let rawWaktu = getCellStr(0);
+                let cleanWaktu = rawWaktu;
+                if (cleanWaktu.includes('Date(')) {
+                    const parts = cleanWaktu.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?/);
+                    if (parts) {
+                        const y = parts[1];
+                        const m = parseInt(parts[2], 10) + 1;
+                        const d = parts[3];
+                        const hh = parts[4] !== undefined ? String(parts[4]).padStart(2, '0') : '00';
+                        const mm = parts[5] !== undefined ? String(parts[5]).padStart(2, '0') : '00';
+                        const ss = parts[6] !== undefined ? String(parts[6]).padStart(2, '0') : '00';
+                        cleanWaktu = `${m}/${d}/${y} ${hh}:${mm}:${ss}`;
+                    }
+                }
+
                 let cleanTgl = getCellStr(2);
                 if (cleanTgl.includes('Date(')) {
                     const parts = cleanTgl.match(/Date\((\d+),(\d+),(\d+)/);
@@ -4676,7 +4745,7 @@ function testReadData() {
                 parsed.push({
                     id: `CW-${1000 + idx + 1}`,
                     _rowNumber: idx + 2,
-                    waktu: getCellStr(0) || new Date().toLocaleString('id-ID'), // Kolom A
+                    waktu: cleanWaktu || new Date().toLocaleString('id-ID'), // Kolom A
                     petugas: getCellStr(1) || '-',                             // Kolom B
                     tanggal: cleanTgl || new Date().toISOString().slice(0, 10), // Kolom C
                     bagian: getCellStr(3) || 'GBB',                            // Kolom D
@@ -4741,24 +4810,29 @@ function testReadData() {
 
         // Fetch Data Ceklist from Google Sheet or Apps Script Web App
         async function fetchCeklistFromGoogleSheet() {
-            const target = ceklistSheetId || DEFAULT_CEKLIST_SHEET_ID;
+            const spId = getCeklistSpreadsheetId();
 
-            // 1. Jika pengguna mengonfigurasi Web App URL Google Apps Script
-            if (target.includes('script.google.com/macros/s/')) {
-                let scriptUrl = target;
-                if (ceklistSheetTab) {
-                    scriptUrl += (scriptUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(ceklistSheetTab)}`;
-                }
-                const response = await fetch(scriptUrl);
-                if (!response.ok) throw new Error(`Apps Script HTTP ${response.status}`);
-                const result = await response.json();
-                if (result && result.data && Array.isArray(result.data)) {
-                    return result.data.map((r, i) => normalizeCeklistRow(r, i)).filter(Boolean);
+            // 1. Jika pengguna mengonfigurasi Web App URL Google Apps Script khusus Ceklist
+            if (ceklistSheetId && ceklistSheetId.includes('script.google.com/macros/s/') && !ceklistSheetId.includes('AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm')) {
+                try {
+                    let scriptUrl = ceklistSheetId;
+                    const qChar = scriptUrl.includes('?') ? '&' : '?';
+                    scriptUrl += `${qChar}sheet=${encodeURIComponent(ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE')}`;
+                    if (spId) scriptUrl += `&spreadsheetId=${encodeURIComponent(spId)}`;
+                    const response = await fetch(scriptUrl);
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result && result.data && Array.isArray(result.data)) {
+                            return result.data.map((r, i) => normalizeCeklistRow(r, i)).filter(Boolean);
+                        }
+                    }
+                } catch (scriptFetchErr) {
+                    console.warn("Apps Script GET failed, fallback to GVIZ:", scriptFetchErr);
                 }
             }
 
-            // 2. Default: Menggunakan GVIZ Google Spreadsheet API
-            let url = `https://docs.google.com/spreadsheets/d/${target}/gviz/tq?tqx=out:json&headers=1`;
+            // 2. Default: Menggunakan GVIZ Google Spreadsheet API langsung
+            let url = `https://docs.google.com/spreadsheets/d/${spId}/gviz/tq?tqx=out:json&headers=1`;
             if (ceklistSheetTab) {
                 url += `&sheet=${encodeURIComponent(ceklistSheetTab)}`;
             }
@@ -5248,13 +5322,21 @@ function testReadData() {
             showToast(`Data Ceklist ${id}${petugas && petugas !== '-' ? ` (${petugas})` : ''} berhasil disimpan!`, 'success');
 
             // Kirim ke Google Apps Script Web App jika URL tersedia
-            const postUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : WEB_APP_URL;
+            const postUrl = getCeklistWebAppUrl();
             if (postUrl) {
                 try {
                     const postParams = new URLSearchParams();
                     postParams.append('sheetName', ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE');
+                    const spId = getCeklistSpreadsheetId();
+                    if (spId) {
+                        postParams.append('spreadsheetId', spId);
+                        postParams.append('sheetId', spId);
+                    }
                     postParams.append('timestamp', nowWaktuStr);
+                    postParams.append('Timestamp', nowWaktuStr);
+                    postParams.append('waktu', nowWaktuStr);
                     postParams.append('petugas', petugas);
+                    postParams.append('namaWarehouseInspektor', petugas);
                     postParams.append('tanggal', tgl);
                     postParams.append('bagian', bagian);
                     postParams.append('area', area);
@@ -5264,7 +5346,9 @@ function testReadData() {
                     postParams.append('foto1', foto1);
                     postParams.append('foto2', foto2);
                     postParams.append('deskripsi', deskripsi);
+                    postParams.append('diskripsiTemuan', deskripsi);
                     postParams.append('tindakan', tindakan);
+                    postParams.append('tindakanPerbaikan', tindakan);
                     postParams.append('pic', pic);
                     postParams.append('targetSelesai', targetSelesai);
                     postParams.append('status', status);
@@ -5293,12 +5377,13 @@ function testReadData() {
         function deleteCeklistWarehouse(id) {
             const record = allCeklistData.find(item => item.id === id);
             deleteConfig = {
-                id: id,
+                id: (record && record.waktu) ? record.waktu : id,
+                rawId: id,
                 sheetName: ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE',
-                columnName: 'ID',
+                columnName: 'Timestamp',
                 item: record
             };
-            const labelDesc = record && record.deskripsi && record.deskripsi !== '-' ? ` (${record.deskripsi.slice(0, 30)}...)` : '';
+            const labelDesc = record && record.deskripsi && record.deskripsi !== '-' ? ` (${record.deskripsi.slice(0, 30)}...)` : (record && record.waktu ? ` (${record.waktu})` : '');
             document.getElementById('delete-id-target').innerText = `${id}${labelDesc}`;
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
@@ -5636,20 +5721,55 @@ function testReadData() {
             const fd = new URLSearchParams();
             fd.append('action', 'edit');
             fd.append('sheetName', ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE');
-            fd.append('id', id);
-            fd.append('columnName', 'ID');
-            if (allCeklistData[idx]._rowNumber) fd.append('rowNumber', allCeklistData[idx]._rowNumber);
-            if (allCeklistData[idx].waktu) fd.append('timestamp', allCeklistData[idx].waktu);
-            if (allCeklistData[idx].deskripsi) fd.append('deskripsi', allCeklistData[idx].deskripsi);
+            const targetKey = allCeklistData[idx].waktu || id;
+            fd.append('id', targetKey);
+            fd.append('targetId', targetKey);
+            fd.append('columnName', 'Timestamp');
+            fd.append('cwId', id);
+            if (allCeklistData[idx]._rowNumber) {
+                fd.append('rowNumber', allCeklistData[idx]._rowNumber);
+                fd.append('rowIndex', allCeklistData[idx]._rowNumber);
+            }
+            if (allCeklistData[idx].waktu) {
+                fd.append('timestamp', allCeklistData[idx].waktu);
+                fd.append('Timestamp', allCeklistData[idx].waktu);
+                fd.append('waktu', allCeklistData[idx].waktu);
+            }
+            if (allCeklistData[idx].deskripsi) {
+                fd.append('deskripsi', allCeklistData[idx].deskripsi);
+                fd.append('diskripsiTemuan', allCeklistData[idx].deskripsi);
+                fd.append('Diskripsi Temuan', allCeklistData[idx].deskripsi);
+            }
+            if (allCeklistData[idx].petugas) {
+                fd.append('petugas', allCeklistData[idx].petugas);
+                fd.append('namaWarehouseInspektor', allCeklistData[idx].petugas);
+            }
+
+            // Kolom Status (Kolom O / 15)
             fd.append('status', newStatus);
             fd.append('Status', newStatus);
+            fd.append('status_penyelesaian', newStatus);
+
+            // Kolom Tindakan Perbaikan (Kolom L / 12)
             fd.append('tindakan', updatedRecord.tindakan);
             fd.append('Tindakan Perbaikan', updatedRecord.tindakan);
+            fd.append('tindakan_perbaikan', updatedRecord.tindakan);
+            fd.append('tindakanPerbaikan', updatedRecord.tindakan);
+
+            // Kolom Dokumentasi Foto 2 / After (Kolom J / 10)
             fd.append('foto2', updatedRecord.foto2);
             fd.append('Dokumentasi foto 2', updatedRecord.foto2);
+            fd.append('dokumentasiFoto2', updatedRecord.foto2);
+            fd.append('foto_2', updatedRecord.foto2);
             fd.append('fotoAfter', updatedRecord.foto2);
 
-            let targetUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : getWebAppUrl();
+            const spId = getCeklistSpreadsheetId();
+            if (spId) {
+                fd.append('spreadsheetId', spId);
+                fd.append('sheetId', spId);
+            }
+
+            let targetUrl = getCeklistWebAppUrl();
 
             fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
                 ov.classList.add('hidden');
