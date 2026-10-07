@@ -4440,21 +4440,24 @@ function testReadData() {
             const tId = deleteConfig.id; 
             const tSh = deleteConfig.sheetName; 
             const tCol = deleteConfig.columnName; 
+            const dItem = deleteConfig.item || null;
             closeConfirmModal();
 
-            if (tSh === 'LOCAL_CHECKLIST') {
+            // Optimistic UI Update untuk semua modul (termasuk Ceklist Warehouse)
+            if (tSh === 'DATA_CEKLIST_WAREHOUSE' || tSh === 'LOCAL_CHECKLIST' || tSh === (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE')) {
                 allCeklistData = allCeklistData.filter(item => item.id !== tId);
                 let localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
                 localAdded = localAdded.filter(item => item.id !== tId);
                 localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
-                showToast(`Data Ceklist ID ${tId} berhasil dihapus!`, 'success');
+                let localUpdates = JSON.parse(localStorage.getItem('sibikom_ceklist_local_updates') || '{}');
+                delete localUpdates[tId];
+                localStorage.setItem('sibikom_ceklist_local_updates', JSON.stringify(localUpdates));
+                let cached = JSON.parse(localStorage.getItem('sibikom_checklist_warehouse_cached') || '[]');
+                cached = cached.filter(item => item.id !== tId);
+                localStorage.setItem('sibikom_checklist_warehouse_cached', JSON.stringify(cached));
                 applyFilterAndSortCeklist();
                 updateCeklistStats();
-                return;
-            }
-
-            // Hapus secara instan dari state lokal di aplikasi (Optimistic UI Update)
-            if (tSh === 'FORM_PERMINTAAN_UPBM') {
+            } else if (tSh === 'FORM_PERMINTAAN_UPBM') {
                 allRiwayatPermintaan = allRiwayatPermintaan.filter(r => String(findValue(r, 'ID_PERMINTAAN') || '').trim() !== String(tId).trim());
                 applyFilterAndSortPermintaan();
                 if (typeof rekapPermintaanData !== 'undefined' && Array.isArray(rekapPermintaanData)) {
@@ -4476,19 +4479,31 @@ function testReadData() {
 
             const ov = document.getElementById('loading-overlay'); 
             ov.classList.remove('hidden'); 
-            ov.querySelector('p').innerText = "Menghapus Data dari Google Sheet...";
+            ov.querySelector('p').innerText = "Menghapus Data dari Google Sheet..."; 
 
             const fd = new URLSearchParams(); 
             fd.append('action', 'delete');
-            fd.append('sheetName', tSh); 
+            fd.append('sheetName', tSh === 'LOCAL_CHECKLIST' ? (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE') : tSh); 
             fd.append('columnName', tCol); 
             fd.append('id', tId); 
             fd.append(tCol, tId);
             if (tCol === 'ID_PERMINTAAN') {
                 fd.append('ID_PERMINTAAN', tId);
             }
+            if (dItem) {
+                if (dItem._rowNumber) fd.append('rowNumber', dItem._rowNumber);
+                if (dItem.waktu) fd.append('timestamp', dItem.waktu);
+                if (dItem.deskripsi) fd.append('deskripsi', dItem.deskripsi);
+                if (dItem.petugas) fd.append('petugas', dItem.petugas);
+            }
 
-            const targetUrl = getWebAppUrl();
+            let targetUrl = getWebAppUrl();
+            if (tSh === 'DATA_CEKLIST_WAREHOUSE' || tSh === 'LOCAL_CHECKLIST' || tSh === (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE')) {
+                if (ceklistSheetId && ceklistSheetId.includes('script.google.com')) {
+                    targetUrl = ceklistSheetId;
+                }
+            }
+
             fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => { 
                 ov.classList.add('hidden'); 
                 ov.querySelector('p').innerText = "Memproses Data..."; 
@@ -4498,6 +4513,7 @@ function testReadData() {
                     if(tSh==='INPUT_TRANSAKSI_KELUAR') fetchRiwayatPengeluaran(); 
                     if(tSh==='FORM_PERMINTAAN_UPBM') fetchRiwayatPermintaan(); 
                     if(tSh==='INPUT_PO_SUPPLIER') fetchRiwayatPO(); 
+                    if(tSh==='DATA_CEKLIST_WAREHOUSE' || tSh==='LOCAL_CHECKLIST' || tSh===(ceklistSheetTab||'DATA_CEKLIST_WAREHOUSE')) syncCeklistGoogleSheet(false);
                     if(typeof syncMainDashboard === 'function') syncMainDashboard(); 
                 }, 2000); 
             }).catch(e => { 
@@ -4659,6 +4675,7 @@ function testReadData() {
 
                 parsed.push({
                     id: `CW-${1000 + idx + 1}`,
+                    _rowNumber: idx + 2,
                     waktu: getCellStr(0) || new Date().toLocaleString('id-ID'), // Kolom A
                     petugas: getCellStr(1) || '-',                             // Kolom B
                     tanggal: cleanTgl || new Date().toISOString().slice(0, 10), // Kolom C
@@ -4681,6 +4698,47 @@ function testReadData() {
             return parsed;
         }
 
+        function normalizeCeklistRow(row, idx) {
+            if (!row) return null;
+            if (row.id && row.petugas && row.deskripsi !== undefined) {
+                if (!row._rowNumber) row._rowNumber = idx + 2;
+                return row;
+            }
+            const findFld = (keys) => {
+                for (let k of keys) {
+                    if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') return String(row[k]).trim();
+                    const cleanK = k.replace(/[\s_()-]/g, '').toLowerCase();
+                    for (let rk in row) {
+                        if (rk.replace(/[\s_()-]/g, '').toLowerCase() === cleanK) {
+                            if (row[rk] !== undefined && row[rk] !== null && String(row[rk]).trim() !== '') return String(row[rk]).trim();
+                        }
+                    }
+                }
+                return '';
+            };
+
+            return {
+                id: findFld(['id', 'ID', 'ID_CEKLIST', 'ID_TEMUAN', 'CW_ID']) || `CW-${1000 + idx + 1}`,
+                _rowNumber: idx + 2,
+                waktu: findFld(['Timestamp', 'timestamp', 'waktu', 'Waktu']) || '',
+                petugas: findFld(['Nama Warehouse Inspektor', 'petugas', 'inspektor', 'nama']) || '-',
+                tanggal: findFld(['Tanggal Inspeksi', 'tanggal', 'tgl']) || '',
+                bagian: findFld(['Bagian', 'bagian']) || 'GBB',
+                area: findFld(['Area', 'area']) || '-',
+                nomorGudang: findFld(['Nomor gudang', 'nomorGudang', 'noGudang']) || '-',
+                kategoriAudit: findFld(['Kategori Audit', 'kategoriAudit', 'kategori']) || '5 R',
+                tingkatKeparahan: findFld(['Tingkat Keparahan', 'tingkatKeparahan', 'keparahan']) || 'Low',
+                foto1: findFld(['Dokumentasi foto 1', 'foto1', 'dokumentasiFoto1', 'foto_1']) || '',
+                foto2: findFld(['Dokumentasi foto 2', 'foto2', 'dokumentasiFoto2', 'foto_2', 'fotoAfter']) || '',
+                deskripsi: findFld(['Diskripsi Temuan', 'Deskripsi Temuan', 'deskripsi', 'temuan']) || '-',
+                tindakan: findFld(['Tindakan Perbaikan', 'tindakan', 'tindakanPerbaikan']) || '-',
+                pic: findFld(['PIC', 'pic']) || '-',
+                targetSelesai: findFld(['Target Selesai', 'targetSelesai', 'target']) || '-',
+                status: findFld(['Status', 'status']) || 'Open',
+                email: findFld(['Email Address', 'email', 'emailAddress']) || ''
+            };
+        }
+
         // Fetch Data Ceklist from Google Sheet or Apps Script Web App
         async function fetchCeklistFromGoogleSheet() {
             const target = ceklistSheetId || DEFAULT_CEKLIST_SHEET_ID;
@@ -4695,7 +4753,7 @@ function testReadData() {
                 if (!response.ok) throw new Error(`Apps Script HTTP ${response.status}`);
                 const result = await response.json();
                 if (result && result.data && Array.isArray(result.data)) {
-                    return result.data;
+                    return result.data.map((r, i) => normalizeCeklistRow(r, i)).filter(Boolean);
                 }
             }
 
@@ -5233,8 +5291,15 @@ function testReadData() {
         }
 
         function deleteCeklistWarehouse(id) {
-            deleteConfig = { id: id, sheetName: 'LOCAL_CHECKLIST', columnName: 'ID' };
-            document.getElementById('delete-id-target').innerText = id;
+            const record = allCeklistData.find(item => item.id === id);
+            deleteConfig = {
+                id: id,
+                sheetName: ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE',
+                columnName: 'ID',
+                item: record
+            };
+            const labelDesc = record && record.deskripsi && record.deskripsi !== '-' ? ` (${record.deskripsi.slice(0, 30)}...)` : '';
+            document.getElementById('delete-id-target').innerText = `${id}${labelDesc}`;
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
@@ -5458,19 +5523,44 @@ function testReadData() {
             const file = event.target.files[0];
             if (!file) return;
 
-            if (file.size > 5 * 1024 * 1024) {
-                showToast("Ukuran foto maksimal 5 MB.", "error");
+            if (file.size > 15 * 1024 * 1024) {
+                showToast("Ukuran foto maksimal 15 MB.", "error");
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const dataUrl = e.target.result;
-                document.getElementById('edit-preview-foto-after-img').src = dataUrl;
-                document.getElementById('edit-preview-foto-after-container').classList.remove('hidden');
-                document.getElementById('edit-ceklist-foto-2').value = dataUrl;
-                document.getElementById('edit-label-upload-file').innerText = file.name;
-                showToast("Foto After berhasil dimuat ke form!", "success");
+                const img = new Image();
+                img.onload = function() {
+                    // Kompresi cerdas via Canvas: max 1000px, 0.75 JPEG
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 1000;
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+                    document.getElementById('edit-preview-foto-after-img').src = compressedDataUrl;
+                    document.getElementById('edit-preview-foto-after-container').classList.remove('hidden');
+                    document.getElementById('edit-ceklist-foto-2').value = compressedDataUrl;
+                    document.getElementById('edit-label-upload-file').innerText = file.name;
+                    showToast("Foto After berhasil diproses & siap disimpan ke Google Sheet!", "success");
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -5515,9 +5605,9 @@ function testReadData() {
                 foto2: newFoto2 || allCeklistData[idx].foto2 || ''
             };
 
+            // 1. Optimistic Update lokal seketika (Sama persis seperti UPBM)
             allCeklistData[idx] = updatedRecord;
 
-            // Simpan perubahan ke sibikom_ceklist_local_updates
             const localUpdates = JSON.parse(localStorage.getItem('sibikom_ceklist_local_updates') || '{}');
             localUpdates[id] = {
                 status: newStatus,
@@ -5526,7 +5616,6 @@ function testReadData() {
             };
             localStorage.setItem('sibikom_ceklist_local_updates', JSON.stringify(localUpdates));
 
-            // Jika ada di sibikom_ceklist_local_added, update juga
             const localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
             const addedIdx = localAdded.findIndex(item => item.id === id);
             if (addedIdx !== -1) {
@@ -5534,28 +5623,47 @@ function testReadData() {
                 localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
             }
 
-            // Sync update ke Google Apps Script Web App jika tersedia
-            const postUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : WEB_APP_URL;
-            if (postUrl) {
-                try {
-                    const postParams = new URLSearchParams();
-                    postParams.append('action', 'UPDATE_CEKLIST');
-                    postParams.append('id', id);
-                    postParams.append('status', newStatus);
-                    postParams.append('tindakan', updatedRecord.tindakan);
-                    postParams.append('foto2', updatedRecord.foto2);
-                    postParams.append('sheetName', ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE');
-                    fetch(postUrl, { method: 'POST', mode: 'no-cors', body: postParams }).catch(e => console.warn(e));
-                } catch(err) {
-                    console.warn("GAS update dispatch error:", err);
-                }
-            }
-
             closeEditCeklistModal();
             applyFilterAndSortCeklist();
             updateCeklistStats();
 
-            showToast(`Temuan ${id} berhasil diperbarui (Status: ${newStatus})!`, 'success');
+            // 2. Loading overlay identik UPBM
+            const ov = document.getElementById('loading-overlay');
+            ov.classList.remove('hidden');
+            ov.querySelector('p').innerText = "Menyimpan Perubahan Ceklist ke Google Sheet...";
+
+            // 3. Kirim update ke Google Apps Script Web App
+            const fd = new URLSearchParams();
+            fd.append('action', 'edit');
+            fd.append('sheetName', ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE');
+            fd.append('id', id);
+            fd.append('columnName', 'ID');
+            if (allCeklistData[idx]._rowNumber) fd.append('rowNumber', allCeklistData[idx]._rowNumber);
+            if (allCeklistData[idx].waktu) fd.append('timestamp', allCeklistData[idx].waktu);
+            if (allCeklistData[idx].deskripsi) fd.append('deskripsi', allCeklistData[idx].deskripsi);
+            fd.append('status', newStatus);
+            fd.append('Status', newStatus);
+            fd.append('tindakan', updatedRecord.tindakan);
+            fd.append('Tindakan Perbaikan', updatedRecord.tindakan);
+            fd.append('foto2', updatedRecord.foto2);
+            fd.append('Dokumentasi foto 2', updatedRecord.foto2);
+            fd.append('fotoAfter', updatedRecord.foto2);
+
+            let targetUrl = (ceklistSheetId && ceklistSheetId.includes('script.google.com')) ? ceklistSheetId : getWebAppUrl();
+
+            fetch(targetUrl, { method: 'POST', mode: 'no-cors', body: fd }).then(() => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                showToast(`Perubahan Temuan ${id} berhasil disimpan & disinkronkan ke Google Sheet!`, 'success');
+                setTimeout(() => {
+                    syncCeklistGoogleSheet(false);
+                }, 2000);
+            }).catch(err => {
+                ov.classList.add('hidden');
+                ov.querySelector('p').innerText = "Memproses Data...";
+                console.error("Error editing ceklist:", err);
+                showToast("Gagal menyimpan perubahan ke Google Sheet. Periksa koneksi Apps Script.", "error");
+            });
         }
 
         function printDetailCeklist() {
@@ -5735,9 +5843,14 @@ function testReadData() {
             syncCeklistGoogleSheet(true);
         }
 
-        function openModalAppsScriptCeklist() {
+        async function openModalAppsScriptCeklist() {
             const modal = document.getElementById('modal-appscript-ceklist');
             if (modal) modal.classList.remove('hidden');
+            const codeEl = document.getElementById('text-appscript-code');
+            if (codeEl) {
+                const text = await loadCodeGsText();
+                if (text) codeEl.innerText = text;
+            }
         }
 
         function closeModalAppsScriptCeklist() {
