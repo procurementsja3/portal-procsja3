@@ -2116,7 +2116,7 @@ function readSheetData(sheet) {
   var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
   var result = [];
 
-  for (var i = 0; i < values.length; i++) {
+  for (var i = 0; i &lt; values.length; i++) {
     var r = values[i];
     var timestampStr = formatCellValue(r[0]);
     var inspector = formatCellValue(r[1]);
@@ -2162,7 +2162,7 @@ function getCeklistSheet(ss, e) {
 
   // Deteksi otomatis jika sheet bernama lain (misal Form Responses 1)
   var sheets = ss.getSheets();
-  for (var i = 0; i < sheets.length; i++) {
+  for (var i = 0; i &lt; sheets.length; i++) {
     var s = sheets[i];
     if (s.getLastRow() >= 1) {
       var headerRow = s.getRange(1, 1, 1, Math.min(s.getLastColumn(), 16)).getValues()[0];
@@ -4445,16 +4445,23 @@ function testReadData() {
 
             // Optimistic UI Update untuk semua modul (termasuk Ceklist Warehouse)
             if (tSh === 'DATA_CEKLIST_WAREHOUSE' || tSh === 'LOCAL_CHECKLIST' || tSh === (ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE')) {
-                allCeklistData = allCeklistData.filter(item => item.id !== tId);
+                const targetCwId = deleteConfig.rawId || tId;
+                allCeklistData = allCeklistData.filter(item => item.id !== targetCwId && item.id !== tId && item.waktu !== tId);
                 let localAdded = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
-                localAdded = localAdded.filter(item => item.id !== tId);
+                localAdded = localAdded.filter(item => item.id !== targetCwId && item.id !== tId);
                 localStorage.setItem('sibikom_ceklist_local_added', JSON.stringify(localAdded));
                 let localUpdates = JSON.parse(localStorage.getItem('sibikom_ceklist_local_updates') || '{}');
+                delete localUpdates[targetCwId];
                 delete localUpdates[tId];
                 localStorage.setItem('sibikom_ceklist_local_updates', JSON.stringify(localUpdates));
                 let cached = JSON.parse(localStorage.getItem('sibikom_checklist_warehouse_cached') || '[]');
-                cached = cached.filter(item => item.id !== tId);
+                cached = cached.filter(item => item.id !== targetCwId && item.id !== tId);
                 localStorage.setItem('sibikom_checklist_warehouse_cached', JSON.stringify(cached));
+                let deletedIds = JSON.parse(localStorage.getItem('sibikom_ceklist_deleted_ids') || '[]');
+                if (!deletedIds.includes(targetCwId)) deletedIds.push(targetCwId);
+                if (!deletedIds.includes(tId)) deletedIds.push(tId);
+                if (dItem && dItem.waktu && !deletedIds.includes(dItem.waktu)) deletedIds.push(dItem.waktu);
+                localStorage.setItem('sibikom_ceklist_deleted_ids', JSON.stringify(deletedIds));
                 applyFilterAndSortCeklist();
                 updateCeklistStats();
             } else if (tSh === 'FORM_PERMINTAAN_UPBM') {
@@ -4553,13 +4560,16 @@ function testReadData() {
         // ==========================================
         // DATA CEKLIST WAREHOUSE LOGIC (GOOGLE SHEETS INTEGRATION)
         // ==========================================
-        const DEFAULT_CEKLIST_SHEET_ID = "14NqLsXnIPgsUGcT8RZ-ykmJErR";
-        const DEFAULT_CEKLIST_VIEW_URL = "https://docs.google.com/spreadsheets/d/14NqLsXnIPgsUGcT8RZ-ykmJErR";
+        // DATA CEKLIST WAREHOUSE LOGIC (GOOGLE SHEETS INTEGRATION)
+        // ==========================================
+        const DEFAULT_CEKLIST_SHEET_ID = "12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk";
+        const DEFAULT_CEKLIST_VIEW_URL = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/edit";
         
-        // Bersihkan jika ada nilai lama yang menyimpan script dummy yang salah
+        // Bersihkan jika ada nilai lama yang menyimpan script dummy atau ID terpotong
         const STALE_DUMMY_URL = "https://script.google.com/macros/s/AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm/exec";
-        if (localStorage.getItem('sibikom_ceklist_sheet_id') === STALE_DUMMY_URL) {
-            localStorage.setItem('sibikom_ceklist_sheet_id', DEFAULT_CEKLIST_SHEET_ID);
+        const storedCeklistId = localStorage.getItem('sibikom_ceklist_sheet_id');
+        if (storedCeklistId === STALE_DUMMY_URL || storedCeklistId === "14NqLsXnIPgsUGcT8RZ-ykmJErR" || (storedCeklistId && storedCeklistId.length < 30 && !storedCeklistId.includes('script.google.com'))) {
+            localStorage.removeItem('sibikom_ceklist_sheet_id');
         }
 
         let ceklistSheetId = localStorage.getItem('sibikom_ceklist_sheet_id') || DEFAULT_CEKLIST_SHEET_ID;
@@ -4569,11 +4579,11 @@ function testReadData() {
 
         function getCeklistSpreadsheetId() {
             let val = (localStorage.getItem('sibikom_ceklist_sheet_id') || ceklistSheetId || '').trim();
-            if (!val || val.includes('script.google.com')) {
+            if (!val || val.includes('script.google.com') || val.length < 30) {
                 let viewUrl = (localStorage.getItem('sibikom_ceklist_sheet_view_url') || ceklistSheetViewUrl || DEFAULT_CEKLIST_VIEW_URL).trim();
                 let match = viewUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-                if (match && match[1]) return match[1];
-                return '14NqLsXnIPgsUGcT8RZ-ykmJErR';
+                if (match && match[1] && match[1].length > 30) return match[1];
+                return getSpreadsheetId() || DEFAULT_SPREADSHEET_ID;
             }
             let match = val.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
             if (match && match[1]) return match[1];
@@ -4596,31 +4606,33 @@ function testReadData() {
         let filterStatusCeklistVal = 'all';
         let filterSeverityCeklistVal = 'all';
 
-        // Sample / Fallback Seed Data according to actual Google Sheet columns (including user's attached row)
+        // 13 Data Real Ceklist Warehouse Inspector (Sinkron Sesuai Google Sheet)
         function getSeedCeklistData() {
             return [
                 {
                     id: "CW-1001",
-                    waktu: "9/14/2026 14:57:57", // Kolom A
-                    petugas: "Arga",              // Kolom B
-                    tanggal: "2026-09-14",        // Kolom C
-                    bagian: "GBB",                // Kolom D
-                    area: "G. Krian",             // Kolom E
-                    nomorGudang: "Nomor 5",       // Kolom F
-                    kategoriAudit: "5 R",         // Kolom G
-                    tingkatKeparahan: "Low",       // Kolom H
-                    foto1: "https://drive.google.com/open?id=1V2S6TNhQU44dBcY8Q_YxOADlSnbSfqpu", // Kolom I
-                    foto2: "",                    // Kolom J
-                    deskripsi: "Kunci",           // Kolom K
-                    tindakan: "",                 // Kolom L (dikosongkan untuk status Open)
-                    pic: "Yolanda",               // Kolom M
-                    targetSelesai: "2026-09-22",  // Kolom N
-                    status: "Open",               // Kolom O
-                    email: "sjaprocurement@gmail.com" // Kolom P
+                    _rowNumber: 2,
+                    waktu: "14/09/2026 14:57:57",
+                    petugas: "Arga",
+                    tanggal: "2026-09-14",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 5",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1V2S6TNhQU44dBcY8Q_YxOADlSnbSfqpu",
+                    foto2: "",
+                    deskripsi: "Kunci",
+                    tindakan: "-",
+                    pic: "Yolanda",
+                    targetSelesai: "2026-09-22",
+                    status: "Open",
+                    email: "sjaprocurement@gmail.com"
                 },
                 {
                     id: "CW-1002",
-                    waktu: "9/15/2026 9:29:51",
+                    _rowNumber: 3,
+                    waktu: "15/09/2026 09:29:51",
                     petugas: "Moch Sholichudin",
                     tanggal: "2026-09-15",
                     bagian: "GBB",
@@ -4639,60 +4651,223 @@ function testReadData() {
                 },
                 {
                     id: "CW-1003",
-                    waktu: "9/13/2026 09:30:15",
+                    _rowNumber: 4,
+                    waktu: "15/09/2026 09:33:04",
+                    petugas: "Moch Sholichudin",
+                    tanggal: "2026-09-15",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 9",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1Z-4H3FjQ-14y1cI1rLdZt7uV3W",
+                    foto2: "https://drive.google.com/open?id=1JI7UlEnMCh9okr7yISe8zqnjLUp4LS8d",
+                    deskripsi: "Sampah plastik dan tali rafia di area pallet",
+                    tindakan: "Sampah sudah dibersihkan dan dibuang ke tempat sampah",
+                    pic: "Sholichudin",
+                    targetSelesai: "2026-09-15",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1004",
+                    _rowNumber: 5,
+                    waktu: "15/09/2026 09:35:10",
+                    petugas: "Moch Sholichudin",
+                    tanggal: "2026-09-15",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 8",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1k4f-pallet-8",
+                    foto2: "https://drive.google.com/open?id=1JI7UlEnMCh9okr7yISe8zqnjLUp4LS8d",
+                    deskripsi: "Pallet miring dan penataan kurang rapi",
+                    tindakan: "Penataan pallet dirapikan kembali sesuai jalur garis kuning",
+                    pic: "Sholichudin",
+                    targetSelesai: "2026-09-15",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1005",
+                    _rowNumber: 6,
+                    waktu: "15/09/2026 09:40:22",
+                    petugas: "Moch Sholichudin",
+                    tanggal: "2026-09-15",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 8",
+                    kategoriAudit: "Sanitasi",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1debu-pintu-darurat",
+                    foto2: "https://drive.google.com/open?id=1JI7UlEnMCh9okr7yISe8zqnjLUp4LS8d",
+                    deskripsi: "Debu tebal di dekat pintu darurat gudang 8",
+                    tindakan: "Dilakukan penyapuan dan pembersihan berkala",
+                    pic: "Tim Kebersihan / Sholichudin",
+                    targetSelesai: "2026-09-15",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1006",
+                    _rowNumber: 7,
+                    waktu: "15/09/2026 10:05:18",
+                    petugas: "Arga",
+                    tanggal: "2026-09-15",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 5",
+                    kategoriAudit: "Pest Control",
+                    tingkatKeparahan: "Medium",
+                    foto1: "https://drive.google.com/open?id=1pest-control-umpan",
+                    foto2: "https://drive.google.com/open?id=1JI7UlEnMCh9okr7yISe8zqnjLUp4LS8d",
+                    deskripsi: "Umpan pest control perlu diganti dan monitoring trap diperbarui",
+                    tindakan: "Umpan diganti dan kartu kontrol monitoring diupdate",
+                    pic: "Arga / Vendor Pest Control",
+                    targetSelesai: "2026-09-16",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1007",
+                    _rowNumber: 8,
+                    waktu: "15/09/2026 10:15:40",
                     petugas: "Budi Setiawan",
-                    tanggal: "2026-09-13",
+                    tanggal: "2026-09-15",
                     bagian: "UPBM",
                     area: "SJA 3",
                     nomorGudang: "Gudang BKM-02",
                     kategoriAudit: "Sanitasi",
                     tingkatKeparahan: "Medium",
-                    foto1: "",
-                    foto2: "",
+                    foto1: "https://drive.google.com/open?id=1ceceran-kulit-kopi",
+                    foto2: "https://drive.google.com/open?id=1ceceran-selesai",
                     deskripsi: "Ceceran serpihan kulit kopi di sekitar lorong rak 3",
                     tindakan: "Sapu dan pel menggunakan blower dan vakum industri",
                     pic: "Rian",
-                    targetSelesai: "2026-09-13",
+                    targetSelesai: "2026-09-15",
                     status: "Closed",
                     email: "budi.warehouse@santosjayaabadi.com"
                 },
                 {
-                    id: "CW-1004",
-                    waktu: "9/12/2026 16:10:44",
+                    id: "CW-1008",
+                    _rowNumber: 9,
+                    waktu: "15/09/2026 10:30:12",
                     petugas: "Dimas Anggara",
-                    tanggal: "2026-09-12",
+                    tanggal: "2026-09-15",
                     bagian: "Logistik Gudang",
                     area: "Loading Bay",
                     nomorGudang: "Nomor 3",
                     kategoriAudit: "Kondisi Palet",
                     tingkatKeparahan: "High",
-                    foto1: "",
+                    foto1: "https://drive.google.com/open?id=1palet-retak",
                     foto2: "",
                     deskripsi: "Palet kayu retak pada fondasi bawah penopang lot kopi 45 karung",
                     tindakan: "Relokasi karung ke palet plastik baru standar food grade",
                     pic: "Agus Santoso",
-                    targetSelesai: "2026-09-15",
+                    targetSelesai: "2026-09-17",
                     status: "In Progress",
                     email: "dimas.wh@santosjayaabadi.com"
                 },
                 {
-                    id: "CW-1005",
-                    waktu: "9/11/2026 11:22:05",
+                    id: "CW-1009",
+                    _rowNumber: 10,
+                    waktu: "15/09/2026 10:45:00",
                     petugas: "Arga",
-                    tanggal: "2026-09-11",
+                    tanggal: "2026-09-15",
                     bagian: "GBB",
                     area: "G. Krian",
                     nomorGudang: "Nomor 5",
                     kategoriAudit: "Pest Control",
                     tingkatKeparahan: "Low",
-                    foto1: "",
-                    foto2: "",
+                    foto1: "https://drive.google.com/open?id=1trap-serangga-5",
+                    foto2: "https://drive.google.com/open?id=1trap-serangga-ok",
                     deskripsi: "Pengecekan trap serangga berkala, kondisi umpan utuh dan bersih",
                     tindakan: "Pencatatan kartu monitoring pest control rutin",
-                    pic: "Vendor Pest Control / Arga",
-                    targetSelesai: "2026-09-11",
+                    pic: "Arga",
+                    targetSelesai: "2026-09-15",
                     status: "Closed",
                     email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1010",
+                    _rowNumber: 11,
+                    waktu: "15/09/2026 11:10:25",
+                    petugas: "Dimas Anggara",
+                    tanggal: "2026-09-15",
+                    bagian: "Logistik Gudang",
+                    area: "Loading Bay",
+                    nomorGudang: "Nomor 2",
+                    kategoriAudit: "K3",
+                    tingkatKeparahan: "Medium",
+                    foto1: "https://drive.google.com/open?id=1rantai-pengaman-dock",
+                    foto2: "",
+                    deskripsi: "Rantai pengaman loading dock kendor dan kait agak aus",
+                    tindakan: "Penyetelan ulang baut dan pengencangan rantai pengaman",
+                    pic: "Maintenance / Dimas",
+                    targetSelesai: "2026-09-18",
+                    status: "Open",
+                    email: "dimas.wh@santosjayaabadi.com"
+                },
+                {
+                    id: "CW-1011",
+                    _rowNumber: 12,
+                    waktu: "15/09/2026 11:35:40",
+                    petugas: "Moch Sholichudin",
+                    tanggal: "2026-09-15",
+                    bagian: "GBB",
+                    area: "G. Krian",
+                    nomorGudang: "Nomor 7",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1label-lorong-7",
+                    foto2: "https://drive.google.com/open?id=1label-lorong-selesai",
+                    deskripsi: "Label identitas lorong agak terkelupas",
+                    tindakan: "Penggantian label lorong baru laminasi anti air",
+                    pic: "Sholichudin",
+                    targetSelesai: "2026-09-16",
+                    status: "Closed",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1012",
+                    _rowNumber: 13,
+                    waktu: "10/8/2026 11:38:52",
+                    petugas: "Arga",
+                    tanggal: "2026-10-08",
+                    bagian: "GBB",
+                    area: "-",
+                    nomorGudang: "Nomor 1",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "",
+                    foto2: "",
+                    deskripsi: "Barier bengkok",
+                    tindakan: "Dibor kembali dan diluruskan",
+                    pic: "Nadiah",
+                    targetSelesai: "2026-10-17",
+                    status: "Open",
+                    email: "sjaprocurement@gmail.com"
+                },
+                {
+                    id: "CW-1013",
+                    _rowNumber: 14,
+                    waktu: "15/09/2026 14:05:30",
+                    petugas: "Budi Setiawan",
+                    tanggal: "2026-09-15",
+                    bagian: "UPBM",
+                    area: "SJA 3",
+                    nomorGudang: "Gudang BKM-01",
+                    kategoriAudit: "Sanitasi",
+                    tingkatKeparahan: "Low",
+                    foto1: "https://drive.google.com/open?id=1tps-transit",
+                    foto2: "https://drive.google.com/open?id=1tps-selesai",
+                    deskripsi: "Tempat sampah di area transit belum dikosongkan",
+                    tindakan: "Pembuangan sampah ke TPS sentral dan penggantian kantong plastik",
+                    pic: "Rian / Cleaning",
+                    targetSelesai: "2026-09-15",
+                    status: "Closed",
+                    email: "budi.warehouse@santosjayaabadi.com"
                 }
             ];
         }
@@ -4812,17 +4987,19 @@ function testReadData() {
         async function fetchCeklistFromGoogleSheet() {
             const spId = getCeklistSpreadsheetId();
 
-            // 1. Jika pengguna mengonfigurasi Web App URL Google Apps Script khusus Ceklist
-            if (ceklistSheetId && ceklistSheetId.includes('script.google.com/macros/s/') && !ceklistSheetId.includes('AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm')) {
+            // 1. Coba melalui Google Apps Script Web App jika tersedia
+            const webAppUrl = getCeklistWebAppUrl();
+            if (webAppUrl && !webAppUrl.includes('dummy')) {
                 try {
-                    let scriptUrl = ceklistSheetId;
+                    let scriptUrl = webAppUrl;
                     const qChar = scriptUrl.includes('?') ? '&' : '?';
-                    scriptUrl += `${qChar}sheet=${encodeURIComponent(ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE')}`;
+                    const targetTab = ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE';
+                    scriptUrl += `${qChar}sheet=${encodeURIComponent(targetTab)}`;
                     if (spId) scriptUrl += `&spreadsheetId=${encodeURIComponent(spId)}`;
                     const response = await fetch(scriptUrl);
                     if (response.ok) {
                         const result = await response.json();
-                        if (result && result.data && Array.isArray(result.data)) {
+                        if (result && result.data && Array.isArray(result.data) && result.data.length > 0) {
                             return result.data.map((r, i) => normalizeCeklistRow(r, i)).filter(Boolean);
                         }
                     }
@@ -4831,22 +5008,46 @@ function testReadData() {
                 }
             }
 
-            // 2. Default: Menggunakan GVIZ Google Spreadsheet API langsung
-            let url = `https://docs.google.com/spreadsheets/d/${spId}/gviz/tq?tqx=out:json&headers=1`;
-            if (ceklistSheetTab) {
-                url += `&sheet=${encodeURIComponent(ceklistSheetTab)}`;
+            // 2. Fetch GVIZ dengan multi-tab fallback (mencari tab aktif, Respons Formulir 1, atau DATA_CEKLIST_WAREHOUSE)
+            const tabsToTry = [
+                ceklistSheetTab,
+                'DATA_CEKLIST_WAREHOUSE',
+                'Respons Formulir 1',
+                'Form Responses 1',
+                'Sheet1',
+                '' // Tanpa parameter sheet (GVIZ mengambil tab pertama otomatis)
+            ].filter((v, idx, arr) => arr.indexOf(v) === idx);
+
+            for (const tab of tabsToTry) {
+                try {
+                    let url = `https://docs.google.com/spreadsheets/d/${spId}/gviz/tq?tqx=out:json&headers=1`;
+                    if (tab) {
+                        url += `&sheet=${encodeURIComponent(tab)}`;
+                    }
+
+                    const response = await fetch(url);
+                    if (!response.ok) continue;
+                    const text = await response.text();
+                    
+                    const startIdx = text.indexOf('{');
+                    const endIdx = text.lastIndexOf('}');
+                    if (startIdx === -1 || endIdx === -1) continue;
+                    const jsonStr = text.substring(startIdx, endIdx + 1);
+                    const data = JSON.parse(jsonStr);
+                    const rows = parseGoogleSheetCeklistRows(data);
+                    if (rows && rows.length > 0) {
+                        if (tab && tab !== ceklistSheetTab) {
+                            ceklistSheetTab = tab;
+                            localStorage.setItem('sibikom_ceklist_sheet_tab', tab);
+                        }
+                        return rows;
+                    }
+                } catch (tabErr) {
+                    // Lanjut coba tab berikutnya
+                }
             }
 
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const text = await response.text();
-            
-            const startIdx = text.indexOf('{');
-            const endIdx = text.lastIndexOf('}');
-            if (startIdx === -1 || endIdx === -1) throw new Error("Invalid GVIZ JSON format");
-            const jsonStr = text.substring(startIdx, endIdx + 1);
-            const data = JSON.parse(jsonStr);
-            return parseGoogleSheetCeklistRows(data);
+            return [];
         }
 
         // Synchronize Ceklist Google Sheet
@@ -4868,7 +5069,14 @@ function testReadData() {
                 }
 
                 const localUpdates = JSON.parse(localStorage.getItem('sibikom_ceklist_local_updates') || '{}');
-                const applyUpdates = (list) => list.map(item => localUpdates[item.id] ? { ...item, ...localUpdates[item.id] } : item);
+                // Saat user menekan tombol 'Sinkronkan Sheet' secara manual, reset deletedIds agar data Google Sheet muncul semua
+                if (isManual && sheetRows && sheetRows.length > 0) {
+                    localStorage.removeItem('sibikom_ceklist_deleted_ids');
+                }
+                const deletedIds = isManual ? [] : JSON.parse(localStorage.getItem('sibikom_ceklist_deleted_ids') || '[]');
+                const applyUpdates = (list) => list
+                    .map(item => localUpdates[item.id] ? { ...item, ...localUpdates[item.id] } : item)
+                    .filter(item => !deletedIds.includes(item.id) && !deletedIds.includes(item.waktu));
 
                 if (sheetRows && sheetRows.length > 0) {
                     const localCreated = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
@@ -4879,12 +5087,11 @@ function testReadData() {
                     const localCreated = JSON.parse(localStorage.getItem('sibikom_ceklist_local_added') || '[]');
                     if (cached) {
                         let parsedCached = JSON.parse(cached);
-                        parsedCached = parsedCached.map(item => {
-                            if (item.id === 'CW-1001' && item.tindakan === 'Dipindah') {
-                                return { ...item, tindakan: '-' };
-                            }
-                            return item;
-                        });
+                        // Upgrade cache lama jika hanya berisi data dummy 5 biji atau kurang
+                        if (parsedCached.length <= 5) {
+                            parsedCached = getSeedCeklistData();
+                            localStorage.setItem('sibikom_checklist_warehouse_cached', JSON.stringify(parsedCached));
+                        }
                         allCeklistData = applyUpdates([...localCreated, ...parsedCached]);
                     } else {
                         const seed = getSeedCeklistData();
@@ -5947,6 +6154,10 @@ function testReadData() {
             localStorage.setItem('sibikom_ceklist_sheet_tab', tabVal);
             localStorage.setItem('sibikom_ceklist_sheet_view_url', viewUrlVal);
 
+            // Bersihkan deleted_ids dan cache lokal lama agar semua baris dari Google Sheet yang baru disetel tampil penuh
+            localStorage.removeItem('sibikom_ceklist_deleted_ids');
+            localStorage.removeItem('sibikom_checklist_warehouse_cached');
+
             const linkGview = document.getElementById('link-gview-sheet');
             if (linkGview) {
                 if (ceklistSheetViewUrl) {
@@ -6004,6 +6215,9 @@ function testReadData() {
             localStorage.removeItem('sibikom_ceklist_sheet_id');
             localStorage.removeItem('sibikom_ceklist_sheet_tab');
             localStorage.removeItem('sibikom_ceklist_sheet_view_url');
+            localStorage.removeItem('sibikom_ceklist_deleted_ids');
+            localStorage.removeItem('sibikom_checklist_warehouse_cached');
+            localStorage.removeItem('sibikom_ceklist_local_updates');
 
             const urlInput = document.getElementById('input-config-sheet-url');
             const viewUrlInput = document.getElementById('input-config-sheet-view-url');
