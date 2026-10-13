@@ -4560,10 +4560,10 @@ function testReadData() {
         // ==========================================
         // DATA CEKLIST WAREHOUSE LOGIC (GOOGLE SHEETS INTEGRATION)
         // ==========================================
-        // DATA CEKLIST WAREHOUSE LOGIC (GOOGLE SHEETS INTEGRATION)
-        // ==========================================
+        const DEFAULT_CEKLIST_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpy3a4-dX8Hbc-g6AUlJ_0MhyJaRFFqjFAFMPCDvspN7Hqk1wp9J5Cx0nJTh3JUiYb/exec";
         const DEFAULT_CEKLIST_SHEET_ID = "12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk";
         const DEFAULT_CEKLIST_VIEW_URL = "https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/edit";
+        const DEFAULT_CEKLIST_TAB_NAME = "Form Responses 1";
         
         // Bersihkan jika ada nilai lama yang menyimpan script dummy atau ID terpotong
         const STALE_DUMMY_URL = "https://script.google.com/macros/s/AKfycbzWOGLrDN7WaeLwOqQ4ZjCjU08RZg-sIdjGGqgPzKw1lfZAw1aE5CpN6gSsPrJPNvbm/exec";
@@ -4572,8 +4572,8 @@ function testReadData() {
             localStorage.removeItem('sibikom_ceklist_sheet_id');
         }
 
-        let ceklistSheetId = localStorage.getItem('sibikom_ceklist_sheet_id') || DEFAULT_CEKLIST_SHEET_ID;
-        let ceklistSheetTab = localStorage.getItem('sibikom_ceklist_sheet_tab') || 'DATA_CEKLIST_WAREHOUSE';
+        let ceklistSheetId = localStorage.getItem('sibikom_ceklist_sheet_id') || DEFAULT_CEKLIST_APP_SCRIPT_URL;
+        let ceklistSheetTab = localStorage.getItem('sibikom_ceklist_sheet_tab') || DEFAULT_CEKLIST_TAB_NAME;
         let ceklistSheetViewUrl = localStorage.getItem('sibikom_ceklist_sheet_view_url') || DEFAULT_CEKLIST_VIEW_URL;
         let ceklistAutoSyncTimer = null;
 
@@ -4868,6 +4868,26 @@ function testReadData() {
                     targetSelesai: "2026-10-04",
                     status: "Closed",
                     email: ""
+                },
+                {
+                    id: "CW-1014",
+                    _rowNumber: 15,
+                    waktu: "10/13/2026 9:18:01",
+                    petugas: "-",
+                    tanggal: "2026-10-13",
+                    bagian: "GBB",
+                    area: "-",
+                    nomorGudang: "-",
+                    kategoriAudit: "5 R",
+                    tingkatKeparahan: "Low",
+                    foto1: "",
+                    foto2: "",
+                    deskripsi: "-",
+                    tindakan: "-",
+                    pic: "-",
+                    targetSelesai: "-",
+                    status: "Open",
+                    email: ""
                 }
             ];
         }
@@ -4986,39 +5006,44 @@ function testReadData() {
         // Fetch Data Ceklist from Google Sheet or Apps Script Web App
         async function fetchCeklistFromGoogleSheet() {
             const spId = getCeklistSpreadsheetId();
+            const preferredTabs = [
+                ceklistSheetTab,
+                'Form Responses 1',
+                'DATA_CEKLIST_WAREHOUSE',
+                'Respons Formulir 1',
+                'Sheet1',
+                ''
+            ].filter((v, idx, arr) => v !== undefined && v !== null && arr.indexOf(v) === idx);
 
             // 1. Coba melalui Google Apps Script Web App jika tersedia
             const webAppUrl = getCeklistWebAppUrl();
             if (webAppUrl && !webAppUrl.includes('dummy')) {
-                try {
-                    let scriptUrl = webAppUrl;
-                    const qChar = scriptUrl.includes('?') ? '&' : '?';
-                    const targetTab = ceklistSheetTab || 'DATA_CEKLIST_WAREHOUSE';
-                    scriptUrl += `${qChar}sheet=${encodeURIComponent(targetTab)}`;
-                    if (spId) scriptUrl += `&spreadsheetId=${encodeURIComponent(spId)}`;
-                    const response = await fetch(scriptUrl);
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result && result.data && Array.isArray(result.data) && result.data.length > 0) {
-                            return result.data.map((r, i) => normalizeCeklistRow(r, i)).filter(Boolean);
+                for (const tTab of preferredTabs) {
+                    try {
+                        let scriptUrl = webAppUrl;
+                        const qChar = scriptUrl.includes('?') ? '&' : '?';
+                        if (tTab) {
+                            scriptUrl += `${qChar}sheet=${encodeURIComponent(tTab)}`;
                         }
+                        const response = await fetch(scriptUrl);
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result && result.data && Array.isArray(result.data) && result.data.length > 0) {
+                                if (tTab && tTab !== ceklistSheetTab) {
+                                    ceklistSheetTab = tTab;
+                                    localStorage.setItem('sibikom_ceklist_sheet_tab', tTab);
+                                }
+                                return result.data.map((r, i) => normalizeCeklistRow(r, i)).filter(Boolean);
+                            }
+                        }
+                    } catch (scriptFetchErr) {
+                        // Coba tab berikutnya
                     }
-                } catch (scriptFetchErr) {
-                    console.warn("Apps Script GET failed, fallback to GVIZ:", scriptFetchErr);
                 }
             }
 
-            // 2. Fetch GVIZ dengan multi-tab fallback (mencari tab aktif, Respons Formulir 1, atau DATA_CEKLIST_WAREHOUSE)
-            const tabsToTry = [
-                ceklistSheetTab,
-                'DATA_CEKLIST_WAREHOUSE',
-                'Respons Formulir 1',
-                'Form Responses 1',
-                'Sheet1',
-                '' // Tanpa parameter sheet (GVIZ mengambil tab pertama otomatis)
-            ].filter((v, idx, arr) => arr.indexOf(v) === idx);
-
-            for (const tab of tabsToTry) {
+            // 2. Fetch GVIZ dengan multi-tab fallback (mencari Form Responses 1, DATA_CEKLIST_WAREHOUSE, dsb)
+            for (const tab of preferredTabs) {
                 try {
                     let url = `https://docs.google.com/spreadsheets/d/${spId}/gviz/tq?tqx=out:json&headers=1`;
                     if (tab) {
@@ -6209,8 +6234,8 @@ function testReadData() {
         }
 
         function resetDefaultConfigSheet() {
-            ceklistSheetId = DEFAULT_CEKLIST_SHEET_ID;
-            ceklistSheetTab = 'DATA_CEKLIST_WAREHOUSE';
+            ceklistSheetId = DEFAULT_CEKLIST_APP_SCRIPT_URL;
+            ceklistSheetTab = DEFAULT_CEKLIST_TAB_NAME;
             ceklistSheetViewUrl = DEFAULT_CEKLIST_VIEW_URL;
             localStorage.removeItem('sibikom_ceklist_sheet_id');
             localStorage.removeItem('sibikom_ceklist_sheet_tab');
@@ -6222,14 +6247,14 @@ function testReadData() {
             const urlInput = document.getElementById('input-config-sheet-url');
             const viewUrlInput = document.getElementById('input-config-sheet-view-url');
             const nameInput = document.getElementById('input-config-sheet-name');
-            if (urlInput) urlInput.value = DEFAULT_CEKLIST_SHEET_ID;
+            if (urlInput) urlInput.value = DEFAULT_CEKLIST_APP_SCRIPT_URL;
             if (viewUrlInput) viewUrlInput.value = DEFAULT_CEKLIST_VIEW_URL;
-            if (nameInput) nameInput.value = 'DATA_CEKLIST_WAREHOUSE';
+            if (nameInput) nameInput.value = DEFAULT_CEKLIST_TAB_NAME;
 
             const linkGview = document.getElementById('link-gview-sheet');
             if (linkGview) linkGview.href = DEFAULT_CEKLIST_VIEW_URL;
 
-            showToast("Pengaturan telah di-reset ke Google Sheet default SIBIKOM.", "info");
+            showToast("Pengaturan telah di-reset ke Google Sheet & Apps Script permanen Ceklist WH.", "info");
             syncCeklistGoogleSheet(true);
         }
 
