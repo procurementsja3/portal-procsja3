@@ -7087,6 +7087,95 @@ function testReadData() {
             ];
         }
 
+        // --- Helper Penyimpanan Aman Anti-Quota Exceeded ---
+        function saveActiveOpnameSession() {
+            if (!currentOpnameSession) return;
+            try {
+                // Simpan physical counts map yang sangat hemat memori (hanya lot yang sudah diisi/dihitung)
+                const physicalCounts = {};
+                (currentOpnameSession.items || []).forEach(item => {
+                    if (item && item.actualQty !== null && item.actualQty !== undefined) {
+                        const key = item.id || item.noLot;
+                        physicalCounts[key] = {
+                            actualQty: item.actualQty,
+                            status: item.status,
+                            notes: item.notes || '',
+                            countedAt: item.countedAt
+                        };
+                    }
+                });
+
+                const payload = {
+                    sessionNo: currentOpnameSession.sessionNo,
+                    cutOffDate: currentOpnameSession.cutOffDate,
+                    gudang: currentOpnameSession.gudang,
+                    checker: currentOpnameSession.checker,
+                    method: currentOpnameSession.method,
+                    notes: currentOpnameSession.notes,
+                    status: currentOpnameSession.status || 'OPEN',
+                    createdAt: currentOpnameSession.createdAt,
+                    approvedAt: currentOpnameSession.approvedAt,
+                    approver: currentOpnameSession.approver,
+                    isSeedData: !!currentOpnameSession.isSeedData,
+                    physicalCounts: physicalCounts,
+                    itemsSeed: currentOpnameSession.isSeedData ? currentOpnameSession.items : null
+                };
+
+                localStorage.setItem('sibikom_opname_active_session', JSON.stringify(payload));
+            } catch (err) {
+                console.warn("Gagal menyimpan ke localStorage (quota exceeded atau storage restricted):", err);
+            }
+        }
+
+        function archiveSessionToHistory(session) {
+            if (!session) return;
+            try {
+                const history = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
+                const allItems = session.items || [];
+                let matchCount = 0, surplusCount = 0, deficitCount = 0, uncountedCount = 0;
+                let totalSys = 0, totalAct = 0;
+                
+                allItems.forEach(it => {
+                    totalSys += (it.systemQty || 0);
+                    if (it.actualQty !== null && it.actualQty !== undefined) {
+                        totalAct += it.actualQty;
+                        const d = it.actualQty - it.systemQty;
+                        if (Math.abs(d) < 0.001) matchCount++;
+                        else if (d > 0) surplusCount++;
+                        else deficitCount++;
+                    } else {
+                        uncountedCount++;
+                    }
+                });
+
+                const entry = {
+                    sessionNo: session.sessionNo,
+                    cutOffDate: session.cutOffDate,
+                    gudang: session.gudang,
+                    checker: session.checker,
+                    method: session.method,
+                    notes: session.notes,
+                    status: session.status || 'OPEN',
+                    createdAt: session.createdAt,
+                    approvedAt: session.approvedAt,
+                    approver: session.approver,
+                    totalLots: allItems.length,
+                    countedLots: allItems.length - uncountedCount,
+                    matchLots: matchCount,
+                    surplusLots: surplusCount,
+                    deficitLots: deficitCount,
+                    totalSystemQty: totalSys,
+                    totalActualQty: totalAct,
+                    netDiffQty: totalAct - totalSys
+                };
+
+                history.unshift(entry);
+                localStorage.setItem('sibikom_opname_history', JSON.stringify(history.slice(0, 30)));
+            } catch (e) {
+                console.warn("Gagal menyimpan riwayat opname:", e);
+            }
+        }
+
         async function loadDataStockOpname(forceRefresh = false) {
             const syncIcon = document.getElementById('icon-sync-opname');
             if (syncIcon) syncIcon.classList.add('animate-spin');
@@ -7097,49 +7186,42 @@ function testReadData() {
             }
 
             try {
-                // 1. Cek penyimpanan lokal
-                const savedSessionStr = localStorage.getItem('sibikom_opname_active_session');
-                if (savedSessionStr && !forceRefresh) {
-                    try {
-                        currentOpnameSession = JSON.parse(savedSessionStr);
-                        opnameMasterData = currentOpnameSession.items || [];
-                        
-                        // Migrasi/sinkronisasi nomor sesi ke format standar urut SO-YYYYMM-0001 jika masih format random lama
-                        if (currentOpnameSession && currentOpnameSession.sessionNo) {
-                            const sn = currentOpnameSession.sessionNo;
-                            const today = new Date();
-                            const curPeriod = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}`;
-                            const parts = sn.split('-');
-                            if (sn.startsWith('SO-') && (parts.length < 3 || parts[2].length !== 4)) {
-                                const hist = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
-                                if (hist.length === 0) {
-                                    currentOpnameSession.sessionNo = `SO-${curPeriod}-0001`;
-                                    localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        currentOpnameSession = null;
-                    }
+                // 1. Baca data tersimpan dari localStorage
+                let savedSession = null;
+                try {
+                    const raw = localStorage.getItem('sibikom_opname_active_session');
+                    if (raw) savedSession = JSON.parse(raw);
+                } catch (e) {
+                    console.warn("Gagal membaca active session dari localStorage:", e);
                 }
 
-                // 2. Jika sesi belum ada atau dipaksa refresh dari FIFO Google Sheet
-                if (!currentOpnameSession || forceRefresh) {
+                // 2. Evaluasi apakah butuh sinkronisasi data dari FIFO
+                const needFetchFifo = forceRefresh || !currentOpnameSession || !currentOpnameSession.items || currentOpnameSession.items.length === 0;
+
+                if (needFetchFifo) {
                     let itemsFromFifo = [];
+                    let isSeed = false;
+
                     try {
                         const fifoData = await fetchJSONData('CALC_STOK_AKTIF_FIFO');
                         const validFifo = (fifoData || []).filter(r => Object.values(r).some(v => v !== ""));
                         if (validFifo.length > 0) {
-                            itemsFromFifo = validFifo.map((row, idx) => {
-                                const lotId = findValue(row, 'ID_MASUK') || findValue(row, 'ID_LOT') || `LOT-${idx + 1}`;
+                            itemsFromFifo = validFifo.filter(row => {
+                                const sisa = parseNilaiAngka(findValue(row, 'SISA_KG') || findValue(row, 'SISA_STOK') || findValue(row, 'BERAT_NETTO') || findValue(row, 'NETTO') || '0');
+                                const status = String(findValue(row, 'STATUS_STOK') || '').toUpperCase();
+                                const noLot = findValue(row, 'NO_LOT') || findValue(row, 'ID_LOT') || findValue(row, 'ID_MASUK');
+                                return status !== 'HABIS' && sisa > 0 && !!noLot;
+                            }).map((row, idx) => {
+                                const lotId = findValue(row, 'ID_MASUK') || findValue(row, 'NO_LOT') || `LOT-${idx + 1}`;
+                                const noLot = findValue(row, 'NO_LOT') || findValue(row, 'ID_LOT') || lotId;
                                 const gudang = findValue(row, 'GUDANG') || findValue(row, 'GUDANG_PENYIMPANAN') || 'SJA 3';
-                                const lokasi = findValue(row, 'BLOK') || findValue(row, 'AREA') || findValue(row, 'LOKASI') || `Blok ${(idx % 4) + 1}`;
+                                const lokasi = findValue(row, 'ID_LOKASI') || findValue(row, 'BIN') || findValue(row, 'SLOT') || 'Gudang';
                                 const jenis = findValue(row, 'JENIS_KOPI') || findValue(row, 'JENIS') || 'Biji Kopi';
-                                const sisaStok = parseNilaiAngka(findValue(row, 'SISA_STOK') || findValue(row, 'BERAT_NETTO') || findValue(row, 'NETTO') || '0');
-                                
+                                const sisaStok = parseNilaiAngka(findValue(row, 'SISA_KG') || findValue(row, 'SISA_STOK') || findValue(row, 'BERAT_NETTO') || findValue(row, 'NETTO') || '0');
+
                                 return {
                                     id: lotId,
-                                    noLot: lotId,
+                                    noLot: noLot,
                                     gudang: gudang,
                                     lokasi: lokasi,
                                     jenisKopi: jenis,
@@ -7158,15 +7240,107 @@ function testReadData() {
                     }
 
                     if (itemsFromFifo.length === 0) {
-                        // Gunakan default seed data agar UI operasional langsung aktif
-                        itemsFromFifo = getDefaultOpnameSeedData();
+                        if (savedSession && savedSession.itemsSeed && savedSession.itemsSeed.length > 0) {
+                            itemsFromFifo = savedSession.itemsSeed;
+                        } else if (savedSession && Array.isArray(savedSession.items) && savedSession.items.length > 0) {
+                            itemsFromFifo = savedSession.items;
+                        } else {
+                            itemsFromFifo = getDefaultOpnameSeedData();
+                            isSeed = true;
+                        }
                     }
 
+                    // Tentukan nomor sesi & metadata:
+                    // Jika Segarkan diklik pada sesi aktif, pertahankan nomor sesi dan identitas sesi yang ada!
                     const today = new Date();
-                    const sessionCode = generateNextOpnameSessionNo(today);
-                    
+                    let sessionNo = (currentOpnameSession && currentOpnameSession.sessionNo) || 
+                                    (savedSession && savedSession.sessionNo) || 
+                                    generateNextOpnameSessionNo(today);
+
+                    // Sanitasi nomor sesi bila masih format acak lama
+                    if (sessionNo && (!sessionNo.startsWith('SO-') || sessionNo.split('-').length < 3)) {
+                        sessionNo = generateNextOpnameSessionNo(today);
+                    }
+
+                    const cutOffDate = (currentOpnameSession && currentOpnameSession.cutOffDate) || (savedSession && savedSession.cutOffDate) || today.toISOString().split('T')[0];
+                    const gudang = (currentOpnameSession && currentOpnameSession.gudang) || (savedSession && savedSession.gudang) || 'Semua Gudang';
+                    const checker = (currentOpnameSession && currentOpnameSession.checker) || (savedSession && savedSession.checker) || ((window.currentUser && window.currentUser.nama) ? window.currentUser.nama : 'Admin Gudang');
+                    const method = (currentOpnameSession && currentOpnameSession.method) || (savedSession && savedSession.method) || 'Blind & Cycle Count';
+                    const notes = (currentOpnameSession && currentOpnameSession.notes) || (savedSession && savedSession.notes) || 'Audit Rekonsiliasi Fisik vs Mutasi Sistem BKM';
+                    const status = (currentOpnameSession && currentOpnameSession.status) || (savedSession && savedSession.status) || 'OPEN';
+                    const createdAt = (currentOpnameSession && currentOpnameSession.createdAt) || (savedSession && savedSession.createdAt) || today.toISOString();
+
+                    // Kumpulkan hitungan fisik yang sudah pernah dimasukkan pengguna
+                    const physicalCounts = {};
+                    if (savedSession && savedSession.physicalCounts) {
+                        Object.assign(physicalCounts, savedSession.physicalCounts);
+                    }
+                    if (currentOpnameSession && Array.isArray(currentOpnameSession.items)) {
+                        currentOpnameSession.items.forEach(it => {
+                            if (it.actualQty !== null && it.actualQty !== undefined) {
+                                physicalCounts[it.id || it.noLot] = {
+                                    actualQty: it.actualQty,
+                                    status: it.status,
+                                    notes: it.notes,
+                                    countedAt: it.countedAt
+                                };
+                            }
+                        });
+                    }
+
+                    // Terapkan hitungan fisik yang sudah ada ke daftar lot
+                    itemsFromFifo.forEach(item => {
+                        const countData = physicalCounts[item.id] || physicalCounts[item.noLot];
+                        if (countData) {
+                            item.actualQty = countData.actualQty;
+                            item.notes = countData.notes || item.notes;
+                            item.countedAt = countData.countedAt || item.countedAt;
+                            item.diffQty = item.actualQty - item.systemQty;
+                            item.deviasiPct = item.systemQty > 0 ? ((item.diffQty / item.systemQty) * 100) : 0;
+                            if (Math.abs(item.diffQty) < 0.001) item.status = 'MATCH';
+                            else if (item.diffQty > 0) item.status = 'SURPLUS';
+                            else item.status = 'DEFISIT';
+                        }
+                    });
+
                     currentOpnameSession = {
-                        sessionNo: sessionCode,
+                        sessionNo,
+                        cutOffDate,
+                        gudang,
+                        checker,
+                        method,
+                        notes,
+                        status,
+                        createdAt,
+                        isSeedData: isSeed,
+                        items: itemsFromFifo
+                    };
+
+                    saveActiveOpnameSession();
+                } else {
+                    if (!currentOpnameSession && savedSession) {
+                        currentOpnameSession = savedSession;
+                        if (!currentOpnameSession.items && currentOpnameSession.itemsSeed) {
+                            currentOpnameSession.items = currentOpnameSession.itemsSeed;
+                        }
+                    }
+                }
+
+                opnameMasterData = (currentOpnameSession && currentOpnameSession.items) ? currentOpnameSession.items : [];
+
+                // 3. Render ke layar
+                updateOpnameSessionHeaderUI();
+                filterOpnameData();
+
+                if (forceRefresh) {
+                    showToast("Data Stock Opname berhasil disegarkan & disinkronkan!", "success");
+                }
+            } catch (err) {
+                console.error("Error loading stock opname:", err);
+                if (!currentOpnameSession || !currentOpnameSession.items || currentOpnameSession.items.length === 0) {
+                    const today = new Date();
+                    currentOpnameSession = {
+                        sessionNo: generateNextOpnameSessionNo(today),
                         cutOffDate: today.toISOString().split('T')[0],
                         gudang: 'Semua Gudang',
                         checker: (window.currentUser && window.currentUser.nama) ? window.currentUser.nama : 'Admin Gudang',
@@ -7174,20 +7348,19 @@ function testReadData() {
                         notes: 'Audit Rekonsiliasi Fisik vs Mutasi Sistem BKM',
                         status: 'OPEN',
                         createdAt: today.toISOString(),
-                        items: itemsFromFifo
+                        isSeedData: true,
+                        items: getDefaultOpnameSeedData()
                     };
-
-                    localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
                     opnameMasterData = currentOpnameSession.items;
+                    saveActiveOpnameSession();
+                    updateOpnameSessionHeaderUI();
+                    filterOpnameData();
+                    showToast("Data dimuat menggunakan database lokal gudang", "info");
+                } else {
+                    updateOpnameSessionHeaderUI();
+                    filterOpnameData();
+                    showToast("Data berhasil disegarkan dari cache lokal", "info");
                 }
-
-                // 3. Render ke layar
-                updateOpnameSessionHeaderUI();
-                filterOpnameData();
-                showToast("Data Stock Opname berhasil dimuat & disinkronkan!", "success");
-            } catch (err) {
-                console.error("Error loading stock opname:", err);
-                showToast("Gagal memuat data stock opname", "error");
             } finally {
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
             }
@@ -7466,7 +7639,7 @@ function testReadData() {
             item.notes = item.notes || 'Sesuai fisik utuh';
             item.countedAt = new Date().toISOString();
 
-            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            saveActiveOpnameSession();
             renderOpnameTable();
             updateOpnameKPICards();
             showToast(`Lot ${item.noLot} dicocokkan dengan sistem!`, "success");
@@ -7519,7 +7692,7 @@ function testReadData() {
             if (noteVal) item.notes = noteVal;
             item.countedAt = new Date().toISOString();
 
-            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            saveActiveOpnameSession();
             inpLot.value = '';
             inpQty.value = '';
             if (inpNote) inpNote.value = '';
@@ -7551,7 +7724,7 @@ function testReadData() {
                 item.countedAt = new Date().toISOString();
             });
 
-            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            saveActiveOpnameSession();
             renderOpnameTable();
             updateOpnameKPICards();
             showToast(`${uncounted.length} lot berhasil disinkronkan dengan stok sistem!`, "success");
@@ -7667,15 +7840,12 @@ function testReadData() {
 
             // Backup sesi lama ke history jika ada
             if (currentOpnameSession) {
-                try {
-                    const history = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
-                    history.unshift(currentOpnameSession);
-                    localStorage.setItem('sibikom_opname_history', JSON.stringify(history.slice(0, 20)));
-                } catch (e) {}
+                archiveSessionToHistory(currentOpnameSession);
             }
 
             // Buat sesi baru
             closeModalNewOpnameSession();
+            currentOpnameSession = null;
             await loadDataStockOpname(true);
 
             if (currentOpnameSession) {
@@ -7685,7 +7855,7 @@ function testReadData() {
                 currentOpnameSession.checker = inpChecker;
                 currentOpnameSession.method = inpMethod;
                 currentOpnameSession.notes = inpNotes;
-                localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+                saveActiveOpnameSession();
 
                 // Simpan counter urutan sesi periode ini
                 try {
@@ -7811,7 +7981,7 @@ function testReadData() {
             item.notes = inpNotes ? inpNotes.value.trim() : '';
             item.countedAt = new Date().toISOString();
 
-            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            saveActiveOpnameSession();
             closeModalEditOpnameItem();
             renderOpnameTable();
             updateOpnameKPICards();
@@ -7834,14 +8004,10 @@ function testReadData() {
             currentOpnameSession.approvedAt = new Date().toISOString();
             currentOpnameSession.approver = (window.currentUser && window.currentUser.nama) ? window.currentUser.nama : 'Foreman Gudang / Supervisor';
 
-            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            saveActiveOpnameSession();
             
             // Simpan ke log riwayat
-            try {
-                const history = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
-                history.unshift(currentOpnameSession);
-                localStorage.setItem('sibikom_opname_history', JSON.stringify(history.slice(0, 20)));
-            } catch (e) {}
+            archiveSessionToHistory(currentOpnameSession);
 
             showToast("Rekonsiliasi Stock Opname berhasil divalidasi!", "success");
             exportOpnameReportPDF();
@@ -7878,12 +8044,32 @@ function testReadData() {
                 let html = '';
                 let tSys = 0;
                 let tAct = 0;
+                const allItems = currentOpnameSession.items || [];
+                const totalAll = allItems.length;
 
-                currentOpnameSession.items.forEach((it, idx) => {
+                // Sortir item: yang sudah dihitung / ada deviasi di atas agar informatif untuk audit
+                const sortedItems = [...allItems].sort((a, b) => {
+                    const aCounted = (a.actualQty !== null && a.actualQty !== undefined) ? 1 : 0;
+                    const bCounted = (b.actualQty !== null && b.actualQty !== undefined) ? 1 : 0;
+                    if (aCounted !== bCounted) return bCounted - aCounted;
+                    const aDiff = Math.abs((a.actualQty || 0) - a.systemQty);
+                    const bDiff = Math.abs((b.actualQty || 0) - b.systemQty);
+                    return bDiff - aDiff;
+                });
+
+                allItems.forEach(it => {
+                    tSys += (it.systemQty || 0);
+                    if (it.actualQty !== null && it.actualQty !== undefined) {
+                        tAct += it.actualQty;
+                    }
+                });
+
+                const maxPrintRows = 300;
+                const itemsToRender = sortedItems.slice(0, maxPrintRows);
+
+                itemsToRender.forEach((it, idx) => {
                     const isCounted = it.actualQty !== null && it.actualQty !== undefined;
                     const diff = isCounted ? (it.actualQty - it.systemQty) : 0;
-                    tSys += it.systemQty;
-                    if (isCounted) tAct += it.actualQty;
 
                     html += `
                         <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}">
@@ -7903,20 +8089,31 @@ function testReadData() {
                         </tr>
                     `;
                 });
+
+                if (totalAll > maxPrintRows) {
+                    html += `
+                        <tr class="bg-amber-50/70 text-amber-900 font-sans italic text-center">
+                            <td colspan="9" class="p-2 border-t border-amber-200">
+                                ... Menampilkan ${maxPrintRows} lot prioritas audit dari total ${totalAll} lot. Total rekapitulasi di bawah mencakup 100% keseluruhan data.
+                            </td>
+                        </tr>
+                    `;
+                }
+
                 tbody.innerHTML = html;
 
                 const tDiff = tAct - tSys;
                 if (tfoot) {
                     tfoot.innerHTML = `
                         <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-400">
-                            <td colspan="4" class="p-2 text-right font-sans font-bold uppercase">TOTAL REKAPITULASI:</td>
+                            <td colspan="4" class="p-2 text-right font-sans font-bold uppercase">TOTAL REKAPITULASI (${totalAll} LOT):</td>
                             <td class="p-2 text-right">${formatAngkaId(tSys)}</td>
                             <td class="p-2 text-right font-black">${formatAngkaId(tAct)}</td>
                             <td class="p-2 text-right font-black ${tDiff === 0 ? 'text-slate-800' : (tDiff > 0 ? 'text-blue-800' : 'text-rose-700')}">
                                 ${tDiff > 0 ? `+${formatAngkaId(tDiff)}` : formatAngkaId(tDiff)}
                             </td>
                             <td colspan="2" class="p-2 text-left font-sans text-[9px] text-slate-500">
-                                Deviasi: ${tSys > 0 ? ((tDiff / tSys) * 100).toFixed(2) : '0.00'}%
+                                Deviasi Netto: ${tSys > 0 ? ((tDiff / tSys) * 100).toFixed(2) : '0.00'}%
                             </td>
                         </tr>
                     `;
