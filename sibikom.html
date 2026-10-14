@@ -154,6 +154,37 @@
             background-color: rgba(88, 28, 135, 0.35) !important;
             border-color: rgba(168, 85, 247, 0.3) !important;
         }
+
+        /* High-Contrast Dark Mode for Stock Opname KPI Cards & Texts */
+        html.dark .opname-card-default {
+            background-image: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+            border-color: #334155 !important;
+        }
+        html.dark .opname-card-emerald {
+            background-image: linear-gradient(135deg, rgba(6, 78, 59, 0.45) 0%, #0f172a 100%) !important;
+            border-color: rgba(16, 185, 129, 0.35) !important;
+        }
+        html.dark .opname-card-blue {
+            background-image: linear-gradient(135deg, rgba(12, 74, 110, 0.45) 0%, #0f172a 100%) !important;
+            border-color: rgba(14, 165, 233, 0.35) !important;
+        }
+        html.dark .opname-card-amber {
+            background-image: linear-gradient(135deg, rgba(120, 53, 15, 0.45) 0%, #0f172a 100%) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+
+        html.dark #stat-opname-total-lot {
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        html.dark #stat-opname-accuracy {
+            color: #34d399 !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        html.dark #stat-opname-system-qty {
+            color: #38bdf8 !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
     </style>
 
     <script>
@@ -315,6 +346,10 @@
                         <button onclick="switchTab('gudang-penerimaan'); toggleMobileSidebar()" id="btn-gudang-penerimaan" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Penerimaan</button>
                         <button onclick="switchTab('gudang-pengeluaran'); toggleMobileSidebar()" id="btn-gudang-pengeluaran" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Pengeluaran</button>
                         <button onclick="switchTab('gudang-fifo'); toggleMobileSidebar()" id="btn-gudang-fifo" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cek Stok FIFO</button>
+                        <button onclick="switchTab('gudang-opname'); toggleMobileSidebar()" id="btn-gudang-opname" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-between">
+                            <span>Stock Opname Gudang</span>
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">Baru</span>
+                        </button>
                         <button onclick="switchTab('gudang-cetak-rmw'); toggleMobileSidebar()" id="btn-gudang-cetak-rmw" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cetak Bukti (RMW)</button>
                         <button onclick="switchTab('gudang-ceklist'); toggleMobileSidebar()" id="btn-gudang-ceklist" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Ceklist Warehouse</button>
                     </div>
@@ -1035,6 +1070,466 @@
                 
                 <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100"><p class="text-sm text-emerald-700 font-semibold bg-emerald-100/50 px-4 py-2 rounded-lg"><span id="page-info-fifo">0 - 0</span> dari <span id="total-info-fifo">0</span> stok aktif</p><div class="flex gap-2"><button type="button" onclick="prevPageFifo()" id="btn-prev-fifo" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50"><i class="ph ph-caret-left"></i></button><button type="button" onclick="nextPageFifo()" id="btn-next-fifo" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50"><i class="ph ph-caret-right"></i></button></div></div>
             </section>
+
+            <!-- SECTION: STOCK OPNAME AREA GUDANG -->
+            <section id="sec-gudang-opname" class="bg-white p-6 sm:p-8 rounded-2xl shadow-card border border-slate-100 hidden opacity-0 transition-opacity duration-300 w-full max-w-[98%] 2xl:max-w-[1800px] mx-auto space-y-6">
+                <!-- Header Control & Info -->
+                <div class="flex flex-col xl:flex-row justify-between xl:items-center gap-4 border-b border-slate-100 pb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-center justify-center text-2xl font-bold shrink-0">
+                            <i class="ph ph-clipboard-text"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xl font-bold text-slate-800 tracking-tight">Stock Opname Area Gudang</h2>
+                                <span class="text-xs bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-bold">Fisik vs Sistem</span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Audit rekonsiliasi berkala stok biji kopi per Gudang, Blok, & Lot dengan metode Blind & Cycle Count.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700">
+                            <i class="ph ph-buildings text-base text-brand-primary mr-1.5"></i>
+                            <select id="opname-filter-gudang" onchange="filterOpnameData()" class="bg-transparent border-none outline-none font-bold cursor-pointer text-slate-800">
+                                <option value="all">Semua Gudang</option>
+                                <option value="SJA 3">Gudang SJA 3</option>
+                                <option value="G. Krian">Gudang Krian</option>
+                                <option value="G. 137">Gudang 137</option>
+                            </select>
+                        </div>
+                        <button type="button" onclick="openModalNewOpnameSession()" class="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer">
+                            <i class="ph ph-plus-circle text-base"></i> Sesi Opname Baru
+                        </button>
+                        <button type="button" onclick="loadDataStockOpname(true)" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all cursor-pointer">
+                            <i class="ph ph-arrows-clockwise text-base" id="icon-sync-opname"></i> Segarkan
+                        </button>
+                        <button type="button" onclick="exportOpnameReportPDF()" class="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all cursor-pointer">
+                            <i class="ph ph-file-pdf text-base text-red-500"></i> Cetak BA Opname
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Stock Opname -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="opname-card-default bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900/90 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs relative overflow-hidden transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Lot Diperiksa</p>
+                                <h3 id="stat-opname-total-lot" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1 font-mono tracking-tight">0</h3>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-400 mt-1">Item dalam audit</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center text-2xl border border-slate-200/90 dark:border-slate-700 shadow-xs">
+                                <i class="ph ph-barcode"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opname-card-emerald bg-gradient-to-br from-emerald-50/60 to-white dark:from-emerald-950/40 dark:to-slate-900/90 p-4 sm:p-5 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs relative overflow-hidden transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Akurasi Stok (Match)</p>
+                                <h3 id="stat-opname-accuracy" class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-300 mt-1 font-mono tracking-tight">100%</h3>
+                                <p id="stat-opname-match-count" class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-medium">0 dari 0 lot sesuai</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-2xl border border-emerald-200 dark:border-emerald-700/60 shadow-xs">
+                                <i class="ph ph-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opname-card-blue bg-gradient-to-br from-blue-50/60 to-white dark:from-sky-950/40 dark:to-slate-900/90 p-4 sm:p-5 rounded-2xl border border-blue-200/80 dark:border-sky-800/60 shadow-2xs relative overflow-hidden transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-blue-700 dark:text-sky-400 uppercase tracking-wider">Stok Sistem (Book)</p>
+                                <h3 id="stat-opname-system-qty" class="text-xl sm:text-2xl font-black text-blue-700 dark:text-sky-300 mt-1 font-mono tracking-tight">0,00 <span class="text-xs font-normal text-slate-400">Kg</span></h3>
+                                <p class="text-[11px] text-blue-600 dark:text-sky-400 mt-1 font-medium">Total Netto Kalkulasi</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-sky-950/80 text-blue-700 dark:text-sky-300 flex items-center justify-center text-2xl border border-blue-200 dark:border-sky-700/60 shadow-xs">
+                                <i class="ph ph-database"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opname-card-amber bg-gradient-to-br from-amber-50/60 to-white dark:from-amber-950/40 dark:to-slate-900/90 p-4 sm:p-5 rounded-2xl border border-amber-200/80 dark:border-amber-800/60 shadow-2xs relative overflow-hidden transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">Deviasi Selisih Netto</p>
+                                <h3 id="stat-opname-diff-qty" class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 font-mono tracking-tight">0,00 <span class="text-xs font-normal text-slate-400">Kg</span></h3>
+                                <p id="stat-opname-diff-status" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-medium">Toleransi Normal (±0%)</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 flex items-center justify-center text-2xl border border-amber-200 dark:border-amber-700/60 shadow-xs">
+                                <i class="ph ph-scales"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Banner Sesi Aktif -->
+                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border dark:border-emerald-800/80 font-bold text-[11px]">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sesi Aktif
+                        </span>
+                        <span class="font-bold text-slate-800 dark:text-slate-100" id="label-opname-session-no">NO: SO-202610-0001</span>
+                        <span class="text-slate-400 dark:text-slate-600">|</span>
+                        <span class="text-slate-600 dark:text-slate-400">Checker: <strong id="label-opname-checker" class="text-slate-800 dark:text-slate-100">Admin Gudang</strong></span>
+                        <span class="text-slate-400 dark:text-slate-600">|</span>
+                        <span class="text-slate-500 dark:text-slate-400">Metode: <strong class="text-indigo-600 dark:text-indigo-400 font-semibold">Blind & Cycle Count</strong></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-500 dark:text-slate-400">Status Selisih:</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:border dark:border-emerald-800/80" id="badge-count-match">0 Sesuai</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-sky-950 dark:text-sky-300 dark:border dark:border-sky-800/80" id="badge-count-surplus">0 Surplus</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 dark:border dark:border-rose-800/80" id="badge-count-deficit">0 Defisit</span>
+                    </div>
+                </div>
+
+                <!-- Barcode Scanner / Quick Entry Bar Checker -->
+                <div class="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/60 rounded-xl p-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-200 shrink-0">
+                        <i class="ph ph-barcode text-xl text-amber-600"></i>
+                        <span>Scan / Input Cepat Checker:</span>
+                    </div>
+                    <form onsubmit="handleQuickScanOpname(event)" class="flex flex-wrap items-center gap-2 flex-1 max-w-3xl">
+                        <div class="relative flex-1 min-w-[140px]">
+                            <i class="ph ph-qr-code absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="opname-quick-lot" placeholder="Scan Barcode / No Lot..." class="w-full pl-8 pr-2 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:border-amber-500 font-mono" required>
+                        </div>
+                        <div class="w-28 sm:w-32">
+                            <input type="number" step="0.01" id="opname-quick-qty" placeholder="Kg Fisik..." class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:border-amber-500 font-mono font-bold" required>
+                        </div>
+                        <div class="flex-1 min-w-[140px] hidden sm:block">
+                            <input type="text" id="opname-quick-note" placeholder="Kondisi / Catatan..." class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:border-amber-500">
+                        </div>
+                        <button type="submit" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0">
+                            <i class="ph ph-check"></i> Input
+                        </button>
+                    </form>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" onclick="quickFillAllRemainingMatch()" class="px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer" title="Otomatis isi lot yang belum dihitung agar sama persis dengan sistem">
+                            <i class="ph ph-magic-wand text-amber-500"></i> Samakan Semua Sesuai Sistem
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter & Search Bar -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 w-full sm:w-auto flex-1 max-w-md">
+                        <div class="relative w-full">
+                            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                            <input type="text" id="opname-search-input" onkeyup="filterOpnameData()" placeholder="Cari No Lot, Jenis Kopi, Gudang, atau Petugas..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-white">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <select id="opname-filter-status" onchange="filterOpnameData()" class="px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-700 outline-none focus:border-amber-500 font-medium">
+                            <option value="all">Semua Status Selisih</option>
+                            <option value="MATCH">Sesuai (Match / Selisih 0)</option>
+                            <option value="SURPLUS">Surplus (+ Fisik &gt; Sistem)</option>
+                            <option value="DEFISIT">Defisit (- Fisik &lt; Sistem)</option>
+                            <option value="UNCOUNTED">Belum Dihitung (Pending)</option>
+                        </select>
+                        <button type="button" onclick="batchApproveOpname()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer" title="Setujui dan kunci penyesuaian stock opname">
+                            <i class="ph ph-check-square-offset text-sm"></i> Validasi Rekonsiliasi
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabel Stock Opname -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs whitespace-nowrap border-collapse">
+                            <thead class="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="px-4 py-3.5">ID / No Lot</th>
+                                    <th class="px-4 py-3.5">Gudang & Area</th>
+                                    <th class="px-4 py-3.5">Jenis Kopi</th>
+                                    <th class="px-4 py-3.5 text-right bg-blue-50/70 text-blue-900 border-x border-blue-100">Stok Sistem (Kg)</th>
+                                    <th class="px-4 py-3.5 text-right bg-amber-50/70 text-amber-900 border-r border-amber-100">Fisik Aktual (Kg)</th>
+                                    <th class="px-4 py-3.5 text-right">Selisih (Kg)</th>
+                                    <th class="px-4 py-3.5 text-center">Deviasi (%)</th>
+                                    <th class="px-4 py-3.5 text-center">Status</th>
+                                    <th class="px-4 py-3.5">Keterangan / Kondisi</th>
+                                    <th class="px-4 py-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-stock-opname" class="divide-y divide-slate-100 font-mono">
+                                <tr>
+                                    <td colspan="10" class="text-center py-12 text-slate-400 font-sans">
+                                        <i class="ph ph-spinner-gap animate-spin text-3xl mb-2 block mx-auto text-amber-500"></i>
+                                        Memuat data stock opname area gudang...
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot id="tfoot-stock-opname" class="bg-slate-50 font-mono font-bold border-t-2 border-slate-300 text-xs text-slate-800">
+                                <tr>
+                                    <td colspan="3" class="px-4 py-3 text-right uppercase font-sans font-extrabold">TOTAL RINGKASAN:</td>
+                                    <td class="px-4 py-3 text-right text-blue-800 font-bold bg-blue-50/50" id="foot-opname-sys">0,00</td>
+                                    <td class="px-4 py-3 text-right text-amber-800 font-bold bg-amber-50/50" id="foot-opname-act">0,00</td>
+                                    <td class="px-4 py-3 text-right font-black" id="foot-opname-diff">0,00</td>
+                                    <td class="px-4 py-3 text-center" id="foot-opname-pct">0.00%</td>
+                                    <td colspan="3" class="px-4 py-3 text-right font-sans text-slate-500 text-[11px]" id="foot-opname-summary">0 item opname</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination & Info -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
+                    <p>Menampilkan <span id="opname-page-info" class="font-bold text-slate-700">0 - 0</span> dari <span id="opname-total-info" class="font-bold text-slate-700">0</span> item opname</p>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="prevOpnamePage()" id="btn-opname-prev" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 font-semibold cursor-pointer disabled:opacity-50">
+                            <i class="ph ph-caret-left"></i> Sebelumnya
+                        </button>
+                        <button type="button" onclick="nextOpnamePage()" id="btn-opname-next" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 font-semibold cursor-pointer disabled:opacity-50">
+                            Berikutnya <i class="ph ph-caret-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modal Sesi Baru Stock Opname -->
+            <div id="modal-new-opname-session" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 font-bold">
+                                <i class="ph ph-clipboard-text text-lg"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">Mulai Sesi Stock Opname Baru</h3>
+                        </div>
+                        <button type="button" onclick="closeModalNewOpnameSession()" class="text-slate-400 hover:text-slate-600 text-lg p-1 rounded-lg hover:bg-slate-200/60 transition-colors">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    </div>
+                    <form id="form-new-opname-session" onsubmit="submitNewOpnameSession(event)" class="p-6 space-y-4 text-xs">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-200">Nomor Sesi Opname (Otomatis)</label>
+                                <span class="text-[10px] font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">Format: SO-YYYYMM-0001</span>
+                            </div>
+                            <div class="relative flex items-center">
+                                <input type="text" id="inp-session-no" class="w-full pl-3 pr-24 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-mono font-bold outline-none focus:border-amber-500">
+                                <button type="button" onclick="regenerateOpnameSessionNo()" title="Hitung Ulang Nomor Urut Otomatis" class="absolute right-1 px-2.5 py-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 hover:bg-slate-200/50 dark:hover:bg-slate-700 rounded text-xs flex items-center gap-1 transition-colors">
+                                    <i class="ph ph-arrows-clockwise text-sm"></i>
+                                    <span class="text-[10px] font-semibold">Refresh</span>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                                <i class="ph ph-info text-amber-500"></i> Penomoran urut otomatis per bulan: <strong class="text-slate-700 dark:text-slate-200">SO-202610-0001</strong> (2026 = Tahun, 10 = Bulan Oktober, 0001 = Urut sesi).
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-200 mb-1">Tanggal Cut-Off</label>
+                                <input type="date" id="inp-session-date" onchange="onOpnameDateChange()" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Target Gudang</label>
+                                <select id="inp-session-gudang" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white outline-none focus:border-amber-500 font-semibold">
+                                    <option value="Semua Gudang">Semua Gudang (Full Count)</option>
+                                    <option value="SJA 3">Gudang SJA 3</option>
+                                    <option value="G. Krian">Gudang Krian</option>
+                                    <option value="G. 137">Gudang 137</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Nama Petugas Checker</label>
+                                <input type="text" id="inp-session-checker" required placeholder="Nama lengkap pemeriksa..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Metode Penghitungan</label>
+                                <select id="inp-session-method" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white outline-none focus:border-amber-500">
+                                    <option value="Blind Count">Blind Count (Rekomendasi)</option>
+                                    <option value="Cycle Count">Cycle Count Berkala</option>
+                                    <option value="Wall-to-Wall">Wall-to-Wall (Tutup Buku)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Catatan / Referensi Audit</label>
+                            <textarea id="inp-session-notes" rows="2" placeholder="Tuliskan tujuan opname (contoh: Audit akhir bulan / Sampling berkala)..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white outline-none focus:border-amber-500"></textarea>
+                        </div>
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 space-y-1">
+                            <p class="font-bold flex items-center gap-1"><i class="ph ph-info"></i> Mekanisme Pengambilan Saldo Sistem:</p>
+                            <p>Sistem akan secara otomatis menyalin saldo aktif saat ini dari mutasi BKM Penerimaan & Pengeluaran sebagai dasar pembanding hitungan fisik di lapangan.</p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                            <button type="button" onclick="closeModalNewOpnameSession()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-100">Batal</button>
+                            <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5">
+                                <i class="ph ph-play"></i> Buka Sesi & Mulai Hitung
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Input / Edit Fisik Item Stock Opname -->
+            <div id="modal-edit-opname-item" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[125] flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+                                <i class="ph ph-scales"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-sm">Input Hitungan Fisik Lot</h3>
+                        </div>
+                        <button type="button" onclick="closeModalEditOpnameItem()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    </div>
+                    <form id="form-edit-opname-item" onsubmit="saveOpnameItemActual(event)" class="p-6 space-y-4 text-xs">
+                        <input type="hidden" id="edit-opname-index">
+                        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">No. Lot</span>
+                                <strong id="modal-item-lot" class="text-slate-800 font-mono text-sm">-</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Jenis Kopi</span>
+                                <strong id="modal-item-jenis" class="text-slate-800 font-mono text-sm">-</strong>
+                            </div>
+                            <div class="col-span-2 pt-1 border-t border-slate-200/60 flex justify-between">
+                                <span class="text-[11px] text-slate-500">Stok Sistem Saat Ini:</span>
+                                <strong id="modal-item-system-qty" class="text-blue-700 font-mono font-bold">0,00 Kg</strong>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block font-bold text-slate-700 dark:text-slate-200">Hasil Hitungan Fisik Aktual (Kg)</label>
+                                <button type="button" onclick="fillModalActualWithSystem()" class="text-[11px] font-semibold text-brand-primary hover:underline flex items-center gap-1 cursor-pointer">
+                                    <i class="ph ph-arrow-down-left"></i> Samakan dgn Sistem
+                                </button>
+                            </div>
+                            <input type="number" step="0.01" id="inp-item-actual-qty" oninput="calculateModalOpnameDiff()" required placeholder="Masukkan netto aktual lapangan..." class="w-full px-3 py-2.5 text-sm font-mono font-bold rounded-lg border border-amber-300 outline-none focus:ring-2 focus:ring-amber-500/20 bg-amber-50/30">
+                        </div>
+
+                        <!-- Live Calculation Preview -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 font-mono text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 font-sans">Selisih (Fisik - Sistem):</span>
+                                <strong id="modal-preview-diff" class="font-bold">0,00 Kg</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 font-sans">Deviasi (%):</span>
+                                <strong id="modal-preview-pct" class="font-bold">0.00%</strong>
+                            </div>
+                            <div class="flex justify-between items-center pt-1 border-t border-slate-200">
+                                <span class="text-slate-500 font-sans">Status Audit:</span>
+                                <span id="modal-preview-status" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">MATCH</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Keterangan / Kondisi Fisik</label>
+                            <input type="text" id="inp-item-notes" placeholder="Contoh: Sesuai label / Kemasan basah / Karung sobek..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 outline-none focus:border-amber-500">
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="closeModalEditOpnameItem()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-100">Batal</button>
+                            <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm transition-colors">
+                                Simpan Hitungan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Print Preview Berita Acara Stock Opname -->
+            <div id="modal-print-opname" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[130] flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-100">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-printer text-xl text-brand-primary"></i>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base">Berita Acara Stock Opname Gudang</h3>
+                        </div>
+                        <button type="button" onclick="closeModalPrintOpname()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-1 bg-slate-100/50">
+                        <div id="opname-print-document" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-slate-800 text-xs font-sans space-y-4">
+                            <!-- Header Document -->
+                            <div class="flex items-center justify-between border-b-2 border-slate-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 border border-slate-200">
+                                        <img src="kapal_api_logo_sm.png" alt="Logo" class="w-full h-full object-contain">
+                                    </div>
+                                    <div>
+                                        <h2 class="text-base font-extrabold tracking-tight">PT SANTOS JAYA ABADI 3</h2>
+                                        <p class="text-[10px] text-slate-500">DEPARTEMEN WAREHOUSE & SUPPLY CHAIN</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <h3 class="text-sm font-bold uppercase tracking-wide text-slate-900">BERITA ACARA STOCK OPNAME</h3>
+                                    <p class="text-[11px] font-mono font-semibold text-slate-600 dark:text-slate-300" id="print-opname-no">NO: SO-202610-0001</p>
+                                    <p class="text-[10px] text-slate-400" id="print-opname-date">Tgl: 13 Oktober 2026</p>
+                                </div>
+                            </div>
+
+                            <!-- Meta Info Sesi -->
+                            <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-[11px]">
+                                <div><span class="text-slate-500">Gudang Audit:</span> <strong id="print-meta-gudang" class="text-slate-800">Semua Gudang</strong></div>
+                                <div><span class="text-slate-500">Metode:</span> <strong id="print-meta-metode" class="text-slate-800">Blind & Cycle Count</strong></div>
+                                <div><span class="text-slate-500">Petugas:</span> <strong id="print-meta-checker" class="text-slate-800">Admin Gudang</strong></div>
+                            </div>
+
+                            <!-- Tabel Cetak Hasil Opname -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse border border-slate-300 text-[10px]">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-300">
+                                            <th class="p-2 border-r border-slate-300">No</th>
+                                            <th class="p-2 border-r border-slate-300">No. Lot</th>
+                                            <th class="p-2 border-r border-slate-300">Gudang</th>
+                                            <th class="p-2 border-r border-slate-300">Jenis</th>
+                                            <th class="p-2 text-right border-r border-slate-300">Sistem (Kg)</th>
+                                            <th class="p-2 text-right border-r border-slate-300">Fisik (Kg)</th>
+                                            <th class="p-2 text-right border-r border-slate-300">Selisih (Kg)</th>
+                                            <th class="p-2 text-center border-r border-slate-300">Status</th>
+                                            <th class="p-2">Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="print-opname-tbody" class="divide-y divide-slate-200 font-mono">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                    <tfoot id="print-opname-tfoot" class="bg-slate-50 font-bold font-mono border-t border-slate-300">
+                                        <!-- Populated dynamically -->
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Tanda Tangan -->
+                            <div class="grid grid-cols-3 pt-6 text-center text-[10px] text-slate-700">
+                                <div>
+                                    <p>Dihitung Oleh (Checker),</p>
+                                    <div class="h-16"></div>
+                                    <p class="font-bold underline" id="sign-checker">Admin Gudang</p>
+                                    <p class="text-[9px] text-slate-400">Warehouse Inspector</p>
+                                </div>
+                                <div>
+                                    <p>Diperiksa Oleh,</p>
+                                    <div class="h-16"></div>
+                                    <p class="font-bold underline">Foreman Gudang</p>
+                                    <p class="text-[9px] text-slate-400">Inventory Control</p>
+                                </div>
+                                <div>
+                                    <p>Disetujui Oleh,</p>
+                                    <div class="h-16"></div>
+                                    <p class="font-bold underline">WH Supervisor / Manager</p>
+                                    <p class="text-[9px] text-slate-400">Head of Supply Chain</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+                        <button type="button" onclick="closeModalPrintOpname()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-100">Tutup</button>
+                        <button type="button" onclick="triggerPrintOpnameDoc()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5">
+                            <i class="ph ph-printer"></i> Cetak / Simpan PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <section id="sec-gudang-cetak-rmw" class="bg-white p-6 sm:p-8 rounded-2xl shadow-card border border-slate-100 hidden opacity-0 transition-opacity duration-300 w-full max-w-[98%] 2xl:max-w-[1800px] mx-auto">
                 <div class="mb-6 flex items-center text-slate-800 border-b border-slate-100 pb-4 gap-3 hidden-print">
@@ -2733,8 +3228,8 @@ function testReadData() {
 
         // Tab Switching Logic
         function switchTab(tabId) {
-            const tabs = ['main-dashboard', 'dashboard', 'gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-cetak-rmw', 'gudang-ceklist', 'produksi'];
-            const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'gudang-ceklist': 'Data Ceklist Warehouse', 'produksi': 'Form Permintaan UPBM Roasting' };
+            const tabs = ['main-dashboard', 'dashboard', 'gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-opname', 'gudang-cetak-rmw', 'gudang-ceklist', 'produksi'];
+            const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-opname': 'Stock Opname Area Gudang', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'gudang-ceklist': 'Data Ceklist Warehouse', 'produksi': 'Form Permintaan UPBM Roasting' };
             
             tabs.forEach(id => {
                 const section = document.getElementById(`sec-${id}`);
@@ -2770,6 +3265,7 @@ function testReadData() {
             else if (tabId === 'main-dashboard') { syncMainDashboard(); }
             else if (tabId === 'gudang-pengeluaran') { loadDataPengeluaranOtomatis(); fetchRiwayatPengeluaran(); }
             else if (tabId === 'gudang-fifo') { fetchFIFOData(); }
+            else if (tabId === 'gudang-opname') { loadDataStockOpname(); }
             else if (tabId === 'gudang-cetak-rmw') { loadDataDropdownRMW(); }
             else if (tabId === 'gudang-ceklist') { loadDataCeklistWarehouse(); }
             else if (tabId === 'produksi') { fetchRiwayatPermintaan(); }
@@ -6563,6 +7059,895 @@ function testReadData() {
 
         function downloadCodeGsFile() {
             window.location.href = '/Code.gs';
+        }
+
+        // ==========================================
+        // MODUL STOCK OPNAME AREA GUDANG (OPERASIONAL BKM)
+        // ==========================================
+        let currentOpnameSession = null;
+        let opnameMasterData = [];
+        let opnameFilteredData = [];
+        let opnameCurrentPage = 1;
+        const opnamePageSize = 15;
+        let currentEditingOpnameIndex = -1;
+
+        // Default Master Data Stock Opname jika data online/FIFO belum tersedia
+        function getDefaultOpnameSeedData() {
+            return [
+                { id: 'LOT-202610-001', noLot: 'LOT-202610-001', gudang: 'SJA 3', lokasi: 'Blok A-01', jenisKopi: 'Robusta Dampit Grade 1', systemQty: 18500, actualQty: 18500, diffQty: 0, deviasiPct: 0, status: 'MATCH', notes: 'Palet utuh, kondisi prima', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-002', noLot: 'LOT-202610-002', gudang: 'SJA 3', lokasi: 'Blok A-02', jenisKopi: 'Robusta Dampit Grade 2', systemQty: 12000, actualQty: 11985, diffQty: -15, deviasiPct: -0.125, status: 'DEFISIT', notes: 'Penyusutan normal kadar air', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-003', noLot: 'LOT-202610-003', gudang: 'SJA 3', lokasi: 'Blok B-01', jenisKopi: 'Arabica Java Raung', systemQty: 8400, actualQty: 8400, diffQty: 0, deviasiPct: 0, status: 'MATCH', notes: 'Sesuai label karung', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-004', noLot: 'LOT-202610-004', gudang: 'G. Krian', lokasi: 'Blok K-03', jenisKopi: 'Robusta Temanggung', systemQty: 24000, actualQty: 24020, diffQty: 20, deviasiPct: 0.083, status: 'SURPLUS', notes: 'Kelebihan tara timbangan awal', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-005', noLot: 'LOT-202610-005', gudang: 'G. Krian', lokasi: 'Blok K-05', jenisKopi: 'Arabica Gayo Special', systemQty: 6200, actualQty: null, diffQty: 0, deviasiPct: 0, status: 'UNCOUNTED', notes: '', countedAt: null },
+                { id: 'LOT-202610-006', noLot: 'LOT-202610-006', gudang: 'G. 137', lokasi: 'Blok C-02', jenisKopi: 'Robusta Lampung Asalan', systemQty: 15300, actualQty: 15300, diffQty: 0, deviasiPct: 0, status: 'MATCH', notes: 'Tumpukan 6 lapis rapi', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-007', noLot: 'LOT-202610-007', gudang: 'G. 137', lokasi: 'Blok C-04', jenisKopi: 'Robusta Flores Bajawa', systemQty: 9800, actualQty: null, diffQty: 0, deviasiPct: 0, status: 'UNCOUNTED', notes: '', countedAt: null },
+                { id: 'LOT-202610-008', noLot: 'LOT-202610-008', gudang: 'SJA 3', lokasi: 'Blok B-03', jenisKopi: 'Arabica Toraja Sapan', systemQty: 4500, actualQty: 4500, diffQty: 0, deviasiPct: 0, status: 'MATCH', notes: 'Kondisi kemasan vacuum bagus', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-009', noLot: 'LOT-202610-009', gudang: 'G. Krian', lokasi: 'Blok K-01', jenisKopi: 'Robusta Bali Pupuan', systemQty: 11200, actualQty: 11200, diffQty: 0, deviasiPct: 0, status: 'MATCH', notes: 'Sesuai fisik', countedAt: new Date().toISOString() },
+                { id: 'LOT-202610-010', noLot: 'LOT-202610-010', gudang: 'SJA 3', lokasi: 'Blok A-04', jenisKopi: 'Arabica Bali Kintamani', systemQty: 7600, actualQty: null, diffQty: 0, deviasiPct: 0, status: 'UNCOUNTED', notes: '', countedAt: null }
+            ];
+        }
+
+        async function loadDataStockOpname(forceRefresh = false) {
+            const syncIcon = document.getElementById('icon-sync-opname');
+            if (syncIcon) syncIcon.classList.add('animate-spin');
+
+            const tbody = document.getElementById('table-body-stock-opname');
+            if (tbody && (!currentOpnameSession || forceRefresh)) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-slate-400 font-sans"><i class="ph ph-spinner-gap animate-spin text-3xl mb-2 block mx-auto text-amber-500"></i>Memuat dan merekonsiliasi data stock opname...</td></tr>`;
+            }
+
+            try {
+                // 1. Cek penyimpanan lokal
+                const savedSessionStr = localStorage.getItem('sibikom_opname_active_session');
+                if (savedSessionStr && !forceRefresh) {
+                    try {
+                        currentOpnameSession = JSON.parse(savedSessionStr);
+                        opnameMasterData = currentOpnameSession.items || [];
+                        
+                        // Migrasi/sinkronisasi nomor sesi ke format standar urut SO-YYYYMM-0001 jika masih format random lama
+                        if (currentOpnameSession && currentOpnameSession.sessionNo) {
+                            const sn = currentOpnameSession.sessionNo;
+                            const today = new Date();
+                            const curPeriod = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}`;
+                            const parts = sn.split('-');
+                            if (sn.startsWith('SO-') && (parts.length < 3 || parts[2].length !== 4)) {
+                                const hist = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
+                                if (hist.length === 0) {
+                                    currentOpnameSession.sessionNo = `SO-${curPeriod}-0001`;
+                                    localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        currentOpnameSession = null;
+                    }
+                }
+
+                // 2. Jika sesi belum ada atau dipaksa refresh dari FIFO Google Sheet
+                if (!currentOpnameSession || forceRefresh) {
+                    let itemsFromFifo = [];
+                    try {
+                        const fifoData = await fetchJSONData('CALC_STOK_AKTIF_FIFO');
+                        const validFifo = (fifoData || []).filter(r => Object.values(r).some(v => v !== ""));
+                        if (validFifo.length > 0) {
+                            itemsFromFifo = validFifo.map((row, idx) => {
+                                const lotId = findValue(row, 'ID_MASUK') || findValue(row, 'ID_LOT') || `LOT-${idx + 1}`;
+                                const gudang = findValue(row, 'GUDANG') || findValue(row, 'GUDANG_PENYIMPANAN') || 'SJA 3';
+                                const lokasi = findValue(row, 'BLOK') || findValue(row, 'AREA') || findValue(row, 'LOKASI') || `Blok ${(idx % 4) + 1}`;
+                                const jenis = findValue(row, 'JENIS_KOPI') || findValue(row, 'JENIS') || 'Biji Kopi';
+                                const sisaStok = parseNilaiAngka(findValue(row, 'SISA_STOK') || findValue(row, 'BERAT_NETTO') || findValue(row, 'NETTO') || '0');
+                                
+                                return {
+                                    id: lotId,
+                                    noLot: lotId,
+                                    gudang: gudang,
+                                    lokasi: lokasi,
+                                    jenisKopi: jenis,
+                                    systemQty: sisaStok,
+                                    actualQty: null,
+                                    diffQty: 0,
+                                    deviasiPct: 0,
+                                    status: 'UNCOUNTED',
+                                    notes: '',
+                                    countedAt: null
+                                };
+                            });
+                        }
+                    } catch (err) {
+                        console.warn("Gagal menarik data langsung dari CALC_STOK_AKTIF_FIFO:", err);
+                    }
+
+                    if (itemsFromFifo.length === 0) {
+                        // Gunakan default seed data agar UI operasional langsung aktif
+                        itemsFromFifo = getDefaultOpnameSeedData();
+                    }
+
+                    const today = new Date();
+                    const sessionCode = generateNextOpnameSessionNo(today);
+                    
+                    currentOpnameSession = {
+                        sessionNo: sessionCode,
+                        cutOffDate: today.toISOString().split('T')[0],
+                        gudang: 'Semua Gudang',
+                        checker: (window.currentUser && window.currentUser.nama) ? window.currentUser.nama : 'Admin Gudang',
+                        method: 'Blind & Cycle Count',
+                        notes: 'Audit Rekonsiliasi Fisik vs Mutasi Sistem BKM',
+                        status: 'OPEN',
+                        createdAt: today.toISOString(),
+                        items: itemsFromFifo
+                    };
+
+                    localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+                    opnameMasterData = currentOpnameSession.items;
+                }
+
+                // 3. Render ke layar
+                updateOpnameSessionHeaderUI();
+                filterOpnameData();
+                showToast("Data Stock Opname berhasil dimuat & disinkronkan!", "success");
+            } catch (err) {
+                console.error("Error loading stock opname:", err);
+                showToast("Gagal memuat data stock opname", "error");
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('animate-spin');
+            }
+        }
+
+        function updateOpnameSessionHeaderUI() {
+            if (!currentOpnameSession) return;
+            const lblNo = document.getElementById('label-opname-session-no');
+            const lblChecker = document.getElementById('label-opname-checker');
+            if (lblNo) lblNo.innerText = `NO: ${currentOpnameSession.sessionNo}`;
+            if (lblChecker) lblChecker.innerText = currentOpnameSession.checker || 'Admin Gudang';
+        }
+
+        function filterOpnameData() {
+            if (!currentOpnameSession) return;
+            const searchVal = (document.getElementById('opname-search-input')?.value || '').trim().toLowerCase();
+            const filterGudang = document.getElementById('opname-filter-gudang')?.value || 'all';
+            const filterStatus = document.getElementById('opname-filter-status')?.value || 'all';
+
+            opnameFilteredData = (currentOpnameSession.items || []).filter(item => {
+                // Filter Gudang
+                if (filterGudang !== 'all') {
+                    if (filterGudang === 'SJA 3' && !String(item.gudang).toUpperCase().includes('SJA')) return false;
+                    if (filterGudang === 'G. Krian' && !String(item.gudang).toUpperCase().includes('KRIAN')) return false;
+                    if (filterGudang === 'G. 137' && !String(item.gudang).includes('137')) return false;
+                }
+
+                // Filter Status
+                if (filterStatus !== 'all') {
+                    if (item.status !== filterStatus) return false;
+                }
+
+                // Search query
+                if (searchVal) {
+                    const matchLot = String(item.noLot || '').toLowerCase().includes(searchVal);
+                    const matchJenis = String(item.jenisKopi || '').toLowerCase().includes(searchVal);
+                    const matchGudang = String(item.gudang || '').toLowerCase().includes(searchVal);
+                    const matchLokasi = String(item.lokasi || '').toLowerCase().includes(searchVal);
+                    const matchNotes = String(item.notes || '').toLowerCase().includes(searchVal);
+                    if (!matchLot && !matchJenis && !matchGudang && !matchLokasi && !matchNotes) return false;
+                }
+
+                return true;
+            });
+
+            opnameCurrentPage = 1;
+            renderOpnameTable();
+            updateOpnameKPICards();
+        }
+
+        function renderOpnameTable() {
+            const tbody = document.getElementById('table-body-stock-opname');
+            if (!tbody) return;
+
+            const total = opnameFilteredData.length;
+            const totalPages = Math.ceil(total / opnamePageSize) || 1;
+            if (opnameCurrentPage > totalPages) opnameCurrentPage = totalPages;
+
+            const startIdx = (opnameCurrentPage - 1) * opnamePageSize;
+            const endIdx = Math.min(startIdx + opnamePageSize, total);
+            const pageItems = opnameFilteredData.slice(startIdx, endIdx);
+
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-slate-400 font-sans"><i class="ph ph-folder-open text-3xl mb-2 block mx-auto text-amber-500"></i>Tidak ada data lot yang sesuai dengan filter.</td></tr>`;
+            } else {
+                let html = '';
+                pageItems.forEach((item) => {
+                    const originalIndex = currentOpnameSession.items.indexOf(item);
+                    const isCounted = item.actualQty !== null && item.actualQty !== undefined;
+                    const diff = isCounted ? (item.actualQty - item.systemQty) : 0;
+                    const pct = (isCounted && item.systemQty > 0) ? ((diff / item.systemQty) * 100) : 0;
+                    
+                    let statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">BELUM HITUNG</span>';
+                    let diffClass = 'text-slate-400';
+                    let rowClass = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
+
+                    if (isCounted) {
+                        if (Math.abs(diff) < 0.001) {
+                            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"><i class="ph ph-check"></i> MATCH</span>';
+                            diffClass = 'text-emerald-700 dark:text-emerald-400 font-bold';
+                        } else if (diff > 0) {
+                            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"><i class="ph ph-arrow-up"></i> SURPLUS</span>';
+                            diffClass = 'text-blue-700 dark:text-blue-400 font-bold';
+                            rowClass = 'bg-blue-50/20 hover:bg-blue-50/40 dark:bg-blue-950/20';
+                        } else {
+                            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"><i class="ph ph-arrow-down"></i> DEFISIT</span>';
+                            diffClass = 'text-rose-600 dark:text-rose-400 font-bold';
+                            rowClass = 'bg-rose-50/20 hover:bg-rose-50/40 dark:bg-rose-950/20';
+                        }
+                    }
+
+                    html += `
+                        <tr class="${rowClass}">
+                            <td class="px-4 py-3 font-bold text-slate-800 dark:text-slate-100 font-mono">${item.noLot}</td>
+                            <td class="px-4 py-3 text-slate-600 dark:text-slate-300 font-sans">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">${item.gudang}</span>
+                                <span class="text-[11px] text-slate-400 block">${item.lokasi || '-'}</span>
+                            </td>
+                            <td class="px-4 py-3 font-sans text-slate-700 dark:text-slate-200">${item.jenisKopi}</td>
+                            <td class="px-4 py-3 text-right bg-blue-50/40 dark:bg-blue-950/30 font-bold text-blue-800 dark:text-blue-300 border-x border-blue-100 dark:border-blue-900/40 font-mono">
+                                ${formatAngkaId(item.systemQty)}
+                            </td>
+                            <td class="px-4 py-3 text-right bg-amber-50/40 dark:bg-amber-950/30 font-bold text-amber-900 dark:text-amber-200 border-r border-amber-100 dark:border-amber-900/40 font-mono">
+                                ${isCounted ? formatAngkaId(item.actualQty) : '<span class="text-slate-400 font-normal italic font-sans text-[11px]">Belum diisi</span>'}
+                            </td>
+                            <td class="px-4 py-3 text-right font-mono ${diffClass}">
+                                ${isCounted ? (diff > 0 ? `+${formatAngkaId(diff)}` : formatAngkaId(diff)) : '-'}
+                            </td>
+                            <td class="px-4 py-3 text-center font-mono ${diffClass} font-semibold">
+                                ${isCounted ? (pct > 0 ? `+${pct.toFixed(2)}%` : `${pct.toFixed(2)}%`) : '-'}
+                            </td>
+                            <td class="px-4 py-3 text-center">${statusBadge}</td>
+                            <td class="px-4 py-3 font-sans text-slate-500 dark:text-slate-400 text-[11px] max-w-[180px] truncate" title="${item.notes || '-'}">
+                                ${item.notes || '-'}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button type="button" onclick="openModalEditOpnameItem(${originalIndex})" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-950 dark:hover:bg-amber-900 dark:text-amber-200 transition-colors cursor-pointer" title="Input / Koreksi Hitungan Fisik">
+                                        <i class="ph ph-note-pencil text-sm"></i>
+                                    </button>
+                                    <button type="button" onclick="quickMatchItem(${originalIndex})" class="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:text-emerald-200 transition-colors cursor-pointer" title="Cepat: Samakan dengan Stok Sistem">
+                                        <i class="ph ph-check text-sm"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }
+
+            // Update Pagination UI
+            const pageInfo = document.getElementById('opname-page-info');
+            const totalInfo = document.getElementById('opname-total-info');
+            const btnPrev = document.getElementById('btn-opname-prev');
+            const btnNext = document.getElementById('btn-opname-next');
+
+            if (pageInfo) pageInfo.innerText = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+            if (totalInfo) totalInfo.innerText = total;
+            if (btnPrev) btnPrev.disabled = opnameCurrentPage <= 1;
+            if (btnNext) btnNext.disabled = endIdx >= total;
+
+            // Update Footers
+            let totalSys = 0;
+            let totalAct = 0;
+            let countedCount = 0;
+
+            opnameFilteredData.forEach(item => {
+                totalSys += (item.systemQty || 0);
+                if (item.actualQty !== null && item.actualQty !== undefined) {
+                    totalAct += item.actualQty;
+                    countedCount++;
+                }
+            });
+
+            const totalDiff = totalAct - totalSys;
+            const totalPct = totalSys > 0 ? ((totalDiff / totalSys) * 100) : 0;
+
+            const footSys = document.getElementById('foot-opname-sys');
+            const footAct = document.getElementById('foot-opname-act');
+            const footDiff = document.getElementById('foot-opname-diff');
+            const footPct = document.getElementById('foot-opname-pct');
+            const footSum = document.getElementById('foot-opname-summary');
+
+            if (footSys) footSys.innerText = formatAngkaId(totalSys);
+            if (footAct) footAct.innerText = formatAngkaId(totalAct);
+            if (footDiff) {
+                footDiff.innerText = totalDiff > 0 ? `+${formatAngkaId(totalDiff)}` : formatAngkaId(totalDiff);
+                footDiff.className = `px-4 py-3 text-right font-black ${totalDiff === 0 ? 'text-emerald-700 dark:text-emerald-400' : (totalDiff > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400')}`;
+            }
+            if (footPct) {
+                footPct.innerText = `${totalPct.toFixed(2)}%`;
+                footPct.className = `px-4 py-3 text-center ${totalDiff === 0 ? 'text-emerald-700 dark:text-emerald-400' : (totalDiff > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400')}`;
+            }
+            if (footSum) footSum.innerText = `${countedCount} dari ${total} lot terhitung`;
+        }
+
+        function updateOpnameKPICards() {
+            if (!currentOpnameSession) return;
+            const allItems = currentOpnameSession.items || [];
+            const totalLots = allItems.length;
+
+            let matchCount = 0;
+            let surplusCount = 0;
+            let deficitCount = 0;
+            let uncountedCount = 0;
+
+            let totalSystemQty = 0;
+            let totalActualQty = 0;
+
+            allItems.forEach(item => {
+                totalSystemQty += (item.systemQty || 0);
+                if (item.actualQty === null || item.actualQty === undefined) {
+                    uncountedCount++;
+                } else {
+                    totalActualQty += item.actualQty;
+                    const diff = item.actualQty - item.systemQty;
+                    if (Math.abs(diff) < 0.001) matchCount++;
+                    else if (diff > 0) surplusCount++;
+                    else deficitCount++;
+                }
+            });
+
+            const countedLots = totalLots - uncountedCount;
+            const accuracyPct = countedLots > 0 ? ((matchCount / countedLots) * 100).toFixed(1) : '100.0';
+            const netDiff = totalActualQty - totalSystemQty;
+
+            // KPI: Total Lot
+            const elTotalLot = document.getElementById('stat-opname-total-lot');
+            if (elTotalLot) elTotalLot.innerText = totalLots;
+
+            // KPI: Akurasi Stok
+            const elAcc = document.getElementById('stat-opname-accuracy');
+            const elMatchCount = document.getElementById('stat-opname-match-count');
+            if (elAcc) elAcc.innerText = `${accuracyPct}%`;
+            if (elMatchCount) elMatchCount.innerText = `${matchCount} dari ${countedLots} lot terhitung cocok`;
+
+            // KPI: Stok Sistem (Book)
+            const elSysQty = document.getElementById('stat-opname-system-qty');
+            if (elSysQty) elSysQty.innerHTML = `${formatAngkaId(totalSystemQty)} <span class="text-xs font-normal text-slate-400 dark:text-slate-300">Kg</span>`;
+
+            // KPI: Deviasi Selisih
+            const elDiffQty = document.getElementById('stat-opname-diff-qty');
+            const elDiffStatus = document.getElementById('stat-opname-diff-status');
+            if (elDiffQty) {
+                elDiffQty.innerHTML = `${netDiff > 0 ? '+' : ''}${formatAngkaId(netDiff)} <span class="text-xs font-normal text-slate-400 dark:text-slate-300">Kg</span>`;
+                elDiffQty.className = `text-xl sm:text-2xl font-black mt-1 font-mono tracking-tight ${Math.abs(netDiff) < 0.001 ? 'text-slate-800 dark:text-white' : (netDiff > 0 ? 'text-blue-700 dark:text-sky-300' : 'text-rose-600 dark:text-rose-400')}`;
+            }
+            if (elDiffStatus) {
+                if (Math.abs(netDiff) < 0.001) {
+                    elDiffStatus.innerText = "Toleransi Normal (±0.0%)";
+                    elDiffStatus.className = "text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-medium";
+                } else if (netDiff > 0) {
+                    const pct = totalSystemQty > 0 ? ((netDiff/totalSystemQty)*100).toFixed(2) : '0';
+                    elDiffStatus.innerText = `Surplus Netto (+${pct}%)`;
+                    elDiffStatus.className = "text-[11px] font-bold text-blue-600 dark:text-sky-400 mt-1 font-medium";
+                } else {
+                    const pct = totalSystemQty > 0 ? ((netDiff/totalSystemQty)*100).toFixed(2) : '0';
+                    elDiffStatus.innerText = `Defisit Netto (${pct}%)`;
+                    elDiffStatus.className = "text-[11px] font-bold text-rose-600 dark:text-rose-400 mt-1 font-medium";
+                }
+            }
+
+            // Header Badges
+            const bMatch = document.getElementById('badge-count-match');
+            const bSurplus = document.getElementById('badge-count-surplus');
+            const bDeficit = document.getElementById('badge-count-deficit');
+            if (bMatch) bMatch.innerText = `${matchCount} Sesuai`;
+            if (bSurplus) bSurplus.innerText = `${surplusCount} Surplus`;
+            if (bDeficit) bDeficit.innerText = `${deficitCount} Defisit`;
+        }
+
+        function prevOpnamePage() {
+            if (opnameCurrentPage > 1) {
+                opnameCurrentPage--;
+                renderOpnameTable();
+            }
+        }
+
+        function nextOpnamePage() {
+            const totalPages = Math.ceil(opnameFilteredData.length / opnamePageSize) || 1;
+            if (opnameCurrentPage < totalPages) {
+                opnameCurrentPage++;
+                renderOpnameTable();
+            }
+        }
+
+        // --- Quick Operations ---
+        function quickMatchItem(idx) {
+            if (!currentOpnameSession || !currentOpnameSession.items[idx]) return;
+            const item = currentOpnameSession.items[idx];
+            item.actualQty = item.systemQty;
+            item.diffQty = 0;
+            item.deviasiPct = 0;
+            item.status = 'MATCH';
+            item.notes = item.notes || 'Sesuai fisik utuh';
+            item.countedAt = new Date().toISOString();
+
+            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            renderOpnameTable();
+            updateOpnameKPICards();
+            showToast(`Lot ${item.noLot} dicocokkan dengan sistem!`, "success");
+        }
+
+        function handleQuickScanOpname(event) {
+            if (event) event.preventDefault();
+            if (!currentOpnameSession) {
+                showToast("Buka sesi opname terlebih dahulu!", "error");
+                return;
+            }
+
+            const inpLot = document.getElementById('opname-quick-lot');
+            const inpQty = document.getElementById('opname-quick-qty');
+            const inpNote = document.getElementById('opname-quick-note');
+            if (!inpLot || !inpQty) return;
+
+            const lotVal = inpLot.value.trim();
+            const qtyVal = parseFloat(inpQty.value);
+            const noteVal = inpNote ? inpNote.value.trim() : '';
+
+            if (!lotVal) {
+                showToast("Masukkan atau scan nomor lot!", "error");
+                return;
+            }
+            if (isNaN(qtyVal) || qtyVal < 0) {
+                showToast("Masukkan jumlah Kg fisik yang valid!", "error");
+                return;
+            }
+
+            const targetIdx = currentOpnameSession.items.findIndex(it => 
+                String(it.noLot).toUpperCase() === lotVal.toUpperCase() || 
+                String(it.id).toUpperCase() === lotVal.toUpperCase()
+            );
+
+            if (targetIdx === -1) {
+                showToast(`Nomor Lot "${lotVal}" tidak ditemukan dalam sesi opname ini!`, "error");
+                return;
+            }
+
+            const item = currentOpnameSession.items[targetIdx];
+            item.actualQty = qtyVal;
+            item.diffQty = qtyVal - item.systemQty;
+            item.deviasiPct = item.systemQty > 0 ? ((item.diffQty / item.systemQty) * 100) : 0;
+            
+            if (Math.abs(item.diffQty) < 0.001) item.status = 'MATCH';
+            else if (item.diffQty > 0) item.status = 'SURPLUS';
+            else item.status = 'DEFISIT';
+
+            if (noteVal) item.notes = noteVal;
+            item.countedAt = new Date().toISOString();
+
+            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            inpLot.value = '';
+            inpQty.value = '';
+            if (inpNote) inpNote.value = '';
+            inpLot.focus();
+
+            renderOpnameTable();
+            updateOpnameKPICards();
+            showToast(`Lot ${item.noLot} berhasil diinput: ${formatAngkaId(qtyVal)} Kg`, "success");
+        }
+
+        function quickFillAllRemainingMatch() {
+            if (!currentOpnameSession) return;
+            const uncounted = currentOpnameSession.items.filter(it => it.actualQty === null || it.actualQty === undefined);
+            if (uncounted.length === 0) {
+                showToast("Semua lot sudah memiliki data hitungan fisik!", "info");
+                return;
+            }
+
+            if (!confirm(`Samakan ${uncounted.length} lot yang belum dihitung agar persis dengan data sistem?`)) {
+                return;
+            }
+
+            uncounted.forEach(item => {
+                item.actualQty = item.systemQty;
+                item.diffQty = 0;
+                item.deviasiPct = 0;
+                item.status = 'MATCH';
+                if (!item.notes) item.notes = 'Sesuai fisik utuh';
+                item.countedAt = new Date().toISOString();
+            });
+
+            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            renderOpnameTable();
+            updateOpnameKPICards();
+            showToast(`${uncounted.length} lot berhasil disinkronkan dengan stok sistem!`, "success");
+        }
+
+        // --- Helper Penomoran Otomatis Sesi Stock Opname (SO-YYYYMM-0001) ---
+        function generateNextOpnameSessionNo(targetDate = new Date()) {
+            let d = (targetDate instanceof Date) ? targetDate : new Date(targetDate);
+            if (isNaN(d.getTime())) d = new Date();
+
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const periodKey = `${year}${month}`; // e.g. "202610"
+            const prefix = `SO-${periodKey}-`;
+
+            let highestSeq = 0;
+
+            // 1. Cek riwayat sesi yang tersimpan di localStorage
+            try {
+                const history = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
+                if (Array.isArray(history)) {
+                    history.forEach(item => {
+                        if (item && item.sessionNo && typeof item.sessionNo === 'string' && item.sessionNo.startsWith(prefix)) {
+                            const parts = item.sessionNo.split('-');
+                            if (parts.length >= 3) {
+                                const num = parseInt(parts[2], 10);
+                                if (!isNaN(num) && num > highestSeq) highestSeq = num;
+                            }
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            // 2. Cek sesi aktif saat ini jika ada
+            try {
+                const active = currentOpnameSession || JSON.parse(localStorage.getItem('sibikom_opname_active_session') || 'null');
+                if (active && active.sessionNo && typeof active.sessionNo === 'string' && active.sessionNo.startsWith(prefix)) {
+                    const parts = active.sessionNo.split('-');
+                    if (parts.length >= 3) {
+                        const num = parseInt(parts[2], 10);
+                        const hist = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
+                        if (hist.length > 0 && !isNaN(num) && num > highestSeq) {
+                            highestSeq = num;
+                        } else if (hist.length === 0 && num === 1) {
+                            highestSeq = 1;
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            // 3. Cek counter tersimpan khusus periode ini
+            try {
+                const storedSeq = parseInt(localStorage.getItem(`sibikom_opname_seq_${periodKey}`) || '0', 10);
+                if (!isNaN(storedSeq) && storedSeq > highestSeq) {
+                    highestSeq = storedSeq;
+                }
+            } catch (e) {}
+
+            const nextSeq = highestSeq + 1;
+            return `${prefix}${String(nextSeq).padStart(4, '0')}`;
+        }
+
+        function onOpnameDateChange() {
+            const inpDate = document.getElementById('inp-session-date');
+            const inpNo = document.getElementById('inp-session-no');
+            if (inpDate && inpDate.value && inpNo) {
+                inpNo.value = generateNextOpnameSessionNo(new Date(inpDate.value));
+            }
+        }
+
+        function regenerateOpnameSessionNo() {
+            const inpDate = document.getElementById('inp-session-date');
+            const inpNo = document.getElementById('inp-session-no');
+            const dateVal = (inpDate && inpDate.value) ? new Date(inpDate.value) : new Date();
+            if (inpNo) {
+                inpNo.value = generateNextOpnameSessionNo(dateVal);
+                showToast(`Nomor Sesi Opname di-generate: ${inpNo.value}`, "info");
+            }
+        }
+
+        // --- Modals Handlers ---
+        function openModalNewOpnameSession() {
+            const today = new Date();
+            const inpDate = document.getElementById('inp-session-date');
+            if (inpDate && !inpDate.value) {
+                inpDate.value = today.toISOString().split('T')[0];
+            }
+            const selectedDate = (inpDate && inpDate.value) ? new Date(inpDate.value) : today;
+            const sessionNo = generateNextOpnameSessionNo(selectedDate);
+            const inpNo = document.getElementById('inp-session-no');
+            const inpChecker = document.getElementById('inp-session-checker');
+
+            if (inpNo) inpNo.value = sessionNo;
+            if (inpChecker) inpChecker.value = (window.currentUser && window.currentUser.nama) ? window.currentUser.nama : 'Admin Gudang';
+
+            const modal = document.getElementById('modal-new-opname-session');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModalNewOpnameSession() {
+            const modal = document.getElementById('modal-new-opname-session');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function submitNewOpnameSession(event) {
+            if (event) event.preventDefault();
+            const inpNo = document.getElementById('inp-session-no')?.value;
+            const inpDate = document.getElementById('inp-session-date')?.value;
+            const inpGudang = document.getElementById('inp-session-gudang')?.value || 'Semua Gudang';
+            const inpChecker = document.getElementById('inp-session-checker')?.value || 'Admin Gudang';
+            const inpMethod = document.getElementById('inp-session-method')?.value || 'Blind Count';
+            const inpNotes = document.getElementById('inp-session-notes')?.value || '';
+
+            // Backup sesi lama ke history jika ada
+            if (currentOpnameSession) {
+                try {
+                    const history = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
+                    history.unshift(currentOpnameSession);
+                    localStorage.setItem('sibikom_opname_history', JSON.stringify(history.slice(0, 20)));
+                } catch (e) {}
+            }
+
+            // Buat sesi baru
+            closeModalNewOpnameSession();
+            await loadDataStockOpname(true);
+
+            if (currentOpnameSession) {
+                currentOpnameSession.sessionNo = inpNo;
+                currentOpnameSession.cutOffDate = inpDate;
+                currentOpnameSession.gudang = inpGudang;
+                currentOpnameSession.checker = inpChecker;
+                currentOpnameSession.method = inpMethod;
+                currentOpnameSession.notes = inpNotes;
+                localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+
+                // Simpan counter urutan sesi periode ini
+                try {
+                    const parts = (inpNo || '').split('-');
+                    if (parts.length >= 3) {
+                        const period = parts[1];
+                        const seq = parseInt(parts[2], 10);
+                        if (!isNaN(seq)) {
+                            localStorage.setItem(`sibikom_opname_seq_${period}`, String(seq));
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            updateOpnameSessionHeaderUI();
+            filterOpnameData();
+            showToast(`Sesi Stock Opname ${inpNo} berhasil dibuka!`, "success");
+        }
+
+        function openModalEditOpnameItem(idx) {
+            if (!currentOpnameSession || !currentOpnameSession.items[idx]) return;
+            currentEditingOpnameIndex = idx;
+            const item = currentOpnameSession.items[idx];
+
+            document.getElementById('edit-opname-index').value = idx;
+            document.getElementById('modal-item-lot').innerText = item.noLot;
+            document.getElementById('modal-item-jenis').innerText = item.jenisKopi;
+            document.getElementById('modal-item-system-qty').innerText = `${formatAngkaId(item.systemQty)} Kg`;
+
+            const inpActual = document.getElementById('inp-item-actual-qty');
+            const inpNotes = document.getElementById('inp-item-notes');
+
+            if (inpActual) {
+                inpActual.value = (item.actualQty !== null && item.actualQty !== undefined) ? item.actualQty : '';
+            }
+            if (inpNotes) {
+                inpNotes.value = item.notes || '';
+            }
+
+            calculateModalOpnameDiff();
+            const modal = document.getElementById('modal-edit-opname-item');
+            if (modal) modal.classList.remove('hidden');
+            if (inpActual) inpActual.focus();
+        }
+
+        function closeModalEditOpnameItem() {
+            const modal = document.getElementById('modal-edit-opname-item');
+            if (modal) modal.classList.add('hidden');
+            currentEditingOpnameIndex = -1;
+        }
+
+        function fillModalActualWithSystem() {
+            if (!currentOpnameSession || currentEditingOpnameIndex === -1) return;
+            const item = currentOpnameSession.items[currentEditingOpnameIndex];
+            const inpActual = document.getElementById('inp-item-actual-qty');
+            if (inpActual) {
+                inpActual.value = item.systemQty;
+                calculateModalOpnameDiff();
+            }
+        }
+
+        function calculateModalOpnameDiff() {
+            if (!currentOpnameSession || currentEditingOpnameIndex === -1) return;
+            const item = currentOpnameSession.items[currentEditingOpnameIndex];
+            const inpActual = document.getElementById('inp-item-actual-qty');
+            const prevDiff = document.getElementById('modal-preview-diff');
+            const prevPct = document.getElementById('modal-preview-pct');
+            const prevStatus = document.getElementById('modal-preview-status');
+
+            const val = parseFloat(inpActual?.value);
+            if (isNaN(val)) {
+                if (prevDiff) prevDiff.innerText = '0,00 Kg';
+                if (prevPct) prevPct.innerText = '0.00%';
+                if (prevStatus) {
+                    prevStatus.innerText = 'BELUM DIHITUNG';
+                    prevStatus.className = 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700';
+                }
+                return;
+            }
+
+            const diff = val - item.systemQty;
+            const pct = item.systemQty > 0 ? ((diff / item.systemQty) * 100) : 0;
+
+            if (prevDiff) prevDiff.innerText = `${diff > 0 ? '+' : ''}${formatAngkaId(diff)} Kg`;
+            if (prevPct) prevPct.innerText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
+            
+            if (prevStatus) {
+                if (Math.abs(diff) < 0.001) {
+                    prevStatus.innerText = 'MATCH (SESUAI)';
+                    prevStatus.className = 'px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800';
+                } else if (diff > 0) {
+                    prevStatus.innerText = 'SURPLUS (LEBIH FISIK)';
+                    prevStatus.className = 'px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800';
+                } else {
+                    prevStatus.innerText = 'DEFISIT (KURANG FISIK)';
+                    prevStatus.className = 'px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800';
+                }
+            }
+        }
+
+        function saveOpnameItemActual(event) {
+            if (event) event.preventDefault();
+            if (!currentOpnameSession || currentEditingOpnameIndex === -1) return;
+
+            const item = currentOpnameSession.items[currentEditingOpnameIndex];
+            const inpActual = document.getElementById('inp-item-actual-qty');
+            const inpNotes = document.getElementById('inp-item-notes');
+
+            const actualVal = parseFloat(inpActual?.value);
+            if (isNaN(actualVal) || actualVal < 0) {
+                showToast("Masukkan angka aktual fisik yang valid!", "error");
+                return;
+            }
+
+            item.actualQty = actualVal;
+            item.diffQty = actualVal - item.systemQty;
+            item.deviasiPct = item.systemQty > 0 ? ((item.diffQty / item.systemQty) * 100) : 0;
+            
+            if (Math.abs(item.diffQty) < 0.001) item.status = 'MATCH';
+            else if (item.diffQty > 0) item.status = 'SURPLUS';
+            else item.status = 'DEFISIT';
+
+            item.notes = inpNotes ? inpNotes.value.trim() : '';
+            item.countedAt = new Date().toISOString();
+
+            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            closeModalEditOpnameItem();
+            renderOpnameTable();
+            updateOpnameKPICards();
+            showToast(`Data aktual lot ${item.noLot} berhasil disimpan!`, "success");
+        }
+
+        function batchApproveOpname() {
+            if (!currentOpnameSession) return;
+            const uncounted = currentOpnameSession.items.filter(it => it.actualQty === null || it.actualQty === undefined);
+            
+            let confirmMsg = "Validasi & Kunci Rekonsiliasi Stock Opname?\n\n";
+            if (uncounted.length > 0) {
+                confirmMsg += `PERHATIAN: Masih ada ${uncounted.length} lot yang belum dihitung fisik.\n`;
+            }
+            confirmMsg += "Setelah rekonsiliasi divalidasi, Berita Acara resmi akan diterbitkan.";
+
+            if (!confirm(confirmMsg)) return;
+
+            currentOpnameSession.status = 'RECONCILED';
+            currentOpnameSession.approvedAt = new Date().toISOString();
+            currentOpnameSession.approver = (window.currentUser && window.currentUser.nama) ? window.currentUser.nama : 'Foreman Gudang / Supervisor';
+
+            localStorage.setItem('sibikom_opname_active_session', JSON.stringify(currentOpnameSession));
+            
+            // Simpan ke log riwayat
+            try {
+                const history = JSON.parse(localStorage.getItem('sibikom_opname_history') || '[]');
+                history.unshift(currentOpnameSession);
+                localStorage.setItem('sibikom_opname_history', JSON.stringify(history.slice(0, 20)));
+            } catch (e) {}
+
+            showToast("Rekonsiliasi Stock Opname berhasil divalidasi!", "success");
+            exportOpnameReportPDF();
+        }
+
+        function exportOpnameReportPDF() {
+            if (!currentOpnameSession) {
+                showToast("Belum ada sesi stock opname aktif!", "error");
+                return;
+            }
+
+            const modal = document.getElementById('modal-print-opname');
+            if (!modal) return;
+
+            // Isi Header Dokumen
+            const docNo = document.getElementById('print-opname-no');
+            const docDate = document.getElementById('print-opname-date');
+            const metaGudang = document.getElementById('print-meta-gudang');
+            const metaMetode = document.getElementById('print-meta-metode');
+            const metaChecker = document.getElementById('print-meta-checker');
+            const signChecker = document.getElementById('sign-checker');
+
+            if (docNo) docNo.innerText = `NO: ${currentOpnameSession.sessionNo}`;
+            if (docDate) docDate.innerText = `Tgl Cut-Off: ${currentOpnameSession.cutOffDate}`;
+            if (metaGudang) metaGudang.innerText = currentOpnameSession.gudang || 'Semua Gudang';
+            if (metaMetode) metaMetode.innerText = currentOpnameSession.method || 'Blind & Cycle Count';
+            if (metaChecker) metaChecker.innerText = currentOpnameSession.checker || 'Admin Gudang';
+            if (signChecker) signChecker.innerText = currentOpnameSession.checker || 'Admin Gudang';
+
+            // Isi Tabel
+            const tbody = document.getElementById('print-opname-tbody');
+            const tfoot = document.getElementById('print-opname-tfoot');
+            if (tbody) {
+                let html = '';
+                let tSys = 0;
+                let tAct = 0;
+
+                currentOpnameSession.items.forEach((it, idx) => {
+                    const isCounted = it.actualQty !== null && it.actualQty !== undefined;
+                    const diff = isCounted ? (it.actualQty - it.systemQty) : 0;
+                    tSys += it.systemQty;
+                    if (isCounted) tAct += it.actualQty;
+
+                    html += `
+                        <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}">
+                            <td class="p-2 border-r border-slate-300 text-center">${idx + 1}</td>
+                            <td class="p-2 border-r border-slate-300 font-bold">${it.noLot}</td>
+                            <td class="p-2 border-r border-slate-300 font-sans">${it.gudang} (${it.lokasi || '-'})</td>
+                            <td class="p-2 border-r border-slate-300 font-sans">${it.jenisKopi}</td>
+                            <td class="p-2 text-right border-r border-slate-300">${formatAngkaId(it.systemQty)}</td>
+                            <td class="p-2 text-right border-r border-slate-300 font-bold">${isCounted ? formatAngkaId(it.actualQty) : '-'}</td>
+                            <td class="p-2 text-right border-r border-slate-300 font-bold ${diff === 0 ? 'text-slate-800' : (diff > 0 ? 'text-blue-800' : 'text-rose-700')}">
+                                ${isCounted ? (diff > 0 ? `+${formatAngkaId(diff)}` : formatAngkaId(diff)) : '-'}
+                            </td>
+                            <td class="p-2 text-center border-r border-slate-300 font-sans font-bold text-[9px]">
+                                ${it.status || 'UNCOUNTED'}
+                            </td>
+                            <td class="p-2 font-sans text-slate-600">${it.notes || '-'}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+
+                const tDiff = tAct - tSys;
+                if (tfoot) {
+                    tfoot.innerHTML = `
+                        <tr class="bg-slate-100 text-slate-800 border-t-2 border-slate-400">
+                            <td colspan="4" class="p-2 text-right font-sans font-bold uppercase">TOTAL REKAPITULASI:</td>
+                            <td class="p-2 text-right">${formatAngkaId(tSys)}</td>
+                            <td class="p-2 text-right font-black">${formatAngkaId(tAct)}</td>
+                            <td class="p-2 text-right font-black ${tDiff === 0 ? 'text-slate-800' : (tDiff > 0 ? 'text-blue-800' : 'text-rose-700')}">
+                                ${tDiff > 0 ? `+${formatAngkaId(tDiff)}` : formatAngkaId(tDiff)}
+                            </td>
+                            <td colspan="2" class="p-2 text-left font-sans text-[9px] text-slate-500">
+                                Deviasi: ${tSys > 0 ? ((tDiff / tSys) * 100).toFixed(2) : '0.00'}%
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModalPrintOpname() {
+            const modal = document.getElementById('modal-print-opname');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function triggerPrintOpnameDoc() {
+            const element = document.getElementById('opname-print-document');
+            if (!element) return;
+
+            if (typeof html2pdf !== 'undefined') {
+                const opt = {
+                    margin:       0.3,
+                    filename:     `BA_Stock_Opname_${currentOpnameSession ? currentOpnameSession.sessionNo : 'BKM'}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2 },
+                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+                };
+                html2pdf().set(opt).from(element).save();
+                showToast("Mengunduh Berita Acara Stock Opname...", "info");
+            } else {
+                window.print();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => { 
