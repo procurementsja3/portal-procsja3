@@ -1808,34 +1808,24 @@
                             <i class="ph ph-trash"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Reset Data History Stock Opname</h3>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Hapus Data Dummy & Riwayat Trial</h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                                Karena masih tahap <b>Trial / Uji Coba</b>, Anda dapat menghapus data riwayat yang masuk agar bersih untuk pencatatan riil, atau memuat ulang data dengan format resmi (<b>G0.INXX.250603</b>, No Palet riil, dan Jenis Kopi <b>18IN</b>).
+                                Hapus seluruh data dummy dan hasil opname trial yang tersimpan. Data riwayat akan dikosongkan (0 data) sehingga bersih untuk pencatatan opname fisik riil.
                             </p>
                         </div>
                         <div class="space-y-2 text-left">
-                            <button type="button" onclick="executeResetHistoryOpnameData(true)" class="w-full p-3 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/60 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300 flex items-center justify-between group transition-all cursor-pointer">
-                                <div class="flex items-center gap-2.5">
-                                    <i class="ph ph-trash-simple text-xl text-rose-600"></i>
+                            <button type="button" onclick="executeResetHistoryOpnameData()" class="w-full p-3.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-between group transition-all cursor-pointer shadow-md">
+                                <div class="flex items-center gap-3">
+                                    <i class="ph ph-trash-simple text-xl"></i>
                                     <div>
-                                        <div class="font-bold text-xs">Kosongkan Riwayat (Hapus Bersih)</div>
-                                        <div class="text-[10px] text-rose-600/80">Hapus seluruh data trial. Riwayat menjadi 0 data murni.</div>
-                                    </div>
-                                </div>
-                                <i class="ph ph-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
-                            </button>
-                            <button type="button" onclick="restoreOfficialHistoryOpnameData()" class="w-full p-3 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 hover:bg-indigo-100 dark:bg-indigo-950/30 text-indigo-800 dark:text-indigo-300 flex items-center justify-between group transition-all cursor-pointer">
-                                <div class="flex items-center gap-2.5">
-                                    <i class="ph ph-arrows-counter-clockwise text-xl text-indigo-600"></i>
-                                    <div>
-                                        <div class="font-bold text-xs">Reset ke Format Resmi (G0.INXX.250603)</div>
-                                        <div class="text-[10px] text-indigo-600/80">ID Lot G0.INXX.250603, No Palet riil, dan Jenis Kopi 18IN.</div>
+                                        <div class="font-bold text-xs">Ya, Hapus Bersih Seluruh Data Dummy</div>
+                                        <div class="text-[10px] text-rose-100">Kosongkan riwayat stock opname trial</div>
                                     </div>
                                 </div>
                                 <i class="ph ph-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
                             </button>
                         </div>
-                        <div class="flex items-center justify-center pt-2">
+                        <div class="flex items-center justify-center pt-1">
                             <button type="button" onclick="closeModalResetHistory()" class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors cursor-pointer">
                                 Batal
                             </button>
@@ -7933,14 +7923,15 @@ function testReadData() {
 
         async function loadCodeGsText() {
             if (cachedCodeGsText) return cachedCodeGsText;
-            try {
-                const res = await fetch('/Code.gs');
-                if (res.ok) {
-                    cachedCodeGsText = await res.text();
-                    return cachedCodeGsText;
-                }
-            } catch (e) {
-                console.error("Gagal membaca /Code.gs:", e);
+            const possiblePaths = ['./Code.gs', 'Code.gs', '/Code.gs'];
+            for (const p of possiblePaths) {
+                try {
+                    const res = await fetch(p);
+                    if (res.ok) {
+                        cachedCodeGsText = await res.text();
+                        return cachedCodeGsText;
+                    }
+                } catch (e) {}
             }
             return "";
         }
@@ -8113,7 +8104,24 @@ function testReadData() {
         }
 
         function downloadCodeGsFile() {
-            window.location.href = '/Code.gs';
+            if (cachedCodeGsText) {
+                const blob = new Blob([cachedCodeGsText], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Code.gs';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } else {
+                const a = document.createElement('a');
+                a.href = './Code.gs';
+                a.download = 'Code.gs';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
         // ==========================================
@@ -8149,9 +8157,16 @@ function testReadData() {
         function isDummySeedLot(lot) {
             if (!lot) return false;
             if (lot.isDummy || lot.isSeed) return true;
+            const id = String(lot.id || '').toLowerCase().trim();
+            if (id.startsWith('hist-sja3-') || id.startsWith('dummy-') || id.startsWith('seed-') || id.startsWith('trial-seed-')) return true;
             const no = String(lot.noLot || lot.id || '').toUpperCase().trim();
-            if (no.startsWith('LOT-202610-') || no.startsWith('LOT-2026') || no.startsWith('DUMMY-') || no.startsWith('TEST-')) return true;
-            const jenis = String(lot.jenisKopi || '').toLowerCase();
+            if (no.startsWith('LOT-202610-') || no.startsWith('LOT-2026') || no.startsWith('DUMMY-') || no.startsWith('TEST-') || no.startsWith('LOT ') || no.startsWith('LOT0')) return true;
+            if (no === 'LOT 01' || no === 'LOT 02' || no === 'LOT 03' || no === 'LOT 04' || no === 'LOT 05') return true;
+            const palet = String(lot.noPalet || '').toUpperCase().trim();
+            if (palet.startsWith('PLT-') || palet === 'P01' || palet === 'P02' || palet === 'P03' || palet === 'P04' || palet === 'P05') return true;
+            const masuk = String(lot.idMasuk || '');
+            if (masuk.includes('LOT0') || masuk.includes('LOT 0')) return true;
+            const jenis = String(lot.jenisKopi || '').toLowerCase().trim();
             const dummyCoffees = [
                 'robusta dampit', 'arabica java raung', 'arabica toraja sapan',
                 'robusta lampung asalan', 'robusta temanggung', 'arabica gayo special',
@@ -8160,9 +8175,9 @@ function testReadData() {
                 'arabica kerinci kayu aro', 'robusta tanggamus premium', 'arabica toraja kalosi',
                 'robusta blitar wlingi', 'arabica java ijen blue', 'robusta lumajang pasrujambe',
                 'arabica bali kintamani', 'robusta malang tirtoyudo', 'arabica papua wamena',
-                'robusta sidikalang'
+                'robusta sidikalang', 'robusta dampit ek-1', 'robusta lampung grade 1'
             ];
-            if (no.startsWith('LOT-') && dummyCoffees.some(d => jenis.includes(d))) return true;
+            if (dummyCoffees.some(d => jenis.includes(d))) return true;
             return false;
         }
 
@@ -8333,375 +8348,72 @@ function testReadData() {
             }
         }
 
-        // Master Data Riil Stock Opname SIBIKOM (Format Resmi: G0.INXX.250603, No Palet riil, dan Jenis Kopi 18IN)
-        function getOfficialHistoryOpnameSeedData() {
-            const items = [
-                // Sesi 1 - Gudang SJA 3, PIC: Aris
-                {
-                    id: 'hist-sja3-001',
-                    sessionNo: 'SO-202610-0001',
-                    cutOffDate: '2026-10-20',
-                    opnameTime: '14:15',
-                    checker: 'Aris',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '16469',
-                    idMasuk: 'SJA 3-G0.INXX.250603-16469',
-                    gudang: 'Gudang SJA 3',
-                    bin: 'BIN 2',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1985,
-                    actualQty: 1985,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Sesuai timbangan & segel utuh'
-                },
-                {
-                    id: 'hist-sja3-002',
-                    sessionNo: 'SO-202610-0001',
-                    cutOffDate: '2026-10-20',
-                    opnameTime: '14:28',
-                    checker: 'Aris',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '18160',
-                    idMasuk: 'SJA 3-G0.INXX.250603-18160',
-                    gudang: 'Gudang SJA 3',
-                    bin: 'BIN 2',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1987,
-                    actualQty: 1987,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Kondisi karung rapi & barcode terbaca'
-                },
-                {
-                    id: 'hist-sja3-003',
-                    sessionNo: 'SO-202610-0001',
-                    cutOffDate: '2026-10-20',
-                    opnameTime: '14:42',
-                    checker: 'Aris',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '6051',
-                    idMasuk: 'SJA 3-G0.INXX.250603-6051',
-                    gudang: 'Gudang SJA 3',
-                    bin: 'BIN 2',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1980.5,
-                    actualQty: 1980.5,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Akurat 100%'
-                },
-                {
-                    id: 'hist-sja3-004',
-                    sessionNo: 'SO-202610-0001',
-                    cutOffDate: '2026-10-20',
-                    opnameTime: '14:55',
-                    checker: 'Aris',
-                    noLot: 'G0.INXX.250604',
-                    noPalet: '17345',
-                    idMasuk: 'SJA 3-G0.INXX.250604-17345',
-                    gudang: 'Gudang SJA 3',
-                    bin: 'TRANSIT',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1990,
-                    actualQty: 1990,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Area transit ready moving'
-                },
-                // Sesi 2 - Gudang 137, PIC: Budi Santoso
-                {
-                    id: 'hist-g137-001',
-                    sessionNo: 'SO-202610-0002',
-                    cutOffDate: '2026-10-16',
-                    opnameTime: '09:15',
-                    checker: 'Budi Santoso',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '1376',
-                    idMasuk: 'G. 137-G0.INXX.250603-1376',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 2002,
-                    actualQty: 2002,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Sesuai catatan'
-                },
-                {
-                    id: 'hist-g137-002',
-                    sessionNo: 'SO-202610-0002',
-                    cutOffDate: '2026-10-16',
-                    opnameTime: '09:30',
-                    checker: 'Budi Santoso',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '16372',
-                    idMasuk: 'G. 137-G0.INXX.250603-16372',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1977,
-                    actualQty: 1977,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Sesuai timbangan'
-                },
-                {
-                    id: 'hist-g137-003',
-                    sessionNo: 'SO-202610-0002',
-                    cutOffDate: '2026-10-16',
-                    opnameTime: '09:45',
-                    checker: 'Budi Santoso',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '9081',
-                    idMasuk: 'G. 137-G0.INXX.250603-9081',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 2016,
-                    actualQty: 2016,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Palet rapi & bersih'
-                },
-                {
-                    id: 'hist-g137-004',
-                    sessionNo: 'SO-202610-0002',
-                    cutOffDate: '2026-10-16',
-                    opnameTime: '10:05',
-                    checker: 'Budi Santoso',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '2326',
-                    idMasuk: 'G. 137-G0.INXX.250603-2326',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 6,
-                    systemQty: 402.5,
-                    actualQty: 332.5,
-                    diffQty: -70,
-                    deviasiPct: -17.39,
-                    status: 'DEFISIT',
-                    notes: 'Selisih 1 sak sobek saat bongkar container'
-                },
-                {
-                    id: 'hist-g137-005',
-                    sessionNo: 'SO-202610-0002',
-                    cutOffDate: '2026-10-16',
-                    opnameTime: '10:20',
-                    checker: 'Budi Santoso',
-                    noLot: 'G0.INXX.250603',
-                    noPalet: '15105',
-                    idMasuk: 'G. 137-G0.INXX.250603-15105',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 6,
-                    systemQty: 430.5,
-                    actualQty: 430.5,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Sisa sak timbang akurat'
-                },
-                // Sesi 3 - Gudang 137, PIC: Dedi Hermawan
-                {
-                    id: 'hist-g137-006',
-                    sessionNo: 'SO-202610-0003',
-                    cutOffDate: '2026-10-12',
-                    opnameTime: '08:45',
-                    checker: 'Dedi Hermawan',
-                    noLot: 'G0.INXX.250604',
-                    noPalet: '2121',
-                    idMasuk: 'G. 137-G0.INXX.250604-2121',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1989,
-                    actualQty: 1989,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Sesuai'
-                },
-                {
-                    id: 'hist-g137-007',
-                    sessionNo: 'SO-202610-0003',
-                    cutOffDate: '2026-10-12',
-                    opnameTime: '09:10',
-                    checker: 'Dedi Hermawan',
-                    noLot: 'G0.INXX.250604',
-                    noPalet: '28305',
-                    idMasuk: 'G. 137-G0.INXX.250604-28305',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 1976.5,
-                    actualQty: 2046.5,
-                    diffQty: 70,
-                    deviasiPct: 3.54,
-                    status: 'SURPLUS',
-                    notes: 'Lebih 1 sak titipan batch moving'
-                },
-                {
-                    id: 'hist-g137-008',
-                    sessionNo: 'SO-202610-0003',
-                    cutOffDate: '2026-10-12',
-                    opnameTime: '09:35',
-                    checker: 'Dedi Hermawan',
-                    noLot: 'G0.INXX.250604',
-                    noPalet: '23796',
-                    idMasuk: 'G. 137-G0.INXX.250604-23796',
-                    gudang: 'Gudang 137',
-                    bin: 'GENERAL',
-                    jenisKopi: '18IN',
-                    sisaKarung: 28,
-                    systemQty: 2009.5,
-                    actualQty: 2009.5,
-                    diffQty: 0,
-                    deviasiPct: 0.0,
-                    status: 'MATCH',
-                    notes: 'Sesuai timbangan'
-                }
-            ];
-
-            const sessions = [
-                {
-                    sessionNo: 'SO-202610-0001',
-                    cutOffDate: '2026-10-20',
-                    gudang: 'Gudang SJA 3',
-                    checker: 'Aris',
-                    method: 'Blind Count',
-                    notes: 'Stock opname rutin Gudang SJA 3',
-                    status: 'RECONCILED',
-                    createdAt: '2026-10-20T08:00:00.000Z',
-                    approvedAt: '2026-10-20T17:00:00.000Z',
-                    approver: 'Supervisor Gudang SJA 3',
-                    totalLots: 4,
-                    countedLots: 4,
-                    matchLots: 4,
-                    surplusLots: 0,
-                    deficitLots: 0,
-                    totalSystemQty: 7942.5,
-                    totalActualQty: 7942.5,
-                    netDiffQty: 0,
-                    items: items.slice(0, 4)
-                },
-                {
-                    sessionNo: 'SO-202610-0002',
-                    cutOffDate: '2026-10-16',
-                    gudang: 'Gudang 137',
-                    checker: 'Budi Santoso',
-                    method: 'Blind Count',
-                    notes: 'Audit cycle count Gudang 137',
-                    status: 'RECONCILED',
-                    createdAt: '2026-10-16T09:00:00.000Z',
-                    approvedAt: '2026-10-16T15:30:00.000Z',
-                    approver: 'Foreman Gudang 137',
-                    totalLots: 5,
-                    countedLots: 5,
-                    matchLots: 4,
-                    surplusLots: 0,
-                    deficitLots: 1,
-                    totalSystemQty: 6828,
-                    totalActualQty: 6758,
-                    netDiffQty: -70,
-                    items: items.slice(4, 9)
-                },
-                {
-                    sessionNo: 'SO-202610-0003',
-                    cutOffDate: '2026-10-12',
-                    gudang: 'Gudang 137',
-                    checker: 'Dedi Hermawan',
-                    method: 'Blind Count',
-                    notes: 'Audit periodik Gudang 137',
-                    status: 'RECONCILED',
-                    createdAt: '2026-10-12T08:30:00.000Z',
-                    approvedAt: '2026-10-12T14:00:00.000Z',
-                    approver: 'Foreman Gudang 137',
-                    totalLots: 3,
-                    countedLots: 3,
-                    matchLots: 2,
-                    surplusLots: 1,
-                    deficitLots: 0,
-                    totalSystemQty: 5975,
-                    totalActualQty: 6045,
-                    netDiffQty: 70,
-                    items: items.slice(9, 12)
-                }
-            ];
-
-            return { items, sessions };
-        }
-
-        function seedInitialHistoryOpnameData() {
+        // --- Pembersihan Menyeluruh Data Dummy / Trial SIBIKOM ---
+        function purgeAllDummyData() {
             try {
-                if (localStorage.getItem('sibikom_opname_history_cleared') === 'true') {
-                    return; // Riwayat telah di-reset oleh pengguna, jangan suntikkan data dummy lagi
-                }
-
-                const storedItems = localStorage.getItem('sibikom_opname_history_items');
+                // 1. Bersihkan riwayat item opname jika terdapat data dummy / seed lama
+                const storedItems = localStorage.getItem("sibikom_opname_history_items");
                 if (storedItems) {
                     try {
                         const parsed = JSON.parse(storedItems);
-                        // Cek apakah data tersimpan masih berformat dummy lama (misal: LOT 01, LOT-202610-, P01, Robusta Dampit, dll)
-                        const hasLegacyDummy = Array.isArray(parsed) && (
-                            parsed.length === 0 ||
-                            parsed.some(it => {
-                                const lot = String(it.noLot || '').trim();
-                                const palet = String(it.noPalet || '').trim();
-                                const jenis = String(it.jenisKopi || '').toLowerCase();
-                                const masuk = String(it.idMasuk || '');
-                                return lot.startsWith('LOT ') || 
-                                       lot.startsWith('LOT-') || 
-                                       lot.toLowerCase().startsWith('lot 0') ||
-                                       palet.startsWith('P0') || 
-                                       palet.startsWith('PLT-') ||
-                                       jenis.includes('dampit') || 
-                                       jenis.includes('lampung') || 
-                                       jenis.includes('gayo') || 
-                                       jenis.includes('toraja') ||
-                                       masuk.includes('LOT0') || 
-                                       masuk.includes('LOT 0');
-                            })
-                        );
-
-                        if (hasLegacyDummy) {
-                            // Otomatis perbarui ke format resmi SIBIKOM: G0.INXX.250603, No Palet riil, dan Jenis Kopi 18IN
-                            const official = getOfficialHistoryOpnameSeedData();
-                            localStorage.setItem('sibikom_opname_history_items', JSON.stringify(official.items));
-                            localStorage.setItem('sibikom_opname_history', JSON.stringify(official.sessions));
-                            return;
+                        if (Array.isArray(parsed)) {
+                            const cleanItems = parsed.filter(it => !isDummySeedLot(it));
+                            if (cleanItems.length === 0) {
+                                localStorage.removeItem("sibikom_opname_history_items");
+                            } else if (cleanItems.length !== parsed.length) {
+                                localStorage.setItem("sibikom_opname_history_items", JSON.stringify(cleanItems));
+                            }
                         }
-                        return; // Data sudah dalam format resmi riil
                     } catch (e) {
-                        // ignore and fall through
+                        localStorage.removeItem("sibikom_opname_history_items");
                     }
                 }
 
-                // Inisialisasi awal ke format resmi SIBIKOM
-                const official = getOfficialHistoryOpnameSeedData();
-                localStorage.setItem('sibikom_opname_history_items', JSON.stringify(official.items));
-                localStorage.setItem('sibikom_opname_history', JSON.stringify(official.sessions));
+                // 2. Bersihkan sesi riwayat jika terdapat data dummy / seed lama
+                const storedSessions = localStorage.getItem("sibikom_opname_history");
+                if (storedSessions) {
+                    try {
+                        const parsedSessions = JSON.parse(storedSessions);
+                        if (Array.isArray(parsedSessions)) {
+                            const cleanSessions = parsedSessions.filter(s => {
+                                if (!s || s.isSeedData || s.isDummy) return false;
+                                if (s.sessionNo === "SO-202610-0001" || s.sessionNo === "SO-202610-0002" || s.sessionNo === "SO-202610-0003") {
+                                    if (Array.isArray(s.items) && s.items.some(it => isDummySeedLot(it))) return false;
+                                }
+                                return true;
+                            });
+                            if (cleanSessions.length === 0) {
+                                localStorage.removeItem("sibikom_opname_history");
+                            } else if (cleanSessions.length !== parsedSessions.length) {
+                                localStorage.setItem("sibikom_opname_history", JSON.stringify(cleanSessions));
+                            }
+                        }
+                    } catch (e) {
+                        localStorage.removeItem("sibikom_opname_history");
+                    }
+                }
+
+                // 3. Bersihkan sesi aktif jika terindikasi menyimpan lot dummy
+                const rawActive = localStorage.getItem("sibikom_opname_active_session");
+                if (rawActive) {
+                    try {
+                        const parsedActive = JSON.parse(rawActive);
+                        if (parsedActive && (parsedActive.isSeedData || (Array.isArray(parsedActive.items) && parsedActive.items.some(it => isDummySeedLot(it))))) {
+                            localStorage.removeItem("sibikom_opname_active_session");
+                            if (currentOpnameSession) currentOpnameSession = null;
+                        }
+                    } catch (e) {
+                        localStorage.removeItem("sibikom_opname_active_session");
+                    }
+                }
             } catch (err) {
-                console.warn('Gagal inisialisasi seed history opname:', err);
+                console.warn("Gagal membersihkan data dummy:", err);
             }
+        }
+
+        // Inisialisasi Riwayat: Murni riil tanpa menyuntikkan data dummy
+        function seedInitialHistoryOpnameData() {
+            purgeAllDummyData();
         }
 
         // --- Fitur Reset / Hapus Seluruh Data History Opname (Trial) ---
@@ -8741,28 +8453,9 @@ function testReadData() {
             }
         }
 
-        // Memuat ulang data riwayat dengan format resmi (G0.INXX.250603 & 18IN)
+        // Fallback jika tombol lama dipanggil
         function restoreOfficialHistoryOpnameData() {
-            try {
-                localStorage.removeItem('sibikom_opname_history_cleared');
-                const official = getOfficialHistoryOpnameSeedData();
-                localStorage.setItem('sibikom_opname_history_items', JSON.stringify(official.items));
-                localStorage.setItem('sibikom_opname_history', JSON.stringify(official.sessions));
-
-                allHistoryLotItems = official.items;
-                allHistorySessions = official.sessions;
-                histLotCurrentPage = 1;
-                histSessionCurrentPage = 1;
-
-                populateHistoryPicFilter();
-                filterHistoryData();
-                closeModalResetHistory();
-
-                showToast('Data riwayat berhasil di-reset ke format resmi (G0.INXX.250603 & 18IN)!', 'success');
-            } catch (err) {
-                console.error('Gagal memulihkan format resmi:', err);
-                showToast('Gagal reset: ' + err.message, 'error');
-            }
+            executeResetHistoryOpnameData();
         }
 
         // Reset data trial pada lembar kerja Stock Opname Aktif (Data Stock Opname Gudang)
@@ -9046,14 +8739,11 @@ function testReadData() {
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Tidak Ada Data Riwayat Stock Opname</h4>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Data riwayat opname bersih (0 data) atau tidak sesuai filter. Selesaikan audit fisik di 'Data Stock Opname Gudang' atau muat data format resmi.</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Data riwayat opname bersih (0 data). Lakukan audit fisik di menu 'Data Stock Opname Gudang' dan simpan hasil opname untuk merekam riwayat riil.</p>
                                 </div>
                                 <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                                    <button type="button" onclick="switchTab('gudang-opname')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
-                                        <i class="ph ph-plus-circle"></i> Sesi Opname Aktif
-                                    </button>
-                                    <button type="button" onclick="restoreOfficialHistoryOpnameData()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors flex items-center gap-1.5 cursor-pointer">
-                                        <i class="ph ph-arrow-counter-clockwise"></i> Muat Data Format Resmi (G0.INXX.250603)
+                                    <button type="button" onclick="switchTab('gudang-opname')" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+                                        <i class="ph ph-plus-circle"></i> Buka Lembar Kerja Opname Aktif
                                     </button>
                                 </div>
                             </div>
@@ -9189,14 +8879,11 @@ function testReadData() {
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Tidak Ada Sesi Opname Tersimpan</h4>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Data sesi rekapitulasi riwayat opname bersih (0 sesi). Selesaikan audit fisik pada lembar kerja aktif atau muat ulang data format resmi.</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Belum ada sesi stock opname yang disimpan. Selesaikan audit fisik pada lembar kerja opname gudang lalu klik 'Simpan Hasil Opname'.</p>
                                 </div>
                                 <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                                    <button type="button" onclick="switchTab('gudang-opname')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
-                                        <i class="ph ph-plus-circle"></i> Sesi Opname Aktif
-                                    </button>
-                                    <button type="button" onclick="restoreOfficialHistoryOpnameData()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors flex items-center gap-1.5 cursor-pointer">
-                                        <i class="ph ph-arrow-counter-clockwise"></i> Muat Data Format Resmi (G0.INXX.250603)
+                                    <button type="button" onclick="switchTab('gudang-opname')" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs">
+                                        <i class="ph ph-plus-circle"></i> Buka Lembar Kerja Opname Aktif
                                     </button>
                                 </div>
                             </div>
@@ -12982,6 +12669,9 @@ function testReadData() {
                 updateOpnameTableColumnsVisibility();
             }
             loadSavedLogo(); 
+            if (typeof purgeAllDummyData === 'function') {
+                purgeAllDummyData();
+            }
             try {
                 const rawOp = localStorage.getItem('sibikom_opname_active_session');
                 if (rawOp) {
