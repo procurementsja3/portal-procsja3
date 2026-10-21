@@ -7923,14 +7923,15 @@ function testReadData() {
 
         async function loadCodeGsText() {
             if (cachedCodeGsText) return cachedCodeGsText;
-            try {
-                const res = await fetch('/Code.gs');
-                if (res.ok) {
-                    cachedCodeGsText = await res.text();
-                    return cachedCodeGsText;
-                }
-            } catch (e) {
-                console.error("Gagal membaca /Code.gs:", e);
+            const possiblePaths = ['./Code.gs', 'Code.gs', '/Code.gs'];
+            for (const p of possiblePaths) {
+                try {
+                    const res = await fetch(p);
+                    if (res.ok) {
+                        cachedCodeGsText = await res.text();
+                        return cachedCodeGsText;
+                    }
+                } catch (e) {}
             }
             return "";
         }
@@ -8103,7 +8104,24 @@ function testReadData() {
         }
 
         function downloadCodeGsFile() {
-            window.location.href = '/Code.gs';
+            if (cachedCodeGsText) {
+                const blob = new Blob([cachedCodeGsText], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Code.gs';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } else {
+                const a = document.createElement('a');
+                a.href = './Code.gs';
+                a.download = 'Code.gs';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
         // ==========================================
