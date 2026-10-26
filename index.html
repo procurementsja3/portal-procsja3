@@ -200,6 +200,113 @@
             color: #38bdf8 !important;
             text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
+
+        /* ======================================================== */
+        /* HIGH-DEFINITION & AESTHETIC BLUEPRINT LINES FOR MAPPING   */
+        /* ======================================================== */
+        #warehouse-layout-board {
+            border: 2px solid #334155;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+        }
+        .bin-rack-block {
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .warehouse-cell {
+            transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+        }
+        .warehouse-cell:hover {
+            filter: brightness(1.08);
+            z-index: 25;
+            transform: scale(1.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Dark Mode: Sharp, Crisp & Eye-Pleasing Blueprint Lines */
+        html.dark #warehouse-layout-board {
+            background-color: #070d19 !important;
+            border: 2px solid #38bdf8 !important;
+            border-radius: 14px;
+            box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px -2px rgba(56, 189, 248, 0.2) !important;
+        }
+
+        /* Outline & Framing per BIN Rack */
+        html.dark .bin-rack-block {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+        }
+        html.dark .bin-rack-block .bin-header {
+            background: linear-gradient(180deg, #172847 0%, #0d1b33 100%) !important;
+            color: #f0f9ff !important;
+            border-color: rgba(56, 189, 248, 0.75) !important;
+            border-width: 1.5px !important;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+        }
+        html.dark .bin-rack-block > div {
+            border-color: rgba(56, 189, 248, 0.7) !important;
+            border-width: 1.5px !important;
+        }
+        html.dark .bin-rack-block .grid > div {
+            border-color: rgba(56, 189, 248, 0.5) !important;
+        }
+
+        /* Column Dividers (A | B | C) */
+        html.dark .bin-rack-block [id^="slots-bin-"] > div {
+            border-right: 1.5px solid rgba(56, 189, 248, 0.55) !important;
+        }
+        html.dark .bin-rack-block [id^="slots-bin-"] > div:last-child {
+            border-right: none !important;
+        }
+
+        /* Individual Slot Cells - Prominent, Sharp & Clean Horizontal Lines */
+        html.dark .warehouse-cell {
+            border-bottom: 1.5px solid rgba(125, 211, 252, 0.45) !important;
+            box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+        }
+        html.dark .warehouse-cell:last-child {
+            border-bottom: none !important;
+        }
+        html.dark .warehouse-cell:hover {
+            box-shadow: inset 0 0 0 2px #38bdf8, 0 0 12px rgba(56, 189, 248, 0.5) !important;
+            z-index: 30;
+            filter: brightness(1.25);
+            transform: scale(1.05);
+        }
+
+        /* Middle Transit Area Highway Lines & Highlights */
+        html.dark #middle-transit-area {
+            border-top: 2.5px dashed #38bdf8 !important;
+            border-bottom: 2.5px dashed #38bdf8 !important;
+            box-shadow: 0 0 22px -2px rgba(14, 165, 233, 0.3) !important;
+        }
+
+        /* Office RMW, Staging & Maneuver Sections */
+        html.dark #office-rmw-container {
+            background-color: #241c10 !important;
+            border-color: rgba(56, 189, 248, 0.7) !important;
+            border-width: 1.5px !important;
+        }
+        html.dark #staging-container {
+            background-color: #0d192e !important;
+            border-color: rgba(56, 189, 248, 0.7) !important;
+            border-width: 1.5px !important;
+        }
+        html.dark #staging-container > div {
+            border-color: rgba(125, 211, 252, 0.45) !important;
+            color: #bae6fd !important;
+        }
+        html.dark #maneuver-arrows-container {
+            background-color: #0d192e !important;
+            border-color: rgba(56, 189, 248, 0.7) !important;
+            border-width: 1.5px !important;
+        }
+        html.dark #transit-status-card {
+            background-color: rgba(13, 27, 49, 0.95) !important;
+            border-color: #38bdf8 !important;
+            border-width: 1.5px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 12px rgba(56, 189, 248, 0.25) !important;
+        }
     </style>
 
     <script>
@@ -2052,8 +2159,8 @@
                         <div class="w-full sm:w-44">
                             <select id="map-filter-status" onchange="applyWarehouseMapFilter()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 outline-none focus:border-sky-500 text-slate-800 dark:text-slate-100 shadow-2xs">
                                 <option value="all">Semua Status Slot</option>
-                                <option value="occupied">Terisi (Biru Muda)</option>
-                                <option value="empty">Kosong (Kuning)</option>
+                                <option value="occupied">Terisi (Biru)</option>
+                                <option value="empty">Kosong</option>
                             </select>
                         </div>
                     </div>
@@ -2061,19 +2168,19 @@
                     <!-- Legend Quick Pills -->
                     <div class="flex items-center gap-3 text-xs flex-wrap font-medium">
                         <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
-                            <span class="w-3.5 h-3.5 rounded bg-[#93C5FD] border border-[#0284C7]"></span>
-                            <span class="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">Terisi (Stok Tersedia)</span>
+                            <span class="w-3.5 h-3.5 rounded bg-[#93C5FD] dark:bg-[#1e3a5f] border border-[#0284C7] dark:border-sky-400"></span>
+                            <span class="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">Terisi (Biru)</span>
                         </div>
                         <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
-                            <span class="w-3.5 h-3.5 rounded bg-[#F6E2A3] border border-[#000000]"></span>
-                            <span class="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">Kosong (Kuning)</span>
+                            <span class="w-3.5 h-3.5 rounded bg-[#F6E2A3] dark:bg-[#2a2318] border border-black dark:border-amber-600/60"></span>
+                            <span class="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">Kosong</span>
                         </div>
                         <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
-                            <span class="w-3.5 h-3.5 rounded bg-[#3B82F6] border border-blue-700"></span>
+                            <span class="w-3.5 h-3.5 rounded bg-[#3B82F6] dark:bg-blue-600 border border-blue-700 dark:border-blue-400"></span>
                             <span class="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">Office RMW</span>
                         </div>
                         <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
-                            <span class="w-3.5 h-3.5 rounded bg-amber-400 border border-amber-600"></span>
+                            <span class="w-3.5 h-3.5 rounded bg-amber-400 dark:bg-amber-600 border border-amber-600 dark:border-amber-500"></span>
                             <span class="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">Karantina</span>
                         </div>
                     </div>
@@ -2402,10 +2509,10 @@
                                             <circle cx="14" cy="16" r="2" fill="#000" />
                                         </svg>
                                     </div>
-                                    <div class="border border-slate-400 bg-white w-9 h-4 rounded-xs text-[7px] flex items-center justify-center text-slate-500 font-mono">STG</div>
+                                    <div class="border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 w-9 h-4 rounded-xs text-[7px] flex items-center justify-center text-slate-500 dark:text-slate-300 font-mono">STG</div>
                                 </div>
                                 <!-- Blue bar on the right wall (from photo) -->
-                                <div class="absolute -right-2 top-0 bottom-0 w-1.5 bg-[#2563EB] rounded-xs" title="Batas Dinding / Akses Pintu Dock"></div>
+                                <div class="absolute -right-2 top-0 bottom-0 w-1.5 bg-[#2563EB] dark:bg-sky-600 rounded-xs" title="Batas Dinding / Akses Pintu Dock"></div>
                             </div>
                         </div>
 
@@ -2426,8 +2533,8 @@
                                 <tr>
                                     <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700">Area BIN</th>
                                     <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-center">Total Slot</th>
-                                    <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-center text-sky-700 dark:text-sky-400">Terisi (Biru Muda)</th>
-                                    <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-center text-amber-700 dark:text-amber-400">Kosong (Kuning)</th>
+                                    <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-center text-sky-700 dark:text-sky-400">Terisi (Biru)</th>
+                                    <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-center text-amber-700 dark:text-amber-400">Kosong</th>
                                     <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-center">% Okupansi</th>
                                     <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-right">Total Sak</th>
                                     <th class="px-3 py-2 border-b border-r border-slate-200 dark:border-slate-700 text-right">Total Stok (Kg)</th>
@@ -8910,6 +9017,13 @@ function testReadData() {
                     chartObjKeluar.options.scales.x.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
                     chartObjKeluar.options.scales.y.grid.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
                     chartObjKeluar.update();
+                }
+            } catch(e) {}
+
+            // Perbarui denah visual denah gudang jika sedang aktif
+            try {
+                if (typeof renderWarehouseMapLayout === 'function') {
+                    renderWarehouseMapLayout();
                 }
             } catch(e) {}
         }
@@ -15488,7 +15602,7 @@ function testReadData() {
                             items: [],
                             totalSak: 0,
                             totalKg: 0,
-                            isCustomDashed: (bin === 15 && (col === 'A' || col === 'B')) || (bin === 12 && col === 'B')
+                            isCustomDashed: false
                         });
                     }
                 });
@@ -15501,7 +15615,7 @@ function testReadData() {
         function generateSja3SimulationData() {
             const slots = createEmptyWarehouseSlots();
 
-            // 1. BIN 15 Kolom A (8 Slot Penuh - Robusta Dampit) Sesuai Warna Biru Muda & Garis Putus-Putus Merah di Foto
+            // 1. BIN 15 Kolom A (8 Slot Penuh - Robusta Dampit)
             for (let r = 1; r <= 8; r++) {
                 const s = slots[15]['A'][r - 1];
                 s.isOccupied = true;
@@ -15522,7 +15636,7 @@ function testReadData() {
                 }];
             }
 
-            // 2. BIN 15 Kolom B (8 Slot Penuh - Arabika Flores Bajawa) Sesuai Warna Biru Muda & Garis Putus-Putus Merah di Foto
+            // 2. BIN 15 Kolom B (8 Slot Penuh - Arabika Flores Bajawa)
             for (let r = 1; r <= 8; r++) {
                 const s = slots[15]['B'][r - 1];
                 s.isOccupied = true;
@@ -16545,19 +16659,20 @@ function testReadData() {
 
                         // Buat elemen kotak slot
                         const cellElem = document.createElement('div');
-                        cellElem.className = `warehouse-cell relative border-b border-black last:border-b-0 h-[28px] flex items-center justify-center transition-all cursor-pointer font-mono text-[9px] select-none`;
+                        cellElem.className = `warehouse-cell relative border-b border-black last:border-b-0 h-[28px] flex items-center justify-center font-mono text-[9px] select-none cursor-pointer`;
                         cellElem.setAttribute('data-slot-key', slot.slotKey);
                         cellElem.setAttribute('title', `${slot.idLokasi} - ${slot.isOccupied ? 'TERISI' : 'KOSONG'}`);
                         cellElem.onclick = () => openSlotDetailModal(bin, col, r);
 
                         // Aturan Warna Sesuai Request User:
-                        // Terisi = Biru Muda (#93C5FD)
-                        // Kosong = Kuning (#F6E2A3 / #FEF08A)
+                        // Mode Terang: Terisi = Biru Muda (#93C5FD), Kosong = Kuning (#F6E2A3)
+                        // Mode Gelap (Eye Comfort): Terisi = Deep Slate Blue (#1e3a5f), Kosong = Muted Deep Amber (#2a2318)
+                        const isDark = document.documentElement.classList.contains('dark');
                         if (slot.isOccupied) {
-                            if (slot.isCustomDashed) {
-                                // Gaya khusus BIN 15 Kolom A & B serta BIN 12 Kolom B (Sesuai Foto dengan garis putus-putus)
-                                cellElem.style.backgroundColor = '#93C5FD';
-                                cellElem.className += ' text-sky-950 font-bold border-dashed border-red-500/70';
+                            cellElem.className += ' warehouse-cell-occupied';
+                            if (isDark) {
+                                cellElem.style.backgroundColor = '#1e3a5f';
+                                cellElem.className += ' text-sky-200 font-bold shadow-2xs';
                             } else {
                                 cellElem.style.backgroundColor = '#93C5FD';
                                 cellElem.className += ' text-sky-950 font-bold';
@@ -16572,12 +16687,19 @@ function testReadData() {
                             } else {
                                 miniLabel = `${slot.totalSak || slot.items.length}k`;
                             }
-                            cellElem.innerHTML = `<span class="truncate px-0.5 text-[8.5px]">${miniLabel}</span>`;
+                            cellElem.innerHTML = `<span class="truncate px-0.5 text-[8.5px] font-bold tracking-tight">${miniLabel}</span>`;
                         } else {
-                            // Kosong: Warna Kuning Pastel / Tan Sesuai Foto
-                            cellElem.style.backgroundColor = '#F6E2A3';
-                            cellElem.className += ' text-amber-900/30';
-                            cellElem.innerHTML = `<span class="text-[8px] font-sans opacity-40">${r}</span>`;
+                            // Kosong: Warna Kuning Pastel / Tan Sesuai Foto (Terang) vs Muted Warm Slate-Amber (Gelap)
+                            cellElem.className += ' warehouse-cell-empty';
+                            if (isDark) {
+                                cellElem.style.backgroundColor = '#261f14';
+                                cellElem.className += ' text-amber-500/70 font-semibold';
+                                cellElem.innerHTML = `<span class="text-[8.5px] font-sans opacity-70">${r}</span>`;
+                            } else {
+                                cellElem.style.backgroundColor = '#F6E2A3';
+                                cellElem.className += ' text-amber-900/40';
+                                cellElem.innerHTML = `<span class="text-[8px] font-sans opacity-50">${r}</span>`;
+                            }
                         }
 
                         if (isHighlighted) {
@@ -16768,9 +16890,10 @@ function testReadData() {
                 idLokasiElem.innerText = `ID Lokasi: ${slot.idLokasi}`;
             }
 
+            const isDark = document.documentElement.classList.contains('dark');
             if (slot.isOccupied) {
-                badgeElem.innerText = 'TERISI (BIRU MUDA)';
-                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300';
+                badgeElem.innerText = isDark ? 'TERISI (SLATE BLUE)' : 'TERISI (BIRU MUDA)';
+                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-700';
                 iconWrap.className = 'w-10 h-10 rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 flex items-center justify-center text-xl font-bold shrink-0';
                 iconWrap.innerHTML = '<i class="ph ph-package"></i>';
 
@@ -16926,8 +17049,8 @@ function testReadData() {
                     toggleBtn.onclick = toggleCurrentSlotOccupancy;
                 }
             } else {
-                badgeElem.innerText = 'KOSONG (KUNING)';
-                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300';
+                badgeElem.innerText = isDark ? 'KOSONG (MUTED WARM)' : 'KOSONG (KUNING)';
+                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700';
                 iconWrap.className = 'w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 flex items-center justify-center text-xl font-bold shrink-0';
                 iconWrap.innerHTML = '<i class="ph ph-squares-four"></i>';
 
@@ -17018,27 +17141,46 @@ function testReadData() {
             const isHighlighted = warehouseMapSearchTerm && matchesSearch && tr.isOccupied;
             const isDimmed = (!matchesSearch || !matchesCoffee || !matchesStatus);
 
+            const isDark = document.documentElement.classList.contains('dark');
             if (tr.isOccupied) {
-                // Aturan Warna Sesuai Request User: Terisi = Biru Muda (#93C5FD)
-                transitElem.style.backgroundColor = '#93C5FD';
-                transitElem.className = "my-3 py-2.5 border-y-2 border-dashed border-sky-600 rounded-xl relative flex flex-col md:flex-row items-center justify-between min-h-[82px] px-3 cursor-pointer transition-all hover:brightness-95 hover:shadow-md group select-none";
-                
-                if (badgeOccupied) {
-                    badgeOccupied.innerText = 'TERISI (BIRU MUDA)';
-                    badgeOccupied.className = 'text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-200 text-sky-950 border border-sky-400';
+                // Aturan Warna: Terisi = Biru Muda (#93C5FD) untuk Mode Terang, Deep Slate Blue (#10243d) untuk Mode Gelap
+                if (isDark) {
+                    transitElem.style.backgroundColor = '#10243d';
+                    transitElem.className = "my-3 py-2.5 border-y-2 border-dashed border-sky-500/80 rounded-xl relative flex flex-col md:flex-row items-center justify-between min-h-[82px] px-3 cursor-pointer transition-all hover:brightness-110 hover:shadow-lg group select-none";
+                    if (badgeOccupied) {
+                        badgeOccupied.innerText = 'TERISI (SLATE BLUE)';
+                        badgeOccupied.className = 'text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-950 text-sky-200 border border-sky-500/80';
+                    }
+                } else {
+                    transitElem.style.backgroundColor = '#93C5FD';
+                    transitElem.className = "my-3 py-2.5 border-y-2 border-dashed border-sky-600 rounded-xl relative flex flex-col md:flex-row items-center justify-between min-h-[82px] px-3 cursor-pointer transition-all hover:brightness-95 hover:shadow-md group select-none";
+                    if (badgeOccupied) {
+                        badgeOccupied.innerText = 'TERISI (BIRU MUDA)';
+                        badgeOccupied.className = 'text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-200 text-sky-950 border border-sky-400';
+                    }
                 }
+                
                 if (summaryPalet) {
                     summaryPalet.innerText = `${tr.availableCount.toLocaleString('id-ID')} Palet Aktif (${tr.totalSak.toLocaleString('id-ID')} Sak • ${formatAngkaId(tr.totalKg)} Kg)`;
                 }
             } else {
-                // Kosong = Kuning (#F6E2A3)
-                transitElem.style.backgroundColor = '#F6E2A3';
-                transitElem.className = "my-3 py-2.5 border-y-2 border-dashed border-amber-400 rounded-xl relative flex flex-col md:flex-row items-center justify-between min-h-[82px] px-3 cursor-pointer transition-all hover:brightness-95 hover:shadow-md group select-none";
-                
-                if (badgeOccupied) {
-                    badgeOccupied.innerText = 'KOSONG (KUNING)';
-                    badgeOccupied.className = 'text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-400';
+                // Kosong: Kuning Pastel (#F6E2A3) untuk Mode Terang, Muted Amber (#241d14) untuk Mode Gelap
+                if (isDark) {
+                    transitElem.style.backgroundColor = '#241d14';
+                    transitElem.className = "my-3 py-2.5 border-y-2 border-dashed border-amber-600/70 rounded-xl relative flex flex-col md:flex-row items-center justify-between min-h-[82px] px-3 cursor-pointer transition-all hover:brightness-110 hover:shadow-lg group select-none";
+                    if (badgeOccupied) {
+                        badgeOccupied.innerText = 'KOSONG (MUTED WARM)';
+                        badgeOccupied.className = 'text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-200 border border-amber-700/80';
+                    }
+                } else {
+                    transitElem.style.backgroundColor = '#F6E2A3';
+                    transitElem.className = "my-3 py-2.5 border-y-2 border-dashed border-amber-400 rounded-xl relative flex flex-col md:flex-row items-center justify-between min-h-[82px] px-3 cursor-pointer transition-all hover:brightness-95 hover:shadow-md group select-none";
+                    if (badgeOccupied) {
+                        badgeOccupied.innerText = 'KOSONG (KUNING)';
+                        badgeOccupied.className = 'text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-400';
+                    }
                 }
+                
                 if (summaryPalet) {
                     summaryPalet.innerText = `0 Palet Tersimpan (Jalur Koridor Bebas)`;
                 }
@@ -17089,9 +17231,10 @@ function testReadData() {
             coordElem.innerText = `Area Transit Tengah Gudang (ID Lokasi: SJA3-TRS - BIN TRANSIT)`;
             idLokasiElem.innerText = `Penyimpanan Jalur Tengah Gudang SJA3 (Total ${totalItemCount} Palet: ${availableCount} Available • ${habisCount} Habis)`;
 
+            const isDark = document.documentElement.classList.contains('dark');
             if (slot.isOccupied) {
-                badgeElem.innerText = 'TERISI (BIRU MUDA)';
-                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300';
+                badgeElem.innerText = isDark ? 'TERISI (SLATE BLUE)' : 'TERISI (BIRU MUDA)';
+                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-700';
                 iconWrap.className = 'w-10 h-10 rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 flex items-center justify-center text-xl font-bold shrink-0';
                 iconWrap.innerHTML = '<i class="ph ph-arrows-clockwise"></i>';
 
@@ -17239,8 +17382,8 @@ function testReadData() {
                     toggleBtn.onclick = toggleCurrentSlotOccupancy;
                 }
             } else {
-                badgeElem.innerText = 'KOSONG (KUNING)';
-                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300';
+                badgeElem.innerText = isDark ? 'KOSONG (MUTED WARM)' : 'KOSONG (KUNING)';
+                badgeElem.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700';
                 iconWrap.className = 'w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 flex items-center justify-center text-xl font-bold shrink-0';
                 iconWrap.innerHTML = '<i class="ph ph-arrows-clockwise"></i>';
 
