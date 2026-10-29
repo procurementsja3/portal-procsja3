@@ -5054,8 +5054,6 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h3 id="label-modal-header-title" class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">Cetak Label ID Lokasi &amp; Palet BKM</h3>
-                                    <span class="text-[11px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full font-bold">Ukuran 15 x 20 cm Portrait</span>
-                                    <span id="label-modal-mode-badge" class="text-[11px] bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800 px-2 py-0.5 rounded-full font-semibold">Mode: ID Lokasi (Multi-LOT)</span>
                                 </div>
                                 <p id="label-modal-header-subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Label resmi identifikasi konsolidasi ID Lokasi memuat rincian ID LOT, No Palet, Karung &amp; Netto</p>
                             </div>
@@ -5145,9 +5143,6 @@
                             </button>
                             <button type="button" onclick="downloadActiveLabelPDF()" class="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-3.5 py-1.5 rounded-lg font-bold shadow-sm transition-all cursor-pointer text-xs" title="Unduh dokumen label dalam format PDF (150 x 200 mm Portrait)">
                                 <i class="ph ph-file-pdf text-sm"></i> Unduh PDF
-                            </button>
-                            <button type="button" onclick="printActiveLabel()" class="flex items-center gap-1.5 bg-slate-900 hover:bg-black text-white px-4 py-1.5 rounded-lg font-bold shadow-sm transition-all cursor-pointer text-xs" title="Kirim langsung ke printer label / printer thermal (15x20 cm)">
-                                <i class="ph ph-printer text-sm"></i> Cetak Label
                             </button>
                             <button type="button" id="btn-download-all-labels" onclick="downloadAllLabelsPDF()" class="hidden flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition-all cursor-pointer text-xs" title="Unduh seluruh label sekaligus ke file PDF">
                                 <i class="ph ph-files text-sm"></i> Unduh Semua
@@ -9051,7 +9046,7 @@ function testReadData() {
                     `ID LOKASI: ${locDisplay}`,
                     `BERAT NETTO: ${formatAngkaId(item.beratNetto || 0)} Kg`,
                     `BERAT BRUTO: ${formatAngkaId(item.beratBruto || 0)} Kg`,
-                    `TARA PALET: ${formatAngkaId(item.beratPalletKosong || 0)} Kg`,
+                    `BERAT PALET: ${formatAngkaId(item.beratPalletKosong || 0)} Kg`,
                     `JUMLAH SAK: ${item.karungMasuk || '0'} Sak`,
                     `JENIS KOPI: ${item.jenisKopi || '-'}`,
                     `GUDANG: ${item.gudang || 'SJA 3'} | LOT: ${item.noLotInduk || '-'}`,
@@ -9183,23 +9178,23 @@ function testReadData() {
             let rowsHtml = '';
             group.items.forEach((it, idx) => {
                 const itMutu = String(it.statusMutu || 'PASS').toUpperCase();
-                let mBg = 'bg-emerald-100 text-emerald-800';
-                if (itMutu.includes('REJECT')) mBg = 'bg-red-100 text-red-800';
-                else if (itMutu.includes('HOLD')) mBg = 'bg-amber-100 text-amber-800';
+                let mBg = 'bg-emerald-100 text-slate-950 border border-emerald-300';
+                if (itMutu.includes('REJECT')) mBg = 'bg-red-100 text-slate-950 border border-red-300';
+                else if (itMutu.includes('HOLD')) mBg = 'bg-amber-100 text-slate-950 border border-amber-300';
 
                 rowsHtml += `
                     <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/70' : 'bg-white'}">
-                        <td class="${rowPadding} px-1 text-center font-mono font-bold text-slate-500">${idx + 1}</td>
-                        <td class="${rowPadding} px-1 font-mono font-bold text-slate-900 truncate max-w-[150px]" title="${it.idLot || '-'}">
+                        <td class="${rowPadding} px-1 text-center font-mono font-bold text-slate-700" style="color: #020617 !important;">${idx + 1}</td>
+                        <td class="${rowPadding} px-1.5 text-left font-mono font-bold text-slate-950 truncate max-w-[150px]" style="color: #020617 !important;" title="${it.idLot || '-'}">
                             ${it.idLot || '-'}
                         </td>
-                        <td class="${rowPadding} px-1 text-center font-mono font-black text-indigo-900 bg-indigo-50/50">${it.noPalet || '-'}</td>
-                        <td class="${rowPadding} px-1 text-right font-mono font-semibold text-slate-800">${it.karungMasuk || 0} Sak</td>
-                        <td class="${rowPadding} px-1 text-right font-mono text-slate-600">${formatAngkaId(it.beratBruto || 0)}</td>
-                        <td class="${rowPadding} px-1 text-right font-mono text-slate-500">${formatAngkaId(it.beratPalletKosong || 0)}</td>
-                        <td class="${rowPadding} px-1 text-right font-mono font-black text-emerald-900 bg-emerald-50/60">${formatAngkaId(it.beratNetto || 0)}</td>
+                        <td class="${rowPadding} px-1 text-center font-mono font-black" style="background-color: #ffffff !important; background: #ffffff !important; color: #020617 !important;">${it.noPalet || '-'}</td>
+                        <td class="${rowPadding} px-1 text-right font-mono font-bold text-slate-950" style="color: #020617 !important;">${it.karungMasuk || 0} Sak</td>
+                        <td class="${rowPadding} px-1 text-right font-mono font-bold text-slate-950" style="color: #020617 !important;">${formatAngkaId(it.beratBruto || 0)}</td>
+                        <td class="${rowPadding} px-1 text-right font-mono font-bold text-slate-950" style="color: #020617 !important;">${formatAngkaId(it.beratPalletKosong || 0)}</td>
+                        <td class="${rowPadding} px-1 text-right font-mono font-black text-slate-950 bg-emerald-50/60" style="color: #020617 !important;">${formatAngkaId(it.beratNetto || 0)}</td>
                         <td class="${rowPadding} px-1 text-center font-bold">
-                            <span class="inline-block px-1 py-0.2 rounded text-[6.5px] font-black ${mBg}">${itMutu}</span>
+                            <span class="inline-block px-1 py-0.2 rounded text-[6.5px] font-black ${mBg}" style="color: #020617 !important;">${itMutu}</span>
                         </td>
                     </tr>
                 `;
@@ -9263,17 +9258,17 @@ function testReadData() {
 
                     <!-- 3 Kolom Ringkasan Cepat Lokasi (Bebas Data Dummy: Sak Bilangan Bulat) -->
                     <div class="grid grid-cols-3 gap-1.5 mt-1.5 pt-1.5 border-t border-slate-300 text-center">
-                        <div class="bg-indigo-900 text-white p-1 rounded-md shadow-2xs">
-                            <span class="text-[7px] font-bold text-indigo-200 uppercase tracking-wider block">TOTAL PALET</span>
-                            <strong class="text-[13px] font-black font-mono leading-tight block">${itemsCount} Palet</strong>
+                        <div class="bg-slate-900 text-white p-1 rounded-md shadow-2xs" style="background-color: #0f172a !important;">
+                            <span class="text-[7px] font-bold text-slate-300 uppercase tracking-wider block">TOTAL PALET</span>
+                            <strong class="text-[13px] font-black font-mono leading-tight block text-white">${itemsCount} Palet</strong>
                         </div>
-                        <div class="bg-slate-900 text-white p-1 rounded-md shadow-2xs">
+                        <div class="bg-slate-900 text-white p-1 rounded-md shadow-2xs" style="background-color: #0f172a !important;">
                             <span class="text-[7px] font-bold text-slate-300 uppercase tracking-wider block">TOTAL KARUNG</span>
-                            <strong class="text-[13px] font-black font-mono leading-tight block">${totalSakInt} Sak</strong>
+                            <strong class="text-[13px] font-black font-mono leading-tight block text-white">${totalSakInt} Sak</strong>
                         </div>
-                        <div class="bg-emerald-800 text-white p-1 rounded-md shadow-2xs">
-                            <span class="text-[7px] font-bold text-emerald-200 uppercase tracking-wider block">STATUS QC</span>
-                            <strong class="text-[13px] font-black tracking-wider leading-tight block uppercase">${stMutuSummary}</strong>
+                        <div class="bg-slate-900 text-white p-1 rounded-md shadow-2xs" style="background-color: #0f172a !important;">
+                            <span class="text-[7px] font-bold text-slate-300 uppercase tracking-wider block">STATUS QC</span>
+                            <strong class="text-[13px] font-black tracking-wider leading-tight block uppercase text-white">${stMutuSummary}</strong>
                         </div>
                     </div>
                 </div>
@@ -9289,7 +9284,7 @@ function testReadData() {
                                 </td>
                                 <td class="bg-slate-100 font-bold px-1.5 py-0.5 w-[22%] text-slate-700 border-r border-slate-200">Gudang &amp; Lot Induk</td>
                                 <td class="px-1.5 py-0.5 font-semibold text-slate-900 w-[28%]">
-                                    ${firstItem.gudang || '-'} &bull; Lot: <span class="font-mono font-bold text-indigo-800">${firstItem.noLotInduk || '-'}</span>
+                                    ${firstItem.gudang || '-'} &bull; Lot: <span class="font-mono font-bold text-slate-950" style="color: #020617 !important;">${firstItem.noLotInduk || '-'}</span>
                                 </td>
                             </tr>
                             <tr class="border-b border-slate-200">
@@ -9305,7 +9300,7 @@ function testReadData() {
                                 <td class="px-1.5 py-0.5 font-semibold text-slate-900 border-r border-slate-200 truncate" title="${firstItem.supplier || '-'}">
                                     ${firstItem.supplier || '-'} <span class="text-slate-500 font-mono text-[7px]">(PO: ${firstItem.noPo || '-'})</span>
                                 </td>
-                                <td class="bg-slate-100 font-bold px-1.5 py-0.5 text-slate-700 border-r border-slate-200">No. Polisi &amp; Air</td>
+                                <td class="bg-slate-100 font-bold px-1.5 py-0.5 text-slate-700 border-r border-slate-200">No. Polisi &amp; Kadar Air</td>
                                 <td class="px-1.5 py-0.5 font-mono text-slate-800">
                                     <strong>${firstItem.noPol || '-'}</strong> &bull; KA: <span class="font-bold">${firstItem.kadarAir && firstItem.kadarAir !== '-' ? firstItem.kadarAir + '%' : '-'}</span>
                                 </td>
@@ -9321,11 +9316,11 @@ function testReadData() {
                             <thead>
                                 <tr class="bg-slate-900 text-white font-bold tracking-wider text-[7.5px] uppercase">
                                     <th class="py-1 px-1 text-center w-5">No</th>
-                                    <th class="py-1 px-1 text-left">ID LOT</th>
+                                    <th class="py-1 px-1 text-center">ID LOT</th>
                                     <th class="py-1 px-1 text-center w-12">No Palet</th>
                                     <th class="py-1 px-1 text-right w-14">Karung</th>
                                     <th class="py-1 px-1 text-right w-14">Bruto (Kg)</th>
-                                    <th class="py-1 px-1 text-right w-12">Tara (Kg)</th>
+                                    <th class="py-1 px-1 text-right w-14">Berat Palet (Kg)</th>
                                     <th class="py-1 px-1 text-right w-18">Netto (Kg)</th>
                                     <th class="py-1 px-1 text-center w-11">QC</th>
                                 </tr>
@@ -9344,9 +9339,9 @@ function testReadData() {
                         </div>
                         <div class="flex items-center gap-3 font-mono text-[8px]">
                             <span>Sak: <strong class="text-slate-950 font-black">${totalSakInt} Sak</strong></span>
-                            <span>Bruto: <strong>${formatAngkaId(group.totalBruto)}</strong></span>
-                            <span>Tara: <strong>${formatAngkaId(group.totalTara)}</strong></span>
-                            <span class="text-emerald-950 bg-emerald-100 px-1 py-0.2 rounded font-black">Netto: ${formatAngkaId(group.totalNetto)} Kg</span>
+                            <span>Bruto: <strong class="text-slate-950 font-bold" style="color: #020617 !important;">${formatAngkaId(group.totalBruto)}</strong></span>
+                            <span>Berat Palet: <strong class="text-slate-950 font-bold" style="color: #020617 !important;">${formatAngkaId(group.totalTara)}</strong></span>
+                            <span class="text-slate-950 bg-emerald-100 px-1 py-0.2 rounded font-black" style="color: #020617 !important;">Netto: ${formatAngkaId(group.totalNetto)} Kg</span>
                         </div>
                     </div>
                 </div>
@@ -9500,7 +9495,7 @@ function testReadData() {
                             <tr class="border-b border-slate-200">
                                 <td class="bg-slate-100 font-bold px-2 py-1 text-slate-700 border-r border-slate-200">Gudang &amp; Lot Induk</td>
                                 <td class="px-2 py-1 font-semibold text-slate-900">
-                                    <span class="font-bold">${item.gudang || '-'}</span> &bull; Lot: <span class="font-mono font-bold text-indigo-800">${item.noLotInduk || '-'}</span>
+                                    <span class="font-bold">${item.gudang || '-'}</span> &bull; Lot: <span class="font-mono font-bold text-slate-950" style="color: #020617 !important;">${item.noLotInduk || '-'}</span>
                                 </td>
                             </tr>
                             <tr class="border-b border-slate-200">
@@ -9555,8 +9550,8 @@ function testReadData() {
                             <strong class="text-[12px] font-black text-slate-900 font-mono">${formatAngkaId(item.beratBruto || 0)} Kg</strong>
                         </div>
                         <div>
-                            <span class="text-slate-500 font-semibold block uppercase">Pallet Ksg (Tara)</span>
-                            <strong class="text-[12px] font-black text-slate-700 font-mono">${formatAngkaId(item.beratPalletKosong || 0)} Kg</strong>
+                            <span class="text-slate-500 font-semibold block uppercase">Berat Palet (Kg)</span>
+                            <strong class="text-[12px] font-black text-slate-900 font-mono" style="color: #020617 !important;">${formatAngkaId(item.beratPalletKosong || 0)} Kg</strong>
                         </div>
                     </div>
                     <!-- BERAT NETTO PALING BESAR & JELAS -->
@@ -11611,8 +11606,8 @@ function testReadData() {
                                 <div class="font-bold text-amber-700 dark:text-amber-400">${it.noLot || '-'}</div>
                                 ${it.idMasuk && it.idMasuk !== it.noLot ? `<span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal block font-sans">${it.idMasuk}</span>` : ''}
                             </td>
-                            <td class="px-4 py-3 font-mono text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                                ${it.noPalet ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold">${it.noPalet}</span>` : '<span class="text-slate-400 font-normal">-</span>'}
+                            <td class="px-4 py-3 font-mono text-xs font-semibold">
+                                ${it.noPalet ? `<span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-300 shadow-2xs font-bold" style="background-color: #ffffff !important; color: #020617 !important; border-color: #cbd5e1 !important;">${it.noPalet}</span>` : '<span class="text-slate-400 font-normal">-</span>'}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="font-semibold text-slate-800 dark:text-slate-200 font-sans">${it.gudang || '-'}</div>
@@ -12314,7 +12309,7 @@ function testReadData() {
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800">
                                 <td class="p-2.5 text-center text-slate-400 font-sans">${idx + 1}</td>
                                 <td class="p-2.5 font-mono font-bold text-amber-700 dark:text-amber-400">${it.noLot}</td>
-                                <td class="p-2.5 font-mono text-slate-600 dark:text-slate-300">${it.noPalet}</td>
+                                <td class="p-2.5 font-mono font-semibold" style="color: #020617 !important;"><span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-300 shadow-2xs font-bold" style="background-color: #ffffff !important; color: #020617 !important; border-color: #cbd5e1 !important;">${it.noPalet || '-'}</span></td>
                                 <td class="p-2.5 font-bold text-slate-700 dark:text-slate-200">${it.bin}</td>
                                 <td class="p-2.5 font-sans">${it.jenisKopi}</td>
                                 <td class="p-2.5 text-right font-mono font-bold text-indigo-700 dark:text-indigo-400">${formatAngkaId(it.sisaKarung)} Sak</td>
@@ -12701,8 +12696,8 @@ function testReadData() {
                 rows += `
                     <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                         <td class="px-4 py-3 text-center text-slate-400 font-medium">${rowNo}</td>
-                        <td class="px-4 py-3 font-mono font-bold text-slate-900 dark:text-white">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400">
+                        <td class="px-4 py-3 font-mono font-bold">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md border border-slate-300 font-bold shadow-2xs" style="background-color: #ffffff !important; color: #020617 !important; border-color: #cbd5e1 !important;">
                                 ${p.noPalet}
                             </span>
                         </td>
@@ -15586,7 +15581,7 @@ function testReadData() {
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
                             <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
                             <td class="py-2.5 px-3 font-bold text-amber-700 dark:text-amber-400 font-mono">${it.noLot || '-'}</td>
-                            <td class="py-2.5 px-3 text-center font-mono text-slate-600 dark:text-slate-300">${it.noPalet || '-'}</td>
+                            <td class="py-2.5 px-3 text-center font-mono font-semibold" style="color: #020617 !important;"><span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-300 shadow-2xs font-bold" style="background-color: #ffffff !important; color: #020617 !important; border-color: #cbd5e1 !important;">${it.noPalet || '-'}</span></td>
                             <td class="py-2.5 px-3 text-center font-bold text-indigo-700 dark:text-indigo-300">${it.bin || '-'}</td>
                             <td class="py-2.5 px-3 text-slate-700 dark:text-slate-200">${it.jenisKopi || '-'}</td>
                             <td class="py-2.5 px-3 text-right font-mono text-slate-600 dark:text-slate-300">${formatAngkaId(sysSak)} Sak</td>
@@ -16603,8 +16598,8 @@ function testReadData() {
                                         </button>` : ''}
                                 </div>
                             </td>
-                            <td class="px-4 py-3 font-mono text-slate-700 dark:text-slate-300 font-semibold">
-                                ${item.noPalet ? `<span class="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold">${item.noPalet}</span>` : '<span class="text-slate-400 font-normal">-</span>'}
+                            <td class="px-4 py-3 font-mono font-semibold" style="color: #020617 !important;">
+                                ${item.noPalet ? `<span class="inline-flex items-center px-2 py-0.5 rounded border border-slate-300 shadow-2xs font-bold" style="background-color: #ffffff !important; color: #020617 !important; border-color: #cbd5e1 !important;">${item.noPalet}</span>` : '<span class="text-slate-400 font-normal">-</span>'}
                             </td>
                             <td class="px-4 py-3 text-slate-600 dark:text-slate-300 font-sans">
                                 <div class="flex items-center gap-1.5 flex-wrap">
