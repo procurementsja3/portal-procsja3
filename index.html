@@ -3226,9 +3226,13 @@
                         <a id="link-opname-pallet-sheet" href="https://docs.google.com/spreadsheets/d/12-KuVWk_kfvv9aM10y8BXrMuPJPiEcEAl8BSaKmHPxk/edit" target="_blank" class="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all cursor-pointer" title="Buka Sheet STOCK_OPNAME_PALLET_GBB di Google Sheets">
                             <i class="ph ph-google-logo text-base text-emerald-600"></i> Google Sheet
                         </a>
-                        <button type="button" onclick="fetchOpnamePalletFromGoogleSheet()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all cursor-pointer" title="Sinkronkan & Tarik Data Terbaru dari Sheet STOCK_OPNAME_PALLET_GBB">
+                        <button type="button" onclick="fetchOpnamePalletFromGoogleSheet(true)" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all cursor-pointer" title="Sinkronkan & Tarik Data Terbaru dari Sheet STOCK_OPNAME_PALLET_GBB">
                             <i class="ph ph-arrows-clockwise text-base" id="icon-sync-opname-pallet"></i> Segarkan Data
                         </button>
+                        <div id="badge-opname-pallet-autorefresh" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs" title="Sistem otomatis menyegarkan data setiap 60 detik">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>Auto Refresh: <span id="timer-opname-pallet-countdown" class="font-mono font-bold">60s</span></span>
+                        </div>
                         <button type="button" onclick="exportOpnamePalletExcel()" class="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all cursor-pointer">
                             <i class="ph ph-file-xls text-base text-emerald-600"></i> Export Excel / CSV
                         </button>
@@ -7491,12 +7495,16 @@ function testReadData() {
             else if (tabId === 'gudang-fifo') { fetchFIFOData(); }
             else if (tabId === 'gudang-opname') { clearOpnameColumnFilters(true); const fg = document.getElementById('opname-filter-gudang'); if (fg) fg.value = 'all'; loadDataStockOpname(); }
             else if (tabId === 'gudang-history-opname') { loadHistoryStockOpname(); }
-            else if (tabId === 'gudang-opname-pallet') { loadDataOpnamePalletGBB(); }
+            else if (tabId === 'gudang-opname-pallet') { loadDataOpnamePalletGBB(); startOpnamePalletAutoRefresh(); }
             else if (tabId === 'gudang-mapping') { initWarehouseMapping(); }
             else if (tabId === 'gudang-cetak-rmw') { loadDataDropdownRMW(); }
             else if (tabId === 'gudang-ceklist') { loadDataCeklistWarehouse(); }
             else if (tabId === 'produksi') { fetchRiwayatPermintaan(); }
             else if (tabId === 'dashboard') { syncData(); }
+
+            if (tabId !== 'gudang-opname-pallet') {
+                stopOpnamePalletAutoRefresh();
+            }
         }
 
         let globalDataMasuk = []; let globalDataKeluar = []; let chartObjMasuk = null; let chartObjKeluar = null;
@@ -12582,6 +12590,11 @@ function testReadData() {
             if (elKotorInfo) elKotorInfo.innerText = `${tidakBersih} Tidak Bersih`;
 
             filterOpnamePalletGBB();
+
+            const secPallet = document.getElementById('sec-gudang-opname-pallet');
+            if (secPallet && !secPallet.classList.contains('hidden') && !opnamePalletAutoTimer && typeof startOpnamePalletAutoRefresh === 'function') {
+                startOpnamePalletAutoRefresh();
+            }
         }
 
         function filterOpnamePalletGBB() {
@@ -13415,12 +13428,56 @@ function testReadData() {
             if (modal) modal.classList.add('hidden');
         }
 
-        async function fetchOpnamePalletFromGoogleSheet() {
+        let opnamePalletCountdown = 60;
+        let opnamePalletAutoTimer = null;
+
+        function updateOpnamePalletCountdownUI() {
+            const el = document.getElementById('timer-opname-pallet-countdown');
+            if (el) el.innerText = `${opnamePalletCountdown}s`;
+        }
+
+        function startOpnamePalletAutoRefresh() {
+            if (opnamePalletAutoTimer) clearInterval(opnamePalletAutoTimer);
+            opnamePalletCountdown = 60;
+            updateOpnamePalletCountdownUI();
+
+            opnamePalletAutoTimer = setInterval(() => {
+                const sec = document.getElementById('sec-gudang-opname-pallet');
+                if (!sec || sec.classList.contains('hidden')) return;
+
+                opnamePalletCountdown--;
+                if (opnamePalletCountdown <= 0) {
+                    opnamePalletCountdown = 60;
+                    // Jangan interupsi jika form/modal audit pallet sedang terbuka
+                    const modalAudit = document.getElementById('modal-audit-pallet');
+                    if (modalAudit && !modalAudit.classList.contains('hidden')) {
+                        updateOpnamePalletCountdownUI();
+                        return;
+                    }
+                    fetchOpnamePalletFromGoogleSheet(false);
+                }
+                updateOpnamePalletCountdownUI();
+            }, 1000);
+        }
+
+        function stopOpnamePalletAutoRefresh() {
+            if (opnamePalletAutoTimer) {
+                clearInterval(opnamePalletAutoTimer);
+                opnamePalletAutoTimer = null;
+            }
+        }
+
+        async function fetchOpnamePalletFromGoogleSheet(isManual = true) {
+            opnamePalletCountdown = 60;
+            updateOpnamePalletCountdownUI();
+
             const icon = document.getElementById('icon-sync-opname-pallet');
             if (icon) icon.classList.add('animate-spin');
 
             try {
-                showToast("Menghubungkan ke lembar kerja STOCK_OPNAME_PALLET_GBB...", "info");
+                if (isManual) {
+                    showToast("Menghubungkan ke lembar kerja STOCK_OPNAME_PALLET_GBB...", "info");
+                }
                 const sheetRows = await fetchJSONData('STOCK_OPNAME_PALLET_GBB');
 
                 if (Array.isArray(sheetRows) && sheetRows.length > 0) {
@@ -13509,16 +13566,22 @@ function testReadData() {
                         try {
                             localStorage.setItem('sibikom_opname_pallet_data', JSON.stringify(opnamePalletList));
                         } catch (e) {}
-                        showToast(`Berhasil memuat ${filtered.length} data palet dari sheet STOCK_OPNAME_PALLET_GBB!`, "success");
+                        if (isManual) {
+                            showToast(`Berhasil memuat ${filtered.length} data palet dari sheet STOCK_OPNAME_PALLET_GBB!`, "success");
+                        }
                         loadDataOpnamePalletGBB(false);
                         return;
                     }
                 }
-                showToast("Sheet STOCK_OPNAME_PALLET_GBB belum memiliki baris data atau belum diinisialisasi.", "info");
+                if (isManual) {
+                    showToast("Sheet STOCK_OPNAME_PALLET_GBB belum memiliki baris data atau belum diinisialisasi.", "info");
+                }
                 loadDataOpnamePalletGBB(false);
             } catch (err) {
                 console.warn("Gagal membaca dari sheet STOCK_OPNAME_PALLET_GBB:", err);
-                showToast("Gagal memuat langsung dari Google Sheet. Menggunakan cache lokal.", "warning");
+                if (isManual) {
+                    showToast("Gagal memuat langsung dari Google Sheet. Menggunakan cache lokal.", "warning");
+                }
                 loadDataOpnamePalletGBB(false);
             } finally {
                 if (icon) icon.classList.remove('animate-spin');
