@@ -3229,9 +3229,14 @@
                         <button type="button" onclick="fetchOpnamePalletFromGoogleSheet(true)" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all cursor-pointer" title="Sinkronkan & Tarik Data Terbaru dari Sheet STOCK_OPNAME_PALLET_GBB">
                             <i class="ph ph-arrows-clockwise text-base" id="icon-sync-opname-pallet"></i> Segarkan Data
                         </button>
-                        <div id="badge-opname-pallet-autorefresh" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs" title="Sistem otomatis menyegarkan data setiap 60 detik">
+                        <div id="badge-opname-pallet-autorefresh" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs" title="Sistem otomatis menyegarkan data setiap 30 detik (atau live)">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>Auto Refresh: <span id="timer-opname-pallet-countdown" class="font-mono font-bold">60s</span></span>
+                            <span>Auto Refresh: <span id="timer-opname-pallet-countdown" class="font-mono font-bold">30s</span></span>
+                            <select id="select-opname-pallet-interval" onchange="changeOpnamePalletInterval(this.value)" class="ml-1 text-[11px] bg-white dark:bg-slate-800 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 rounded-md px-1.5 py-0.5 outline-none font-bold cursor-pointer" title="Pilih interval waktu auto-refresh">
+                                <option value="30" selected>30s</option>
+                                <option value="15">15s (Live)</option>
+                                <option value="60">60s</option>
+                            </select>
                         </div>
                         <button type="button" onclick="exportOpnamePalletExcel()" class="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all cursor-pointer">
                             <i class="ph ph-file-xls text-base text-emerald-600"></i> Export Excel / CSV
@@ -13428,17 +13433,33 @@ function testReadData() {
             if (modal) modal.classList.add('hidden');
         }
 
-        let opnamePalletCountdown = 60;
+        let opnamePalletIntervalSeconds = parseInt(localStorage.getItem('sibikom_opname_pallet_refresh_interval') || '30', 10);
+        if (isNaN(opnamePalletIntervalSeconds) || opnamePalletIntervalSeconds < 5) opnamePalletIntervalSeconds = 30;
+        let opnamePalletCountdown = opnamePalletIntervalSeconds;
         let opnamePalletAutoTimer = null;
+
+        function changeOpnamePalletInterval(val) {
+            const sec = parseInt(val, 10) || 30;
+            opnamePalletIntervalSeconds = sec;
+            try {
+                localStorage.setItem('sibikom_opname_pallet_refresh_interval', String(sec));
+            } catch (e) {}
+            opnamePalletCountdown = sec;
+            updateOpnamePalletCountdownUI();
+        }
 
         function updateOpnamePalletCountdownUI() {
             const el = document.getElementById('timer-opname-pallet-countdown');
             if (el) el.innerText = `${opnamePalletCountdown}s`;
+            const sel = document.getElementById('select-opname-pallet-interval');
+            if (sel && sel.value !== String(opnamePalletIntervalSeconds)) {
+                sel.value = String(opnamePalletIntervalSeconds);
+            }
         }
 
         function startOpnamePalletAutoRefresh() {
             if (opnamePalletAutoTimer) clearInterval(opnamePalletAutoTimer);
-            opnamePalletCountdown = 60;
+            opnamePalletCountdown = opnamePalletIntervalSeconds;
             updateOpnamePalletCountdownUI();
 
             opnamePalletAutoTimer = setInterval(() => {
@@ -13447,7 +13468,7 @@ function testReadData() {
 
                 opnamePalletCountdown--;
                 if (opnamePalletCountdown <= 0) {
-                    opnamePalletCountdown = 60;
+                    opnamePalletCountdown = opnamePalletIntervalSeconds;
                     // Jangan interupsi jika form/modal audit pallet sedang terbuka
                     const modalAudit = document.getElementById('modal-audit-pallet');
                     if (modalAudit && !modalAudit.classList.contains('hidden')) {
@@ -13468,7 +13489,7 @@ function testReadData() {
         }
 
         async function fetchOpnamePalletFromGoogleSheet(isManual = true) {
-            opnamePalletCountdown = 60;
+            opnamePalletCountdown = opnamePalletIntervalSeconds;
             updateOpnamePalletCountdownUI();
 
             const icon = document.getElementById('icon-sync-opname-pallet');
