@@ -1529,54 +1529,20 @@
             </form>
 
             <div class="mt-6 pt-4 border-t border-slate-200/50 dark:border-white/10">
-                <p class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-2.5 uppercase tracking-wider text-center">Klik untuk Masuk Langsung (Preview Mode):</p>
-                <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
-                    <!-- Superadmin -->
-                    <button type="button" onclick="quickLogin('superadmin', 'superadmin123')" title="Klik untuk login sebagai Superadmin" class="p-2 sm:p-2.5 rounded-xl quick-login-card ql-superadmin text-center transition-all cursor-pointer flex flex-col justify-between items-center group shadow-xs">
-                        <div class="w-full">
-                            <div class="font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 text-purple-900 dark:text-purple-200">
-                                <i class="ph ph-shield-check text-sm text-purple-600 dark:text-purple-400"></i> Superadmin
-                            </div>
-                            <div class="text-[9px] text-purple-700 dark:text-purple-300 font-medium mt-0.5">Semua Akses</div>
-                        </div>
-                        <div class="w-full mt-2 pt-1.5 border-t border-purple-300/40 dark:border-purple-400/20 text-[9px] font-mono text-left bg-white/50 dark:bg-black/30 px-1.5 py-1 rounded-lg space-y-0.5">
-                            <div class="truncate text-slate-800 dark:text-purple-100" title="Username: superadmin"><span class="text-[8px] font-sans text-purple-700 dark:text-purple-300 font-semibold">User: </span>superadmin</div>
-                            <div class="truncate text-slate-800 dark:text-purple-100" title="Password: superadmin123"><span class="text-[8px] font-sans text-purple-700 dark:text-purple-300 font-semibold">Pass: </span>superadmin123</div>
-                        </div>
+                <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-300 mb-2.5 uppercase tracking-wider text-center">Klik untuk Masuk Langsung (Preview Mode):</p>
+                <div class="grid grid-cols-3 gap-2.5">
+                    <button type="button" onclick="quickLogin('superadmin', 'superadmin123')" class="p-2.5 rounded-xl quick-login-card ql-superadmin text-center transition-all cursor-pointer">
+                        <div class="font-bold text-[11px] flex items-center justify-center gap-1 text-purple-900 dark:text-purple-200"><i class="ph ph-shield-check"></i> Superadmin</div>
+                        <div class="text-[9.5px] text-purple-700 dark:text-purple-300 mt-0.5">Semua Akses</div>
                     </button>
-
-                    <!-- Gudang -->
-                    <button type="button" onclick="quickLogin('RMW-Skd', 'RMW123')" title="Klik untuk login sebagai Admin Gudang" class="p-2 sm:p-2.5 rounded-xl quick-login-card ql-gudang text-center transition-all cursor-pointer flex flex-col justify-between items-center group shadow-xs">
-                        <div class="w-full">
-                            <div class="font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 text-sky-900 dark:text-sky-200">
-                                <i class="ph ph-warehouse text-sm text-sky-600 dark:text-sky-400"></i> Gudang
-                            </div>
-                            <div class="text-[9px] text-sky-700 dark:text-sky-300 font-medium mt-0.5">BKM & Ceklist</div>
-                        </div>
-                        <div class="w-full mt-2 pt-1.5 border-t border-sky-300/40 dark:border-sky-400/20 text-[9px] font-mono text-left bg-white/50 dark:bg-black/30 px-1.5 py-1 rounded-lg space-y-0.5">
-                            <div class="truncate text-slate-800 dark:text-sky-100" title="Username: RMW-Skd"><span class="text-[8px] font-sans text-sky-700 dark:text-sky-300 font-semibold">User: </span>RMW-Skd</div>
-                            <div class="truncate text-slate-800 dark:text-sky-100" title="Password: RMW123"><span class="text-[8px] font-sans text-sky-700 dark:text-sky-300 font-semibold">Pass: </span>RMW123</div>
-                        </div>
+                    <button type="button" onclick="quickLogin('RMW-Skd', 'RMW123')" class="p-2.5 rounded-xl quick-login-card ql-gudang text-center transition-all cursor-pointer">
+                        <div class="font-bold text-[11px] flex items-center justify-center gap-1 text-sky-900 dark:text-sky-200"><i class="ph ph-warehouse"></i> Gudang</div>
+                        <div class="text-[9.5px] text-sky-700 dark:text-sky-300 mt-0.5">BKM & Ceklist</div>
                     </button>
-
-                    <!-- UPBM -->
-                    <button type="button" onclick="quickLogin('UPBM-Skd', 'UPBM123')" title="Klik untuk login sebagai Admin UPBM" class="p-2 sm:p-2.5 rounded-xl quick-login-card ql-upbm text-center transition-all cursor-pointer flex flex-col justify-between items-center group shadow-xs">
-                        <div class="w-full">
-                            <div class="font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 text-amber-900 dark:text-amber-200">
-                                <i class="ph ph-fire text-sm text-amber-600 dark:text-amber-400"></i> UPBM
-                            </div>
-                            <div class="text-[9px] text-amber-700 dark:text-amber-300 font-medium mt-0.5">Roasting Kopi</div>
-                        </div>
-                        <div class="w-full mt-2 pt-1.5 border-t border-amber-300/40 dark:border-amber-400/20 text-[9px] font-mono text-left bg-white/50 dark:bg-black/30 px-1.5 py-1 rounded-lg space-y-0.5">
-                            <div class="truncate text-slate-800 dark:text-amber-100" title="Username: UPBM-Skd"><span class="text-[8px] font-sans text-amber-700 dark:text-amber-300 font-semibold">User: </span>UPBM-Skd</div>
-                            <div class="truncate text-slate-800 dark:text-amber-100" title="Password: UPBM123"><span class="text-[8px] font-sans text-amber-700 dark:text-amber-300 font-semibold">Pass: </span>UPBM123</div>
-                        </div>
+                    <button type="button" onclick="quickLogin('UPBM-Skd', 'UPBM123')" class="p-2.5 rounded-xl quick-login-card ql-upbm text-center transition-all cursor-pointer">
+                        <div class="font-bold text-[11px] flex items-center justify-center gap-1 text-amber-900 dark:text-amber-200"><i class="ph ph-fire"></i> UPBM</div>
+                        <div class="text-[9.5px] text-amber-700 dark:text-amber-300 mt-0.5">Roasting Kopi</div>
                     </button>
-                </div>
-                <div class="mt-2.5 text-center">
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">
-                        <i class="ph ph-cursor-click mr-0.5 text-sky-500"></i> Klik salah satu kartu untuk masuk langsung, atau masukkan kredensial di atas.
-                    </p>
                 </div>
             </div>
         </div>
@@ -1847,6 +1813,9 @@
                         </button>
                         <button type="button" onclick="goToProsesPengeluaranFromNotif()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
                             <i class="ph ph-paper-plane-tilt text-sm"></i> Proses Pengeluaran
+                        </button>
+                        <button type="button" onclick="dismissDashNotifBanner()" class="p-1.5 rounded-xl bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-slate-200/90 dark:border-slate-700 transition-colors cursor-pointer" title="Tutup / Sembunyikan Banner">
+                            <i class="ph ph-x text-base"></i>
                         </button>
                     </div>
                 </div>
@@ -8466,6 +8435,12 @@ function testReadData() {
             showToast('Semua notifikasi permintaan ditandai telah dilihat.', 'success');
         }
 
+        function dismissDashNotifBanner() {
+            try { sessionStorage.setItem('sibikom_dash_banner_dismissed', '1'); } catch(e){}
+            const dashBanner = document.getElementById('dash-upbm-notif-banner');
+            if (dashBanner) dashBanner.classList.add('hidden');
+        }
+
         function updateNotifBadgeCount() {
             let readIds = [];
             try { readIds = JSON.parse(localStorage.getItem('sibikom_read_notif_ids') || '[]'); } catch(e){}
@@ -8483,7 +8458,11 @@ function testReadData() {
             const dashDesc = document.getElementById('dash-notif-banner-desc');
 
             if (subCount) {
-                subCount.innerText = `${incomingPermintaanList.length} permintaan menunggu realisasi (${unreadCount} baru)`;
+                if (unreadCount > 0) {
+                    subCount.innerText = `${incomingPermintaanList.length} permohonan (${unreadCount} baru)`;
+                } else {
+                    subCount.innerText = `${incomingPermintaanList.length} permohonan tersimpan`;
+                }
             }
 
             if (unreadCount > 0) {
@@ -8496,23 +8475,21 @@ function testReadData() {
             } else {
                 if (badgePing) badgePing.classList.add('hidden');
                 if (badgePill) {
-                    if (incomingPermintaanList.length > 0) {
-                        badgePill.innerText = incomingPermintaanList.length;
-                        badgePill.className = "px-1.5 py-0.5 text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full leading-none shadow-xs";
-                        badgePill.classList.remove('hidden');
-                    } else {
-                        badgePill.classList.add('hidden');
-                    }
+                    badgePill.classList.add('hidden');
                 }
             }
 
             const isGudangOrSuper = window.currentUser && (window.currentUser.role === 'Gudang' || window.currentUser.role === 'SuperAdmin');
+            let isBannerDismissed = false;
+            try { isBannerDismissed = sessionStorage.getItem('sibikom_dash_banner_dismissed') === '1'; } catch(e){}
+
             if (dashBanner) {
-                if (isGudangOrSuper && incomingPermintaanList.length > 0) {
+                // Tampilkan banner HANYA bila ada permintaan yang benar-benar BARU (unreadCount > 0) dan belum di-close oleh pengguna
+                if (isGudangOrSuper && unreadCount > 0 && !isBannerDismissed) {
                     dashBanner.classList.remove('hidden');
-                    if (dashBadgePill) dashBadgePill.innerText = `${unreadCount > 0 ? unreadCount + ' Masuk Baru' : incomingPermintaanList.length + ' Menunggu Realisasi'}`;
-                    if (dashDesc && incomingPermintaanList[0]) {
-                        const topReq = incomingPermintaanList[0];
+                    if (dashBadgePill) dashBadgePill.innerText = `${unreadCount} Masuk Baru`;
+                    if (dashDesc && unreadItems[0]) {
+                        const topReq = unreadItems[0];
                         const idTop = findValue(topReq, 'ID_PERMINTAAN') || topReq.ID_PERMINTAAN || '';
                         const pemintaTop = findValue(topReq, 'PEMINTA') || topReq.PEMINTA || 'UPBM';
                         const jenisTop = findValue(topReq, 'JENIS_KOPI') || topReq.JENIS_KOPI || '';
@@ -8559,20 +8536,58 @@ function testReadData() {
 
                 let knownIds = [];
                 try { knownIds = JSON.parse(localStorage.getItem('sibikom_known_notif_ids') || '[]'); } catch(e){}
-                let newIncoming = incomingPermintaanList.filter(item => {
-                    let id = findValue(item, 'ID_PERMINTAAN') || item.ID_PERMINTAAN;
-                    return id && !knownIds.includes(id);
-                });
+                let readIds = [];
+                try { readIds = JSON.parse(localStorage.getItem('sibikom_read_notif_ids') || '[]'); } catch(e){}
 
-                if (newIncoming.length > 0 && window.currentUser && (window.currentUser.role === 'Gudang' || window.currentUser.role === 'SuperAdmin')) {
-                    playNotifChime();
-                    const firstId = findValue(newIncoming[0], 'ID_PERMINTAAN') || newIncoming[0].ID_PERMINTAAN;
-                    showToast(`🔔 Ada ${newIncoming.length} Permintaan Baru masuk dari UPBM Roasting! (${firstId})`, 'info');
-                    newIncoming.forEach(item => {
+                // Inisialisasi awal: bila pertama kali membuka aplikasi di sesi/perangkat baru,
+                // tandai semua data riwayat dari sheet sebagai sudah diketahui agar tidak membanjiri user
+                // dengan badge 99+, banner 198 baru, atau popup beruntun
+                let isInit = false;
+                try { isInit = localStorage.getItem('sibikom_notif_initialized_v2') === '1'; } catch(e){}
+                if (!isInit) {
+                    incomingPermintaanList.forEach(item => {
                         let id = findValue(item, 'ID_PERMINTAAN') || item.ID_PERMINTAAN;
-                        if (id && !knownIds.includes(id)) knownIds.push(id);
+                        if (id) {
+                            if (!knownIds.includes(id)) knownIds.push(id);
+                            if (!readIds.includes(id)) readIds.push(id);
+                        }
                     });
-                    localStorage.setItem('sibikom_known_notif_ids', JSON.stringify(knownIds));
+                    try {
+                        localStorage.setItem('sibikom_known_notif_ids', JSON.stringify(knownIds));
+                        localStorage.setItem('sibikom_read_notif_ids', JSON.stringify(readIds));
+                        localStorage.setItem('sibikom_notif_initialized_v2', '1');
+                    } catch(e){}
+                }
+
+                let alertedIds = [];
+                try { alertedIds = JSON.parse(sessionStorage.getItem('sibikom_alerted_notif_ids') || '[]'); } catch(e){}
+
+                // Hanya item yang benar-benar baru masuk saat sesi berjalan yang memunculkan toast & chime
+                let trulyNewItems = [];
+                if (isInit) {
+                    trulyNewItems = incomingPermintaanList.filter(item => {
+                        let id = findValue(item, 'ID_PERMINTAAN') || item.ID_PERMINTAAN;
+                        return id && !knownIds.includes(id) && !alertedIds.includes(id);
+                    });
+                }
+
+                if (trulyNewItems.length > 0 && window.currentUser && (window.currentUser.role === 'Gudang' || window.currentUser.role === 'SuperAdmin')) {
+                    playNotifChime();
+                    const firstId = findValue(trulyNewItems[0], 'ID_PERMINTAAN') || trulyNewItems[0].ID_PERMINTAAN;
+                    showToast(`🔔 Ada ${trulyNewItems.length} Permintaan Baru dari UPBM Roasting! (${firstId})`, 'info');
+                    try { sessionStorage.removeItem('sibikom_dash_banner_dismissed'); } catch(e){}
+
+                    trulyNewItems.forEach(item => {
+                        let id = findValue(item, 'ID_PERMINTAAN') || item.ID_PERMINTAAN;
+                        if (id) {
+                            if (!knownIds.includes(id)) knownIds.push(id);
+                            if (!alertedIds.includes(id)) alertedIds.push(id);
+                        }
+                    });
+                    try {
+                        localStorage.setItem('sibikom_known_notif_ids', JSON.stringify(knownIds));
+                        sessionStorage.setItem('sibikom_alerted_notif_ids', JSON.stringify(alertedIds));
+                    } catch(e){}
                 }
 
                 updateNotifBadgeCount();
@@ -8671,7 +8686,7 @@ function testReadData() {
             try { readIds = JSON.parse(localStorage.getItem('sibikom_read_notif_ids') || '[]'); } catch(e){}
             if (!readIds.includes(idReq)) {
                 readIds.push(idReq);
-                localStorage.setItem('sibikom_read_notif_ids', JSON.stringify(readIds));
+                try { localStorage.setItem('sibikom_read_notif_ids', JSON.stringify(readIds)); } catch(e){}
                 updateNotifBadgeCount();
             }
 
@@ -8706,26 +8721,24 @@ function testReadData() {
                     bell.classList.remove('hidden');
                     bell.classList.add('flex');
                     checkIncomingPermintaanUPBM(false);
-                    if (!notifPollInterval) {
-                        notifPollInterval = setInterval(() => checkIncomingPermintaanUPBM(false), 25000);
-                    }
                 } else {
                     bell.classList.add('hidden');
                     bell.classList.remove('flex');
                     const dashBanner = document.getElementById('dash-upbm-notif-banner');
                     if (dashBanner) dashBanner.classList.add('hidden');
-                    if (notifPollInterval) {
-                        clearInterval(notifPollInterval);
-                        notifPollInterval = null;
-                    }
                 }
+            }
+            if (notifPollInterval) {
+                clearInterval(notifPollInterval);
+                notifPollInterval = null;
             }
         }
 
         window.addEventListener('storage', function(e) {
             if (e.key === 'sibikom_new_upbm_submit_alert') {
                 if (window.currentUser && (window.currentUser.role === 'Gudang' || window.currentUser.role === 'SuperAdmin')) {
-                    checkIncomingPermintaanUPBM(true);
+                    try { sessionStorage.removeItem('sibikom_dash_banner_dismissed'); } catch(e){}
+                    checkIncomingPermintaanUPBM(false);
                 }
             }
         });
