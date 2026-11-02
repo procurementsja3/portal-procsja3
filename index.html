@@ -7333,7 +7333,7 @@ if (p.action === "cancelOperGudang") {
                     <div class="grid grid-cols-3 gap-3.5">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">ID Lot</label>
-                            <input type="text" id="edit-kel-id-lot" name="ID_LOT" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
+                            <input type="text" id="edit-kel-id-lot" name="ID_LOT" list="lot-list-options" oninput="handleEditLotChange(this.value)" onchange="handleEditLotChange(this.value)" required placeholder="Pilih/ketik ID Lot..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">ID Lokasi</label>
@@ -7347,7 +7347,10 @@ if (p.action === "cancelOperGudang") {
 
                     <div class="grid grid-cols-3 gap-3.5">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Kopi</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-semibold text-slate-700">Jenis Kopi</label>
+                                <span id="edit-kel-jk-source" class="text-[10px] text-emerald-600 font-semibold"></span>
+                            </div>
                             <select id="edit-kel-jenis-kopi" name="JENIS_KOPI" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:border-blue-500 outline-none bg-white">
                                 <option value="18">18</option>
                                 <option value="19">19</option>
@@ -9866,6 +9869,135 @@ function testReadData() {
         }
 
         // ================= EDIT PENGELUARAN KOPI =================
+        function lookupJenisKopiFromLot(idLot) {
+            if (!idLot) return '';
+            const cleanLot = String(idLot).trim().toLowerCase();
+
+            // 1. Cari dari allRiwPen (Data Penerimaan Kopi)
+            if (Array.isArray(allRiwPen) && allRiwPen.length > 0) {
+                const penItem = allRiwPen.find(p => {
+                    const pId = String(findValue(p, 'ID_LOT') || p['ID_LOT'] || '').trim().toLowerCase();
+                    return pId === cleanLot;
+                });
+                if (penItem) {
+                    const jk = findValue(penItem, 'JENIS_KOPI') || penItem['JENIS_KOPI'];
+                    if (jk) return String(jk).trim();
+                }
+            }
+
+            // 2. Cari dari dataFifoLengkap (Data FIFO Penerimaan dari Google Sheet)
+            if (typeof dataFifoLengkap !== 'undefined' && Array.isArray(dataFifoLengkap) && dataFifoLengkap.length > 0) {
+                const fifoItem = dataFifoLengkap.find(f => {
+                    const fId = String(findValue(f, 'ID_MASUK') || findValue(f, 'ID_LOT') || f['ID_LOT'] || f['ID_MASUK'] || '').trim().toLowerCase();
+                    return fId === cleanLot;
+                });
+                if (fifoItem) {
+                    const jk = findValue(fifoItem, 'JENIS_KOPI') || fifoItem['JENIS_KOPI'];
+                    if (jk) return String(jk).trim();
+                }
+            }
+
+            // 3. Cari dari allFifoData (Data Stok Aktif FIFO)
+            if (typeof allFifoData !== 'undefined' && Array.isArray(allFifoData) && allFifoData.length > 0) {
+                const fifoItem2 = allFifoData.find(f => {
+                    const fId = String(findValue(f, 'ID_MASUK') || findValue(f, 'ID_LOT') || f['ID_LOT'] || f['ID_MASUK'] || '').trim().toLowerCase();
+                    return fId === cleanLot;
+                });
+                if (fifoItem2) {
+                    const jk = findValue(fifoItem2, 'JENIS_KOPI') || fifoItem2['JENIS_KOPI'];
+                    if (jk) return String(jk).trim();
+                }
+            }
+
+            // 4. Cari dari allRiwKel (data pengeluaran lain dengan ID Lot yang sama)
+            if (Array.isArray(allRiwKel) && allRiwKel.length > 0) {
+                const kelItem = allRiwKel.find(k => {
+                    const kId = String(findValue(k, 'ID_LOT') || k['ID_LOT'] || '').trim().toLowerCase();
+                    return kId === cleanLot && (findValue(k, 'JENIS_KOPI') || k['JENIS_KOPI']);
+                });
+                if (kelItem) {
+                    const jk = findValue(kelItem, 'JENIS_KOPI') || kelItem['JENIS_KOPI'];
+                    if (jk) return String(jk).trim();
+                }
+            }
+
+            return '';
+        }
+
+        function setEditPengeluaranJenisKopi(val, sourceLabel = '') {
+            const select = document.getElementById('edit-kel-jenis-kopi');
+            const lbl = document.getElementById('edit-kel-jk-source');
+            if (!select) return;
+            val = String(val || '').trim();
+            if (!val) {
+                if (lbl) lbl.innerText = '';
+                return;
+            }
+
+            let matchedIndex = -1;
+            const cleanVal = val.toLowerCase().replace(/^kopi\s+/i, '').trim();
+
+            for (let i = 0; i < select.options.length; i++) {
+                const optVal = select.options[i].value.toLowerCase().trim();
+                const optText = select.options[i].text.toLowerCase().trim();
+                const cleanOptVal = optVal.replace(/^kopi\s+/i, '').trim();
+
+                if (optVal === val.toLowerCase() || optText === val.toLowerCase() ||
+                    (cleanVal && (optVal === cleanVal || cleanOptVal === cleanVal))) {
+                    matchedIndex = i;
+                    break;
+                }
+            }
+
+            if (matchedIndex !== -1) {
+                select.selectedIndex = matchedIndex;
+            } else {
+                // Tambahkan option baru secara dinamis agar tidak pernah kosong
+                const newOpt = document.createElement('option');
+                newOpt.value = val;
+                newOpt.text = val;
+                select.appendChild(newOpt);
+                select.value = val;
+            }
+
+            if (lbl) {
+                lbl.innerText = sourceLabel || '✓ Dari Penerimaan';
+            }
+        }
+
+        function handleEditLotChange(idLotVal) {
+            idLotVal = String(idLotVal || '').trim();
+            if (!idLotVal) return;
+
+            let jk = lookupJenisKopiFromLot(idLotVal);
+            if (jk) {
+                setEditPengeluaranJenisKopi(jk, '✓ Dari Penerimaan');
+            } else {
+                // Fetch penerimaan jika belum ada di memori
+                fetchJSONData('INPUT_PENERIMAAN_KOPI').then(dA => {
+                    if (Array.isArray(dA)) {
+                        allRiwPen = dA.filter(r => findValue(r, 'TANGGAL_MASUK'));
+                        let freshJk = lookupJenisKopiFromLot(idLotVal);
+                        if (freshJk) {
+                            setEditPengeluaranJenisKopi(freshJk, '✓ Dari Penerimaan');
+                        }
+                    }
+                }).catch(e => console.warn(e));
+            }
+
+            // Lengkapi otomatis ID Lokasi & No Palet dari data penerimaan jika input masih kosong
+            const lokInp = document.getElementById('edit-kel-id-lokasi');
+            const paletInp = document.getElementById('edit-kel-no-palet');
+            let foundPen = (allRiwPen || []).find(p => String(findValue(p, 'ID_LOT') || p['ID_LOT'] || '').trim().toLowerCase() === idLotVal.toLowerCase());
+            if (!foundPen && typeof dataFifoLengkap !== 'undefined' && Array.isArray(dataFifoLengkap)) {
+                foundPen = dataFifoLengkap.find(f => String(findValue(f, 'ID_MASUK') || findValue(f, 'ID_LOT') || f['ID_LOT'] || f['ID_MASUK'] || '').trim().toLowerCase() === idLotVal.toLowerCase());
+            }
+            if (foundPen) {
+                if (lokInp && !lokInp.value) lokInp.value = findValue(foundPen, 'ID_LOKASI') || '';
+                if (paletInp && !paletInp.value) paletInp.value = findValue(foundPen, 'NO_PALET') || '';
+            }
+        }
+
         function openEditPengeluaran(idKeluar) {
             if (!idKeluar) return;
             const item = (allRiwKel || []).find(r => String(findValue(r, 'ID_KELUAR') || r['ID_KELUAR'] || '').trim() === String(idKeluar).trim());
@@ -9906,10 +10038,35 @@ function testReadData() {
             document.getElementById('edit-kel-shift').value = findValue(item, 'SHIFT_KELUAR') || "SHIFT 1";
             document.getElementById('edit-kel-id-req').value = findValue(item, 'ID_PERMINTAAN') || "";
             document.getElementById('edit-kel-tujuan').value = findValue(item, 'TUJUAN') || "UPBM";
-            document.getElementById('edit-kel-id-lot').value = findValue(item, 'ID_LOT') || "";
+            
+            const lotVal = findValue(item, 'ID_LOT') || item['ID_LOT'] || "";
+            document.getElementById('edit-kel-id-lot').value = lotVal;
             document.getElementById('edit-kel-id-lokasi').value = findValue(item, 'ID_LOKASI') || "";
             document.getElementById('edit-kel-no-palet').value = findValue(item, 'NO_PALET') || "";
-            document.getElementById('edit-kel-jenis-kopi').value = String(findValue(item, 'JENIS_KOPI') || "18").trim();
+
+            // AMBIL JENIS KOPI DARI ID LOT DI DATA PENERIMAAN GOOGLE SHEET (SESUAI PERMINTAAN USER)
+            let jenisKopiLot = lookupJenisKopiFromLot(lotVal);
+            if (jenisKopiLot) {
+                setEditPengeluaranJenisKopi(jenisKopiLot, '✓ Dari Penerimaan');
+            } else {
+                // Jika belum ketemu di memori lokal, gunakan data dari item pengeluaran jika ada
+                const fallbackJk = findValue(item, 'JENIS_KOPI') || item['JENIS_KOPI'] || "18";
+                setEditPengeluaranJenisKopi(fallbackJk, '');
+                
+                // Fetch data penerimaan Google Sheet secara asinkron untuk memastikan selalu tepat
+                if (lotVal) {
+                    fetchJSONData('INPUT_PENERIMAAN_KOPI').then(dA => {
+                        if (Array.isArray(dA)) {
+                            allRiwPen = dA.filter(r => findValue(r, 'TANGGAL_MASUK'));
+                            let freshJk = lookupJenisKopiFromLot(lotVal);
+                            if (freshJk) {
+                                setEditPengeluaranJenisKopi(freshJk, '✓ Dari Penerimaan');
+                            }
+                        }
+                    }).catch(e => console.warn(e));
+                }
+            }
+
             document.getElementById('edit-kel-karung').value = findValue(item, 'KARUNG_KELUAR') || "";
 
             const kg = parseNilaiAngka(findValue(item, 'KG_KELUAR') || findValue(item, 'KG KELUAR')) || 0;
