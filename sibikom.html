@@ -2280,7 +2280,7 @@
                     </button>
                 </div>
                 
-                <form id="form-gudang-penerimaan" onsubmit="submitPaletBerurutan(event)" class="space-y-6">
+                <form id="form-gudang-penerimaan" novalidate onsubmit="submitPaletBerurutan(event)" class="space-y-6">
                     <div class="bg-slate-50/80 dark:bg-slate-900/90 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
                         <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2.5">
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
@@ -2414,7 +2414,7 @@
                         <button type="button" id="btn-preview-label-penerimaan" onclick="previewCurrentLabelFromForm()" class="hidden w-full sm:w-auto flex justify-center items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md transition-all text-xs sm:text-sm cursor-pointer" title="Preview atau Cetak Label">
                             <i class="ph ph-printer text-lg"></i> Preview/Cetak Label
                         </button>
-                        <button type="submit" class="w-full sm:w-auto flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-8 py-2.5 rounded-lg font-semibold shadow-md transition-colors cursor-pointer">
+                        <button type="submit" id="btn-submit-penerimaan" onclick="submitPaletBerurutan(event)" class="w-full sm:w-auto flex justify-center items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-8 py-2.5 rounded-lg font-semibold shadow-md transition-colors cursor-pointer">
                             <i class="ph ph-paper-plane-right text-lg"></i> Simpan Penerimaan
                         </button>
                     </div>
@@ -8803,7 +8803,16 @@ function testReadData() {
             setTimeout(() => { t.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => t.remove(), 300); }, 4000); 
         }
 
-        // Helper functions for data parsing
+        // Helper functions for data parsing and string escaping
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
         function findValue(row, keyName) {
             if (!row) return "";
             if (row[keyName] !== undefined && row[keyName] !== null && row[keyName] !== "") return row[keyName];
@@ -10250,121 +10259,130 @@ function testReadData() {
         }
 
         function submitPaletBerurutan(e) {
-            if (e) e.preventDefault();
+            if (e && typeof e.preventDefault === 'function') e.preventDefault();
             const frm = document.getElementById('form-gudang-penerimaan');
             if (!frm) return;
 
-            // Validasi kolom bertanda required
-            const req = frm.querySelectorAll('[required]');
-            for (let i of req) {
-                if (i.value.trim() === "") {
-                    showToast(`Isi semua kolom wajib!`, 'error');
-                    i.focus();
+            try {
+                // Validasi kolom bertanda required yang tampak (visible)
+                const req = frm.querySelectorAll('[required]');
+                for (let i of req) {
+                    if (i.offsetParent === null && i.classList.contains('hidden')) continue;
+                    if (!i.value || i.value.trim() === "") {
+                        showToast(`Isi semua kolom wajib!`, 'error');
+                        try { i.focus(); } catch(err){}
+                        return;
+                    }
+                }
+
+                const rws = document.querySelectorAll('.palet-row');
+                if (!rws || rws.length === 0) {
+                    showToast(`Data palet penerimaan belum diinput!`, 'error');
                     return;
                 }
-            }
 
-            const rws = document.querySelectorAll('.palet-row');
-            if (!rws || rws.length === 0) {
-                showToast(`Data palet penerimaan belum diinput!`, 'error');
-                return;
-            }
+                // Kumpulkan data ringkasan untuk konfirmasi user
+                const tM = frm.querySelector('[name="TANGGAL_MASUK"]')?.value?.trim() || '-';
+                const g = (frm.querySelector('[name="GUDANG"]')?.value || document.getElementById('select-gudang')?.value || '-').trim();
+                const nl = frm.querySelector('[name="NO_LOT"]')?.value?.trim() || '-';
+                const sj = frm.querySelector('[name="SURAT_JALAN"]')?.value?.trim() || '-';
+                const jk = (frm.querySelector('[name="JENIS_KOPI"]')?.value || document.getElementById('select-jenis-kopi')?.value || '-').trim();
+                const sp = frm.querySelector('[name="SUPPLIER"]')?.value?.trim() || '-';
+                const nPo = frm.querySelector('[name="NO_PO"]') ? frm.querySelector('[name="NO_PO"]').value.trim() : "";
 
-            // Kumpulkan data ringkasan untuk konfirmasi user
-            const tM = frm.querySelector('[name="TANGGAL_MASUK"]')?.value.trim() || '-';
-            const g = frm.querySelector('[name="GUDANG"]')?.value.trim() || '-';
-            const nl = frm.querySelector('[name="NO_LOT"]')?.value.trim() || '-';
-            const sj = frm.querySelector('[name="SURAT_JALAN"]')?.value.trim() || '-';
-            const jk = frm.querySelector('[name="JENIS_KOPI"]')?.value.trim() || '-';
-            const sp = frm.querySelector('[name="SUPPLIER"]')?.value.trim() || '-';
-            const nPo = frm.querySelector('[name="NO_PO"]') ? frm.querySelector('[name="NO_PO"]').value.trim() : "";
-
-            let totalSak = 0;
-            let totalNetto = 0;
-            rws.forEach(r => {
-                const sak = parseFloat(r.querySelector('[name="KARUNG_MASUK[]"]')?.value) || 0;
-                const bP = parseFloat(r.querySelector('.input-pallet')?.value) || 0;
-                const bB = parseFloat(r.querySelector('.input-bruto')?.value) || 0;
-                totalSak += sak;
-                totalNetto += Math.max(0, bB - bP);
-            });
-
-            // Populate data ke elemen pop-up modal konfirmasi
-            const elSj = document.getElementById('confirm-penerimaan-sj');
-            if (elSj) elSj.innerText = sj;
-
-            const elTgl = document.getElementById('confirm-penerimaan-tgl');
-            if (elTgl) elTgl.innerText = typeof formatSheetDate === 'function' ? formatSheetDate(tM) : tM;
-
-            const elSp = document.getElementById('confirm-penerimaan-supplier');
-            if (elSp) elSp.innerText = sp;
-
-            const elPo = document.getElementById('confirm-penerimaan-po');
-            if (elPo) elPo.innerText = nPo ? nPo : '(Tanpa PO)';
-
-            const elLot = document.getElementById('confirm-penerimaan-lot');
-            if (elLot) elLot.innerText = nl;
-
-            const elGudang = document.getElementById('confirm-penerimaan-gudang');
-            if (elGudang) elGudang.innerText = g;
-
-            const elJenis = document.getElementById('confirm-penerimaan-jenis');
-            if (elJenis) elJenis.innerText = jk;
-
-            const elPalet = document.getElementById('confirm-penerimaan-palet');
-            if (elPalet) elPalet.innerText = `${rws.length} Palet`;
-
-            const elSak = document.getElementById('confirm-penerimaan-sak');
-            if (elSak) elSak.innerText = `${totalSak.toLocaleString('id-ID')} Sak`;
-
-            const elNetto = document.getElementById('confirm-penerimaan-netto');
-            if (elNetto) elNetto.innerText = `${totalNetto.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Kg`;
-
-            // Render Rincian Tiap Baris Palet (1 s/d 20 Palet) untuk Verifikasi Lengkap
-            const badgeCount = document.getElementById('confirm-penerimaan-palet-count-badge');
-            if (badgeCount) badgeCount.innerText = `${rws.length}`;
-
-            const tbodyPalet = document.getElementById('confirm-penerimaan-pallet-tbody');
-            if (tbodyPalet) {
-                let rowsHtml = '';
-                rws.forEach((r, idx) => {
-                    const noP = r.querySelector('.input-no-palet')?.value.trim() || `P${String(idx+1).padStart(2, '0')}`;
-                    const sl = r.querySelector('select[name="ID_LOKASI_SELECT[]"]');
-                    const il = r.querySelector('input[name="ID_LOKASI_MANUAL[]"]');
-                    const idLokasi = (sl && sl.value === 'Lainnya' ? (il ? il.value.trim() : '') : (sl ? sl.value : '')) || '-';
-                    
+                let totalSak = 0;
+                let totalNetto = 0;
+                rws.forEach(r => {
                     const sak = parseFloat(r.querySelector('[name="KARUNG_MASUK[]"]')?.value) || 0;
                     const bP = parseFloat(r.querySelector('.input-pallet')?.value) || 0;
                     const bB = parseFloat(r.querySelector('.input-bruto')?.value) || 0;
-                    const netto = Math.max(0, bB - bP);
-
-                    const ss = r.querySelector('.select-status-mutu');
-                    const is = r.querySelector('.input-status-mutu');
-                    const stMutu = (ss && ss.value === 'Lainnya' ? (is ? is.value.trim() : '') : (ss ? ss.value : '')) || 'PASS';
-
-                    let mutuBadgeClass = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
-                    if (stMutu === 'HOLD') {
-                        mutuBadgeClass = 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
-                    } else if (stMutu === 'REJECT') {
-                        mutuBadgeClass = 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800';
-                    }
-
-                    rowsHtml += `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
-                            <td class="px-2.5 py-1.5 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
-                            <td class="px-2.5 py-1.5 font-bold text-slate-800 dark:text-slate-100">${escapeHtml ? escapeHtml(noP) : noP}</td>
-                            <td class="px-2.5 py-1.5"><span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] border border-slate-200 dark:border-slate-700">${escapeHtml ? escapeHtml(idLokasi) : idLokasi}</span></td>
-                            <td class="px-2.5 py-1.5 text-right font-medium">${sak.toLocaleString('id-ID')} Sak</td>
-                            <td class="px-2.5 py-1.5 text-right font-bold text-emerald-700 dark:text-emerald-400">${netto.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Kg</td>
-                            <td class="px-2.5 py-1.5 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${mutuBadgeClass}">${stMutu}</span></td>
-                        </tr>
-                    `;
+                    totalSak += sak;
+                    totalNetto += Math.max(0, bB - bP);
                 });
-                tbodyPalet.innerHTML = rowsHtml;
-            }
 
-            // Tampilkan pop-up modal konfirmasi
-            openConfirmPenerimaanModal();
+                // Populate data ke elemen pop-up modal konfirmasi
+                const elSj = document.getElementById('confirm-penerimaan-sj');
+                if (elSj) elSj.innerText = sj;
+
+                const elTgl = document.getElementById('confirm-penerimaan-tgl');
+                if (elTgl) elTgl.innerText = typeof formatSheetDate === 'function' ? formatSheetDate(tM) : tM;
+
+                const elSp = document.getElementById('confirm-penerimaan-supplier');
+                if (elSp) elSp.innerText = sp;
+
+                const elPo = document.getElementById('confirm-penerimaan-po');
+                if (elPo) elPo.innerText = nPo ? nPo : '(Tanpa PO)';
+
+                const elLot = document.getElementById('confirm-penerimaan-lot');
+                if (elLot) elLot.innerText = nl;
+
+                const elGudang = document.getElementById('confirm-penerimaan-gudang');
+                if (elGudang) elGudang.innerText = g;
+
+                const elJenis = document.getElementById('confirm-penerimaan-jenis');
+                if (elJenis) elJenis.innerText = jk;
+
+                const elPalet = document.getElementById('confirm-penerimaan-palet');
+                if (elPalet) elPalet.innerText = `${rws.length} Palet`;
+
+                const elSak = document.getElementById('confirm-penerimaan-sak');
+                if (elSak) elSak.innerText = `${totalSak.toLocaleString('id-ID')} Sak`;
+
+                const elNetto = document.getElementById('confirm-penerimaan-netto');
+                if (elNetto) elNetto.innerText = `${totalNetto.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Kg`;
+
+                // Render Rincian Tiap Baris Palet (1 s/d 20 Palet) untuk Verifikasi Lengkap
+                const badgeCount = document.getElementById('confirm-penerimaan-palet-count-badge');
+                if (badgeCount) badgeCount.innerText = `${rws.length}`;
+
+                const tbodyPalet = document.getElementById('confirm-penerimaan-pallet-tbody');
+                if (tbodyPalet) {
+                    let rowsHtml = '';
+                    rws.forEach((r, idx) => {
+                        const noP = r.querySelector('.input-no-palet')?.value.trim() || `P${String(idx+1).padStart(2, '0')}`;
+                        const sl = r.querySelector('select[name="ID_LOKASI_SELECT[]"]');
+                        const il = r.querySelector('input[name="ID_LOKASI_MANUAL[]"]');
+                        const idLokasi = (sl && sl.value === 'Lainnya' ? (il ? il.value.trim() : '') : (sl ? sl.value : '')) || '-';
+                        
+                        const sak = parseFloat(r.querySelector('[name="KARUNG_MASUK[]"]')?.value) || 0;
+                        const bP = parseFloat(r.querySelector('.input-pallet')?.value) || 0;
+                        const bB = parseFloat(r.querySelector('.input-bruto')?.value) || 0;
+                        const netto = Math.max(0, bB - bP);
+
+                        const ss = r.querySelector('.select-status-mutu');
+                        const is = r.querySelector('.input-status-mutu');
+                        const stMutu = (ss && ss.value === 'Lainnya' ? (is ? is.value.trim() : '') : (ss ? ss.value : '')) || 'PASS';
+
+                        let mutuBadgeClass = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
+                        if (stMutu === 'HOLD') {
+                            mutuBadgeClass = 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
+                        } else if (stMutu === 'REJECT') {
+                            mutuBadgeClass = 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800';
+                        }
+
+                        const safeNoP = typeof escapeHtml === 'function' ? escapeHtml(noP) : noP;
+                        const safeIdLokasi = typeof escapeHtml === 'function' ? escapeHtml(idLokasi) : idLokasi;
+
+                        rowsHtml += `
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                                <td class="px-2.5 py-1.5 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
+                                <td class="px-2.5 py-1.5 font-bold text-slate-800 dark:text-slate-100">${safeNoP}</td>
+                                <td class="px-2.5 py-1.5"><span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] border border-slate-200 dark:border-slate-700">${safeIdLokasi}</span></td>
+                                <td class="px-2.5 py-1.5 text-right font-medium">${sak.toLocaleString('id-ID')} Sak</td>
+                                <td class="px-2.5 py-1.5 text-right font-bold text-emerald-700 dark:text-emerald-400">${netto.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Kg</td>
+                                <td class="px-2.5 py-1.5 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${mutuBadgeClass}">${stMutu}</span></td>
+                            </tr>
+                        `;
+                    });
+                    tbodyPalet.innerHTML = rowsHtml;
+                }
+
+                // Tampilkan pop-up modal konfirmasi
+                openConfirmPenerimaanModal();
+            } catch(err) {
+                console.error("Error in submitPaletBerurutan:", err);
+                showToast("Terjadi kendala memproses data penerimaan: " + (err.message || err), "error");
+            }
         }
 
         async function executeRealSubmitPenerimaan() {
@@ -10373,125 +10391,109 @@ function testReadData() {
             if (!frm) return;
 
             const ov = document.getElementById('loading-overlay');
-            const ovT = ov.querySelector('p');
-            ov.classList.remove('hidden');
+            const ovT = ov ? ov.querySelector('p') : null;
+            if (ov) ov.classList.remove('hidden');
 
-            const rws = document.querySelectorAll('.palet-row');
-            let sc = 0;
-            const tM = frm.querySelector('[name="TANGGAL_MASUK"]').value.trim();
-            const g = frm.querySelector('[name="GUDANG"]').value.trim();
-            const nl = frm.querySelector('[name="NO_LOT"]').value.trim();
-            const sj = frm.querySelector('[name="SURAT_JALAN"]').value.trim();
-            const jk = frm.querySelector('[name="JENIS_KOPI"]').value.trim();
-            const sp = frm.querySelector('[name="SUPPLIER"]').value.trim();
-            const nP = frm.querySelector('[name="NO_POL"]').value.trim();
-            const kA = frm.querySelector('[name="KADAR_AIR"]').value.trim();
-            const nPo = frm.querySelector('[name="NO_PO"]') ? frm.querySelector('[name="NO_PO"]').value.trim() : "";
-            const nowTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const petugasAktif = (document.getElementById('current-user-name')?.innerText || 'Admin Gudang').trim();
-            const savedPalletList = [];
+            try {
+                const rws = document.querySelectorAll('.palet-row');
+                let sc = 0;
+                const tM = frm.querySelector('[name="TANGGAL_MASUK"]')?.value?.trim() || '';
+                const g = (frm.querySelector('[name="GUDANG"]')?.value || document.getElementById('select-gudang')?.value || '').trim();
+                const nl = frm.querySelector('[name="NO_LOT"]')?.value?.trim() || '';
+                const sj = frm.querySelector('[name="SURAT_JALAN"]')?.value?.trim() || '';
+                const jk = (frm.querySelector('[name="JENIS_KOPI"]')?.value || document.getElementById('select-jenis-kopi')?.value || '').trim();
+                const sp = frm.querySelector('[name="SUPPLIER"]')?.value?.trim() || '';
+                const nP = frm.querySelector('[name="NO_POL"]')?.value?.trim() || '';
+                const kA = frm.querySelector('[name="KADAR_AIR"]')?.value?.trim() || '';
+                const nPo = frm.querySelector('[name="NO_PO"]') ? frm.querySelector('[name="NO_PO"]').value.trim() : "";
+                const nowTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const petugasAktif = (document.getElementById('current-user-name')?.innerText || 'Admin Gudang').trim();
+                const savedPalletList = [];
 
-            for (let i = 0; i < rws.length; i++) {
-                ovT.innerText = `Mengirim Palet ${i+1}/${rws.length}...`;
-                const r = rws[i];
-                const fd = new FormData();
-                fd.append('sheetName', 'INPUT_PENERIMAAN_KOPI');
-                fd.append('TANGGAL_MASUK', tM);
-                fd.append('GUDANG', g);
-                fd.append('NO_LOT', nl);
-                fd.append('SURAT_JALAN', sj);
-                fd.append('JENIS_KOPI', jk);
-                fd.append('SUPPLIER', sp);
-                fd.append('NO_POL', nP);
-                fd.append('KADAR_AIR', kA);
-                fd.append('NO_PO', nPo);
+                for (let i = 0; i < rws.length; i++) {
+                    if (ovT) ovT.innerText = `Mengirim Palet ${i+1}/${rws.length}...`;
+                    const r = rws[i];
+                    const fd = new FormData();
+                    fd.append('sheetName', 'INPUT_PENERIMAAN_KOPI');
+                    fd.append('TANGGAL_MASUK', tM);
+                    fd.append('GUDANG', g);
+                    fd.append('NO_LOT', nl);
+                    fd.append('SURAT_JALAN', sj);
+                    fd.append('JENIS_KOPI', jk);
+                    fd.append('SUPPLIER', sp);
+                    fd.append('NO_POL', nP);
+                    fd.append('KADAR_AIR', kA);
+                    fd.append('NO_PO', nPo);
 
-                let ss = r.querySelector('.select-status-mutu');
-                let is = r.querySelector('.input-status-mutu'); 
-                let stMutu = ss.value === 'Lainnya' ? (is ? is.value.trim() : '') : ss.value;
-                fd.append('STATUS_MUTU', stMutu);
+                    let ss = r.querySelector('.select-status-mutu');
+                    let is = r.querySelector('.input-status-mutu'); 
+                    let stMutu = ss && ss.value === 'Lainnya' ? (is ? is.value.trim() : '') : (ss ? ss.value : 'PASS');
+                    fd.append('STATUS_MUTU', stMutu || 'PASS');
 
-                let sl = r.querySelector('select[name="ID_LOKASI_SELECT[]"]');
-                let il = r.querySelector('input[name="ID_LOKASI_MANUAL[]"]'); 
-                let idLokasiVal = sl.value === 'Lainnya' ? (il ? il.value.trim() : '') : sl.value;
-                fd.append('ID_LOKASI', idLokasiVal);
+                    let sl = r.querySelector('select[name="ID_LOKASI_SELECT[]"]');
+                    let il = r.querySelector('input[name="ID_LOKASI_MANUAL[]"]'); 
+                    let idLokasiVal = sl && sl.value === 'Lainnya' ? (il ? il.value.trim() : '') : (sl ? sl.value : '');
+                    fd.append('ID_LOKASI', idLokasiVal);
 
-                let currentIdLot = r.querySelector('.id-lot-auto').value.trim();
-                let noPalet = r.querySelector('.input-no-palet').value.trim();
-                let idLotFinal = currentIdLot || (g && nl && noPalet ? `${g}-${nl}-${noPalet}` : '');
-                if (!idLotFinal) {
-                   idLotFinal = `AUTO-${Date.now()}-${i}`;
+                    let currentIdLot = r.querySelector('.id-lot-auto')?.value?.trim() || '';
+                    let noPalet = r.querySelector('.input-no-palet')?.value?.trim() || '';
+                    let idLotFinal = currentIdLot || (g && nl && noPalet ? `${g}-${nl}-${noPalet}` : '');
+                    if (!idLotFinal) {
+                       idLotFinal = `AUTO-${Date.now()}-${i}`;
+                    }
+                    fd.append('ID_LOT', idLotFinal);
+                    fd.append('NO_PALET', noPalet); 
+
+                    let karungMsk = r.querySelector('[name="KARUNG_MASUK[]"]')?.value?.trim() || '0';
+                    fd.append('KARUNG_MASUK', karungMsk);
+
+                    let bP = parseFloat(r.querySelector('.input-pallet')?.value) || 0;
+                    let bB = parseFloat(r.querySelector('.input-bruto')?.value) || 0;
+                    let bN = bB - bP;
+                    fd.append('BERAT_PALLET_KOSONG', bP.toString().replace('.', ','));
+                    fd.append('BERAT_BRUTO', bB.toString().replace('.', ','));
+                    fd.append('BERAT BRUTO (Kg)', bB.toString().replace('.', ','));
+                    fd.append('BERAT_NETTO', bN.toString().replace('.', ','));
+                    fd.append('BERAT NETTO (Kg)', bN.toString().replace('.', ',')); 
+
+                    let ketVal = r.querySelector('[name="KETERANGAN[]"]')?.value?.trim() || '';
+                    fd.append('KETERANGAN', ketVal);
+
+                    savedPalletList.push({
+                        tanggalMasuk: tM,
+                        jamMasuk: nowTimeStr,
+                        gudang: g,
+                        noLotInduk: nl,
+                        suratJalan: sj,
+                        jenisKopi: jk,
+                        supplier: sp,
+                        noPol: nP,
+                        kadarAir: kA,
+                        noPo: nPo,
+                        statusMutu: stMutu || 'PASS',
+                        idLokasi: idLokasiVal,
+                        idLot: idLotFinal,
+                        noPalet: noPalet,
+                        karungMasuk: karungMsk,
+                        beratPalletKosong: bP,
+                        beratBruto: bB,
+                        beratNetto: bN,
+                        keterangan: ketVal,
+                        petugas: petugasAktif
+                    });
+
+                    try {
+                        await fetch(WEB_APP_URL, {method: 'POST', mode: 'no-cors', body: new URLSearchParams(fd)});
+                        sc++;
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    await new Promise(res => setTimeout(res, 500));
                 }
-                fd.append('ID_LOT', idLotFinal);
-                fd.append('NO_PALET', noPalet); 
 
-                let karungMsk = r.querySelector('[name="KARUNG_MASUK[]"]').value.trim();
-                fd.append('KARUNG_MASUK', karungMsk);
-
-                let bP = parseFloat(r.querySelector('.input-pallet').value) || 0;
-                let bB = parseFloat(r.querySelector('.input-bruto').value) || 0;
-                let bN = bB - bP;
-                fd.append('BERAT_PALLET_KOSONG', bP.toString().replace('.', ','));
-                fd.append('BERAT_BRUTO', bB.toString().replace('.', ','));
-                fd.append('BERAT BRUTO (Kg)', bB.toString().replace('.', ','));
-                fd.append('BERAT_NETTO', bN.toString().replace('.', ','));
-                fd.append('BERAT NETTO (Kg)', bN.toString().replace('.', ',')); 
-
-                let ketVal = r.querySelector('[name="KETERANGAN[]"]').value.trim();
-                fd.append('KETERANGAN', ketVal);
-
-                savedPalletList.push({
-                    tanggalMasuk: tM,
-                    jamMasuk: nowTimeStr,
-                    gudang: g,
-                    noLotInduk: nl,
-                    suratJalan: sj,
-                    jenisKopi: jk,
-                    supplier: sp,
-                    noPol: nP,
-                    kadarAir: kA,
-                    noPo: nPo,
-                    statusMutu: stMutu || 'PASS',
-                    idLokasi: idLokasiVal,
-                    idLot: idLotFinal,
-                    noPalet: noPalet,
-                    karungMasuk: karungMsk,
-                    beratPalletKosong: bP,
-                    beratBruto: bB,
-                    beratNetto: bN,
-                    keterangan: ketVal,
-                    petugas: petugasAktif
-                });
-
-                try {
-                    await fetch(WEB_APP_URL, {method: 'POST', mode: 'no-cors', body: new URLSearchParams(fd)});
-                    sc++;
-                } catch (err) {
-                    console.error(err);
-                }
-                // Wait briefly between requests to ensure Google Apps Script processes them in order
-                await new Promise(res => setTimeout(res, 500));
-            }
-
-            ov.classList.add('hidden');
-            if (sc === rws.length) { 
-                showToast(`${sc} Palet berhasil disimpan ke Google Sheet!`, 'success'); 
-                lastSavedReceiptPallets = [...savedPalletList];
-                window.lastSavedReceiptPallets = lastSavedReceiptPallets;
-                const btnLabel = document.getElementById('btn-preview-label-penerimaan');
-                if (btnLabel) {
-                    btnLabel.classList.remove('hidden');
-                }
-                openCetakLabelPenerimaanModal(savedPalletList, 'location');
-                frm.reset(); 
-                const c = document.getElementById('palet-container'); 
-                while (c.children.length > 1) { c.removeChild(c.lastChild); } 
-                paletCount = 1; 
-                document.getElementById('btn-add-palet').classList.remove('hidden'); 
-                setTimeout(() => { fetchRiwayatPenerimaan(); syncMainDashboard(); }, 2000); 
-            } else {
-                showToast(`Hanya ${sc}/${rws.length} terkirim.`, 'error');
-                if (savedPalletList.length > 0) {
+                if (ov) ov.classList.add('hidden');
+                if (sc === rws.length) { 
+                    showToast(`${sc} Palet berhasil disimpan ke Google Sheet!`, 'success'); 
                     lastSavedReceiptPallets = [...savedPalletList];
                     window.lastSavedReceiptPallets = lastSavedReceiptPallets;
                     const btnLabel = document.getElementById('btn-preview-label-penerimaan');
@@ -10499,7 +10501,28 @@ function testReadData() {
                         btnLabel.classList.remove('hidden');
                     }
                     openCetakLabelPenerimaanModal(savedPalletList, 'location');
+                    frm.reset(); 
+                    const c = document.getElementById('palet-container'); 
+                    while (c.children.length > 1) { c.removeChild(c.lastChild); } 
+                    paletCount = 1; 
+                    document.getElementById('btn-add-palet').classList.remove('hidden'); 
+                    setTimeout(() => { fetchRiwayatPenerimaan(); syncMainDashboard(); }, 2000); 
+                } else {
+                    showToast(`Hanya ${sc}/${rws.length} terkirim.`, 'error');
+                    if (savedPalletList.length > 0) {
+                        lastSavedReceiptPallets = [...savedPalletList];
+                        window.lastSavedReceiptPallets = lastSavedReceiptPallets;
+                        const btnLabel = document.getElementById('btn-preview-label-penerimaan');
+                        if (btnLabel) {
+                            btnLabel.classList.remove('hidden');
+                        }
+                        openCetakLabelPenerimaanModal(savedPalletList, 'location');
+                    }
                 }
+            } catch(err) {
+                if (ov) ov.classList.add('hidden');
+                console.error("Error in executeRealSubmitPenerimaan:", err);
+                showToast("Gagal menyimpan data penerimaan: " + (err.message || err), "error");
             }
         }
 
