@@ -9044,7 +9044,8 @@ function testReadData() {
         function formatTanggalId(dateVal) {
             if (!dateVal) return "-";
             try {
-                let str = String(dateVal).trim();
+                let str = formatSheetDate(dateVal);
+                if (!str) str = String(dateVal).trim();
                 if (str.includes("T")) str = str.split("T")[0];
                 const parts = str.split("-");
                 if (parts.length === 3 && parts[0].length === 4) {
@@ -9314,12 +9315,14 @@ function testReadData() {
                 const jk = String(findValue(r, 'JENIS_KOPI') || r['JENIS_KOPI'] || '').trim();
                 const tgl = formatSheetDate(findValue(r, 'TANGGAL_MASUK') || r['TANGGAL_MASUK']);
                 const sisa = parseNilaiAngka(findValue(r, 'SISA_KG') || findValue(r, 'SISA_STOK_KG') || (r._raw && r._raw[14]) || '0');
+                const sisaKrg = parseNilaiAngka(findValue(r, 'SISA_KARUNG') || (r._raw && r._raw[13]) || '0');
                 const status = String(findValue(r, 'STATUS_STOK') || findValue(r, 'STATUS') || (r._raw && r._raw[18]) || '').toLowerCase().trim();
 
-                const item = { id, jk, tgl, sisa, status };
+                const item = { id, jk, tgl, sisa, sisaKrg, status };
                 fifoMap.set(id.toLowerCase(), item);
 
-                if (tgl && sisa > 0 && status !== 'habis') {
+                // Lot dianggap aktif dalam prioritas FIFO hanya jika masih memiliki sisa karung fisik (> 0 Sak) dan sisa kg > 0
+                if (tgl && sisa > 0 && sisaKrg > 0 && status !== 'habis') {
                     const k = jk.toLowerCase();
                     if (!activeLotsByJk.has(k)) activeLotsByJk.set(k, []);
                     activeLotsByJk.get(k).push(item);
@@ -10601,12 +10604,12 @@ function testReadData() {
                 const itemJk = String(findValue(item, 'JENIS_KOPI') || item['JENIS_KOPI'] || '').trim();
                 if (finalJk && itemJk && itemJk.toLowerCase() !== finalJk.toLowerCase()) continue;
 
-                // Cek sisa stok
+                // Cek sisa stok: Lot aktif FIFO hanya jika SISA_KARUNG > 0 (masih ada fisik sak) dan SISA_KG > 0 serta STATUS bukan HABIS
                 const sisaKg = parseNilaiAngka(findValue(item, 'SISA_KG') || findValue(item, 'SISA_STOK_KG') || findValue(item, 'SISA_STOK') || (item._raw && item._raw[14])) || 0;
                 const sisaKrg = parseNilaiAngka(findValue(item, 'SISA_KARUNG') || (item._raw && item._raw[13])) || 0;
-                const status = String(findValue(item, 'STATUS') || (item._raw && item._raw[17]) || '').trim().toUpperCase();
+                const status = String(findValue(item, 'STATUS_STOK') || findValue(item, 'STATUS') || (item._raw && item._raw[17]) || (item._raw && item._raw[18]) || '').trim().toUpperCase();
 
-                if (status === 'HABIS' || (sisaKg <= 0 && sisaKrg <= 0)) continue;
+                if (status === 'HABIS' || sisaKrg <= 0 || sisaKg <= 0) continue;
 
                 const itemTglStr = findValue(item, 'TANGGAL_MASUK');
                 const itemDate = parseUniversalDate(itemTglStr);
@@ -23930,10 +23933,12 @@ function testReadData() {
                 if (otherId.toLowerCase() === String(idMasukTerpilih).trim().toLowerCase()) continue;
 
                 let stok = parseNilaiAngka(findValue(d, 'SISA_KG') || findValue(d, 'SISA_STOK_KG') || findValue(d, 'SISA_STOK') || (d._raw && d._raw[14]) || '0');
+                let sisaKrg = parseNilaiAngka(findValue(d, 'SISA_KARUNG') || (d._raw && d._raw[13])) || 0;
                 let st = String(findValue(d, 'STATUS_STOK') || findValue(d, 'STATUS') || (d._raw && d._raw[18]) || '').toLowerCase().trim();
                 let jk = String(findValue(d, 'JENIS_KOPI') || "").trim();
 
-                if (stok > 0 && st !== 'habis' && jk.toLowerCase() === jenisKopiTerpilih.toLowerCase()) {
+                // Hanya anggap aktif jika stok kg > 0, sisa karung > 0, dan status bukan habis
+                if (stok > 0 && sisaKrg > 0 && st !== 'habis' && jk.toLowerCase() === jenisKopiTerpilih.toLowerCase()) {
                     let tglMasukLainStr = formatSheetDate(findValue(d, 'TANGGAL_MASUK'));
                     if (tglMasukLainStr && tglMasukLainStr < tglMasukTerpilihStr) {
                         return "Penyimpangan FIFO";
@@ -24188,7 +24193,14 @@ function testReadData() {
         let allRiwKel = []; let fKel = []; let pKel = 1; let filKel = { TANGGAL_KELUAR:'', ID_KELUAR:'', ID_PERMINTAAN:'', ID_LOT:'', TUJUAN:'' }; let sorKel = { c: null, d: 'desc' };
         function fetchRiwayatPengeluaran() {
             const ic = document.getElementById('icon-sync-riwayat-pengeluaran'); if(ic) ic.classList.add('animate-spin');
-            fetchJSONData('INPUT_TRANSAKSI_KELUAR').then(dA => { allRiwKel = dA.filter(r => findValue(r,'TANGGAL_KELUAR')); allRiwKel.reverse(); applyFilSorKel(); }).catch(e=>document.getElementById('table-body-riwayat-pengeluaran').innerHTML=`<tr><td colspan="7" class="text-center py-10 text-red-500">Gagal memuat.</td></tr>`).finally(() => { if(ic) ic.classList.remove('animate-spin'); });
+            fetchJSONData('INPUT_TRANSAKSI_KELUAR').then(dA => { 
+                allRiwKel = dA.filter(r => findValue(r,'TANGGAL_KELUAR')); 
+                allRiwKel.reverse(); 
+                if (Array.isArray(dataFifoLengkap) && dataFifoLengkap.length > 0 && typeof auditAllPengeluaranFifo === 'function') {
+                    auditAllPengeluaranFifo(allRiwKel, dataFifoLengkap);
+                }
+                applyFilSorKel(); 
+            }).catch(e=>document.getElementById('table-body-riwayat-pengeluaran').innerHTML=`<tr><td colspan="7" class="text-center py-10 text-red-500">Gagal memuat.</td></tr>`).finally(() => { if(ic) ic.classList.remove('animate-spin'); });
         }
         function handleSearchPengeluaran(c, v) { filKel[c] = String(v).toLowerCase(); applyFilSorKel(); }
         function handleSortPengeluaran(c) { if(sorKel.c===c) sorKel.d=sorKel.d==='asc'?'desc':'asc'; else {sorKel.c=c; sorKel.d='desc';} document.querySelectorAll('[id^="sort-icon-pengeluaran-"]').forEach(i=>i.className='ph ph-sort-ascending text-slate-300'); const aI=document.getElementById(`sort-icon-pengeluaran-${c}`); if(aI) aI.className=`ph ph-sort-${sorKel.d==='asc'?'ascending':'descending'} text-amber-600 font-bold`; applyFilSorKel(); }
@@ -24206,7 +24218,10 @@ function testReadData() {
                 let ik=findValue(r,'ID_KELUAR'); 
                 let kg=formatAngkaId(parseNilaiAngka(findValue(r,'KG_KELUAR')||findValue(r,'KG KELUAR'))); 
                 let stFifo = String(findValue(r,'STATUS_FIFO') || "").toUpperCase();
-                let badgeFifo = (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN') || stFifo.includes('PENYIMPANGAN')) ? '<span class="px-2 py-1 bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold rounded text-[10px] border border-red-200 dark:border-red-800">PENYIMPANGAN</span>' : (stFifo ? '<span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold rounded text-[10px] border border-emerald-200 dark:border-emerald-800">SESUAI</span>' : '-');
+                let isViol = (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN') || stFifo.includes('PENYIMPANGAN') || r._isPenyimpanganFifo === true);
+                let badgeFifo = isViol 
+                    ? '<span class="px-2 py-1 bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold rounded text-[10px] border border-red-200 dark:border-red-800" title="Terdeteksi Penyimpangan FIFO">PENYIMPANGAN</span>' 
+                    : (stFifo ? '<span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold rounded text-[10px] border border-emerald-200 dark:border-emerald-800" title="Sesuai FIFO">SESUAI</span>' : '-');
                 ht += `<tr class="hover:bg-amber-50/50 dark:hover:bg-slate-800/60 transition-colors">
                     <td class="px-5 py-3 font-medium text-slate-700 dark:text-slate-200">${formatSheetDate(findValue(r,'TANGGAL_KELUAR'))}</td>
                     <td class="px-5 py-3 font-bold font-mono text-amber-700 dark:text-amber-400">${ik||"-"}</td>
