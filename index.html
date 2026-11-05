@@ -7539,13 +7539,28 @@ if (p.action === "cancelOperGudang") {
                     </button>
                 </div>
 
-                <div class="p-4 sm:p-5 bg-slate-50/70 border-b border-slate-200/80 flex flex-col sm:flex-row gap-3 items-center justify-between shrink-0">
-                    <div class="relative w-full sm:w-80">
-                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="flt-violation-search" oninput="filterPenyimpanganFifoList(this.value)" placeholder="Cari ID Keluar, ID Lot, Permintaan..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-red-400 focus:ring-1 focus:ring-red-400 outline-none">
+                <div class="p-4 sm:p-5 bg-slate-50/70 border-b border-slate-200/80 flex flex-col md:flex-row gap-3 items-center justify-between shrink-0">
+                    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                        <div class="relative w-full sm:w-72">
+                            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="flt-violation-search" oninput="filterPenyimpanganFifoList(this.value)" placeholder="Cari ID Keluar, ID Lot, Jenis Kopi..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:border-red-400 focus:ring-1 focus:ring-red-400 outline-none">
+                        </div>
+                        <select id="flt-violation-category" onchange="filterPenyimpanganFifoList(document.getElementById('flt-violation-search').value)" class="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:border-red-400">
+                            <option value="all">Semua Temuan Penyimpangan</option>
+                            <option value="inversion">Inversi Urutan (Lot Baru Keluar Duluan)</option>
+                            <option value="bypass">Bypass Stok Masuk Lebih Tua</option>
+                        </select>
                     </div>
-                    <div class="text-xs text-slate-500 font-medium">
-                        Status terdata: <span class="font-bold text-red-600">Penyimpangan / Pelanggaran FIFO</span>
+                    <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                        <div class="text-xs text-slate-600 flex items-center gap-2">
+                            <span class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-lg font-bold" id="modal-fifo-summary-kg">0 Kg</span>
+                            <span class="hidden sm:inline text-slate-400">|</span>
+                            <span class="text-[11px] text-slate-500 hidden sm:inline">Audit Berdasarkan Tanggal Penerimaan Lot</span>
+                        </div>
+                        <button type="button" onclick="exportPenyimpanganFifoCSV()" class="px-3 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer" title="Download data temuan penyimpangan FIFO ke format Excel/CSV">
+                            <i class="ph ph-file-csv text-base"></i>
+                            <span>Export CSV</span>
+                        </button>
                     </div>
                 </div>
 
@@ -7554,20 +7569,21 @@ if (p.action === "cancelOperGudang") {
                         <table class="w-full text-left text-xs whitespace-nowrap">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
                                 <tr>
-                                    <th class="px-4 py-3 text-center">No</th>
-                                    <th class="px-4 py-3">Tgl Keluar</th>
-                                    <th class="px-4 py-3">ID Keluar</th>
-                                    <th class="px-4 py-3">ID Permintaan</th>
-                                    <th class="px-4 py-3">ID Lot Dikeluarkan</th>
-                                    <th class="px-4 py-3">Jenis Kopi</th>
-                                    <th class="px-4 py-3 text-right">Kg Keluar</th>
-                                    <th class="px-4 py-3 text-center">Status FIFO</th>
-                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                    <th class="px-3.5 py-3 text-center">No</th>
+                                    <th class="px-3.5 py-3">Tgl Keluar</th>
+                                    <th class="px-3.5 py-3">ID Keluar</th>
+                                    <th class="px-3.5 py-3">ID Permintaan</th>
+                                    <th class="px-3.5 py-3">ID Lot Dikeluarkan</th>
+                                    <th class="px-3.5 py-3">Jenis Kopi</th>
+                                    <th class="px-3.5 py-3 text-right">Kg Keluar</th>
+                                    <th class="px-3.5 py-3">Detail Temuan & Penyimpangan FIFO</th>
+                                    <th class="px-3.5 py-3 text-center">Status FIFO</th>
+                                    <th class="px-3.5 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-penyimpangan-fifo" class="divide-y divide-slate-100">
                                 <tr>
-                                    <td colspan="9" class="text-center py-10 text-slate-400">Memuat data penyimpangan...</td>
+                                    <td colspan="10" class="text-center py-10 text-slate-400">Memuat data penyimpangan...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -9108,10 +9124,12 @@ function testReadData() {
                 const startIdx = text.indexOf('{'); const endIdx = text.lastIndexOf('}') + 1;
                 const json = JSON.parse(text.substring(startIdx, endIdx));
                 const cols = json.table.cols.map((c, i) => c.label || `Kolom_${i}`);
-                return json.table.rows.map(r => {
+                return json.table.rows.map((r, rowIdx) => {
                     let rowData = {}; let rawArr = [];
                     r.c.forEach((cell, i) => { let val = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || "")) : ""; rowData[cols[i]] = val; rawArr.push(val); });
-                    rowData['_raw'] = rawArr; return rowData;
+                    rowData['_raw'] = rawArr;
+                    rowData['_sheetIndex'] = rowIdx;
+                    return rowData;
                 });
             } catch (error) { console.error(`Fetch ${sheetName}:`, error); return []; }
         }
@@ -9302,62 +9320,201 @@ function testReadData() {
         function prevDashKeluarPage() { if (dashKeluarPage > 1) { dashKeluarPage--; applyDashKeluarTableSearch(); } }
         function nextDashKeluarPage() { if ((dashKeluarPage * dashKeluarItemsPerPage) < dashKeluarDataFiltered.length) { dashKeluarPage++; applyDashKeluarTableSearch(); } }
 
-        // Audit Penyimpangan FIFO System
-        function auditAllPengeluaranFifo(dataKeluar, dataFifo) {
-            if (!Array.isArray(dataKeluar) || !Array.isArray(dataFifo) || dataFifo.length === 0) return 0;
+        // Helper extract date YYMMDD from Lot ID (e.g. G0.SBXX.261014-XXXX -> 2026-10-14)
+        function extractLotDateStr(lotId) {
+            if (!lotId) return "";
+            const m = String(lotId).match(/\b(\d{2})(\d{2})(\d{2})\b/);
+            if (m) {
+                const yy = parseInt(m[1], 10);
+                const mm = parseInt(m[2], 10);
+                const dd = parseInt(m[3], 10);
+                if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+                    const y = yy < 50 ? 2000 + yy : 1900 + yy;
+                    return `${y}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+                }
+            }
+            return "";
+        }
 
-            const fifoMap = new Map();
+        function normalizeDateYMD(dVal) {
+            if (!dVal) return "";
+            const s = String(dVal).trim();
+            if (s.includes("Date(")) {
+                const nums = s.match(/\d+/g);
+                if (nums && nums.length >= 3) {
+                    const y = parseInt(nums[0], 10);
+                    const m = parseInt(nums[1], 10) + 1; // 0-indexed month from Google Sheets GViz
+                    const d = parseInt(nums[2], 10);
+                    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                }
+            }
+            const m1 = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+            if (m1) return `${m1[3]}-${String(m1[2]).padStart(2, '0')}-${String(m1[1]).padStart(2, '0')}`;
+            const m2 = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+            if (m2) return `${m2[1]}-${String(m2[2]).padStart(2, '0')}-${String(m2[3]).padStart(2, '0')}`;
+            return s;
+        }
+
+        function formatIsoToDisplay(dVal) {
+            if (!dVal || dVal === '-') return "-";
+            const ymd = normalizeDateYMD(dVal);
+            if (!ymd || ymd.length !== 10) return String(dVal || "-");
+            const p = ymd.split('-');
+            if (p.length === 3 && p[0].length === 4) return `${p[2]}/${p[1]}/${p[0]}`;
+            return ymd;
+        }
+
+        // Audit Penyimpangan FIFO System (Real Chronological & Inversion Audit)
+        function auditAllPengeluaranFifo(dataKeluar, dataFifo, dataMasuk) {
+            if (!Array.isArray(dataKeluar) || dataKeluar.length === 0) return 0;
+
+            const mMasuk = Array.isArray(dataMasuk) && dataMasuk.length > 0 ? dataMasuk : (Array.isArray(globalDataMasuk) ? globalDataMasuk : []);
+            const mFifo = Array.isArray(dataFifo) && dataFifo.length > 0 ? dataFifo : (Array.isArray(dataFifoLengkap) ? dataFifoLengkap : []);
+
+            // 1. Build comprehensive Lot Master from Penerimaan and FIFO Stock
+            const lotMaster = new Map();
+            mMasuk.forEach(r => {
+                const lid = String(findValue(r, 'ID_LOT') || r['ID_LOT'] || '').trim();
+                if (!lid) return;
+                const rawTgl = findValue(r, 'TANGGAL_MASUK') || r['TANGGAL_MASUK'];
+                const tgl = normalizeDateYMD(rawTgl) || extractLotDateStr(lid);
+                const jk = String(findValue(r, 'JENIS_KOPI') || r['JENIS_KOPI'] || '').trim().toUpperCase();
+                const k = lid.toLowerCase();
+                if (!lotMaster.has(k)) {
+                    lotMaster.set(k, { id: lid, tgl, jk });
+                } else if (tgl && (!lotMaster.get(k).tgl || tgl < lotMaster.get(k).tgl)) {
+                    lotMaster.get(k).tgl = tgl;
+                }
+            });
+
             const activeLotsByJk = new Map();
-
-            dataFifo.forEach(r => {
-                const id = String(findValue(r, 'ID_MASUK') || findValue(r, 'ID_LOT') || r['ID_MASUK'] || r['ID_LOT'] || '').trim();
-                if (!id) return;
-                const jk = String(findValue(r, 'JENIS_KOPI') || r['JENIS_KOPI'] || '').trim();
-                const tgl = formatSheetDate(findValue(r, 'TANGGAL_MASUK') || r['TANGGAL_MASUK']);
+            mFifo.forEach(r => {
+                const lid = String(findValue(r, 'ID_MASUK') || findValue(r, 'ID_LOT') || r['ID_MASUK'] || r['ID_LOT'] || '').trim();
+                if (!lid) return;
+                const rawTgl = findValue(r, 'TANGGAL_MASUK') || r['TANGGAL_MASUK'];
+                const tgl = normalizeDateYMD(rawTgl) || extractLotDateStr(lid);
+                const jk = String(findValue(r, 'JENIS_KOPI') || r['JENIS_KOPI'] || '').trim().toUpperCase();
                 const sisa = parseNilaiAngka(findValue(r, 'SISA_KG') || findValue(r, 'SISA_STOK_KG') || (r._raw && r._raw[14]) || '0');
                 const sisaKrg = parseNilaiAngka(findValue(r, 'SISA_KARUNG') || (r._raw && r._raw[13]) || '0');
                 const status = String(findValue(r, 'STATUS_STOK') || findValue(r, 'STATUS') || (r._raw && r._raw[18]) || '').toLowerCase().trim();
 
-                const item = { id, jk, tgl, sisa, sisaKrg, status };
-                fifoMap.set(id.toLowerCase(), item);
+                const item = { id: lid, jk, tgl, sisa, sisaKrg, status };
+                const k = lid.toLowerCase();
+                if (!lotMaster.has(k)) {
+                    lotMaster.set(k, { id: lid, tgl, jk });
+                } else if (tgl && (!lotMaster.get(k).tgl || tgl < lotMaster.get(k).tgl)) {
+                    lotMaster.get(k).tgl = tgl;
+                }
 
-                // Lot dianggap aktif dalam prioritas FIFO hanya jika masih memiliki sisa karung fisik (> 0 Sak) dan sisa kg > 0
                 if (tgl && sisa > 0 && sisaKrg > 0 && status !== 'habis') {
-                    const k = jk.toLowerCase();
-                    if (!activeLotsByJk.has(k)) activeLotsByJk.set(k, []);
-                    activeLotsByJk.get(k).push(item);
+                    const jKey = jk.toLowerCase();
+                    if (!activeLotsByJk.has(jKey)) activeLotsByJk.set(jKey, []);
+                    activeLotsByJk.get(jKey).push(item);
                 }
             });
 
             activeLotsByJk.forEach(list => list.sort((a, b) => a.tgl.localeCompare(b.tgl)));
 
+            // 2. Map lot info for all pengeluaran
+            const byDayAndJk = new Map();
+            dataKeluar.forEach((r, idx) => {
+                const idLot = String(findValue(r, 'ID_LOT') || r['ID_LOT'] || '').trim();
+                const jk = String(findValue(r, 'JENIS_KOPI') || r['JENIS_KOPI'] || '').trim().toUpperCase();
+                const tglKel = normalizeDateYMD(findValue(r, 'TANGGAL_KELUAR') || r['TANGGAL_KELUAR']);
+                
+                const lotInfo = lotMaster.get(idLot.toLowerCase());
+                const lotTgl = (lotInfo && lotInfo.tgl) ? lotInfo.tgl : extractLotDateStr(idLot);
+                const lotJk = (lotInfo && lotInfo.jk) ? lotInfo.jk : jk;
+
+                const idKeluar = String(findValue(r, 'ID_KELUAR') || r['ID_KELUAR'] || '').trim();
+                const sheetIndex = (typeof r._sheetIndex === 'number') ? r._sheetIndex : idx;
+
+                r._lotTglMasuk = lotTgl || '-';
+                r._lotJk = lotJk || jk || '-';
+                r._tglKel = tglKel || '-';
+                r._isPenyimpanganFifo = false;
+                r._olderFifoLot = '';
+                r._olderFifoTgl = '';
+                r._fifoDeviationReason = '';
+                r._deviationType = '';
+
+                if (tglKel && lotJk) {
+                    const groupKey = `${tglKel}__${lotJk}`;
+                    if (!byDayAndJk.has(groupKey)) byDayAndJk.set(groupKey, []);
+                    byDayAndJk.get(groupKey).push({ row: r, sheetIndex, idKeluar, lotTgl, idLot, tglKel, lotJk });
+                }
+            });
+
+            // 3. Detect Same-Day & Sequential Inversions (Lot lebih baru dikeluarkan duluan sebelum lot lebih tua)
             let countViol = 0;
+            byDayAndJk.forEach((items, groupKey) => {
+                if (items.length <= 1) return;
+
+                // Urutkan item secara kronologis urutan transaksi asli (berdasarkan sheetIndex atau ID_KELUAR)
+                items.sort((a, b) => {
+                    if (typeof a.sheetIndex === 'number' && typeof b.sheetIndex === 'number' && a.sheetIndex !== b.sheetIndex) {
+                        return a.sheetIndex - b.sheetIndex;
+                    }
+                    if (a.idKeluar && b.idKeluar) {
+                        return a.idKeluar.localeCompare(b.idKeluar, undefined, { numeric: true });
+                    }
+                    return 0;
+                });
+
+                let maxTglSeen = null;
+                let maxLotSeen = null;
+
+                items.forEach(it => {
+                    const t = it.lotTgl;
+                    if (!t || t === '-') return;
+
+                    if (maxTglSeen && t < maxTglSeen) {
+                        // Inversi terdeteksi: lot tgl lebih tua keluar setelah lot tgl lebih baru keluar hari ini
+                        const r = it.row;
+                        r._isPenyimpanganFifo = true;
+                        r._olderFifoLot = maxLotSeen.idLot;
+                        r._olderFifoTgl = maxLotSeen.lotTgl;
+                        r._deviationType = 'inversion';
+                        r._fifoDeviationReason = `Inversi Urutan Pengeluaran: Lot ini masuk tanggal ${formatIsoToDisplay(t)}, namun lot yang lebih baru ${maxLotSeen.idLot} (masuk ${formatIsoToDisplay(maxLotSeen.lotTgl)}) sudah dikeluarkan lebih awal pada hari yang sama.`;
+                        countViol++;
+                    }
+
+                    if (!maxTglSeen || t > maxTglSeen) {
+                        maxTglSeen = t;
+                        maxLotSeen = it;
+                    }
+                });
+            });
+
+            // 4. Also check explicit status in sheet & active stock bypass (Strict: c.tgl <= tglKel)
             dataKeluar.forEach(r => {
+                if (r._isPenyimpanganFifo) return; // already flagged
                 const idLot = String(findValue(r, 'ID_LOT') || r['ID_LOT'] || '').trim();
                 const stFifo = String(findValue(r, 'STATUS_FIFO') || r['STATUS_FIFO'] || '').toUpperCase();
-                const lot = fifoMap.get(idLot.toLowerCase());
-
-                let isViol = false;
-                let olderLot = null;
+                const lotTgl = r._lotTglMasuk;
+                const lotJk = r._lotJk;
+                const tglKel = r._tglKel;
 
                 if (stFifo.includes('TIDAK') || stFifo.includes('PELANGGARAN') || stFifo.includes('PENYIMPANGAN')) {
-                    isViol = true;
-                } else if (lot && lot.tgl && lot.jk) {
-                    const cand = activeLotsByJk.get(lot.jk.toLowerCase()) || [];
-                    const found = cand.find(c => c.tgl < lot.tgl && c.id.toLowerCase() !== idLot.toLowerCase());
+                    r._isPenyimpanganFifo = true;
+                    r._deviationType = 'recorded';
+                    r._fifoDeviationReason = `Status Tercatat di Database: ${stFifo}`;
+                    countViol++;
+                } else if (lotTgl && lotTgl !== '-' && lotJk && tglKel && tglKel !== '-') {
+                    const cand = activeLotsByJk.get(lotJk.toLowerCase()) || [];
+                    // CRITICAL: An active lot can ONLY be bypassed if it arrived BEFORE this lot AND arrived ON/BEFORE the issuance date!
+                    const found = cand.find(c => c.tgl < lotTgl && c.tgl <= tglKel && c.id.toLowerCase() !== idLot.toLowerCase());
                     if (found) {
-                        isViol = true;
-                        olderLot = found;
+                        r._isPenyimpanganFifo = true;
+                        r._olderFifoLot = found.id;
+                        r._olderFifoTgl = found.tgl;
+                        r._deviationType = 'bypass';
+                        r._fifoDeviationReason = `Bypass Stok Aktif: Masih terdapat lot lebih tua ${found.id} (masuk ${formatIsoToDisplay(found.tgl)}) yang sudah ada di gudang sebelum lot ini dikeluarkan.`;
+                        countViol++;
                     }
                 }
-
-                r._isPenyimpanganFifo = isViol;
-                if (olderLot) {
-                    r._olderFifoLot = olderLot.id;
-                    r._olderFifoTgl = olderLot.tgl;
-                }
-                if (isViol) countViol++;
             });
+
             return countViol;
         }
 
@@ -9375,12 +9532,13 @@ function testReadData() {
                 ? globalDataKeluar
                 : ((Array.isArray(allRiwKel) && allRiwKel.length > 0) ? allRiwKel : []);
 
-            if (sourceList.length === 0 || !Array.isArray(dataFifoLengkap) || dataFifoLengkap.length === 0) {
-                if (tb) tb.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-slate-400 font-sans"><i class="ph ph-spinner-gap animate-spin text-2xl mb-2 block mx-auto text-amber-500"></i>Menarik dan mengaudit data transaksi FIFO dari Google Sheet...</td></tr>`;
+            if (sourceList.length === 0 || !Array.isArray(globalDataMasuk) || globalDataMasuk.length === 0) {
+                if (tb) tb.innerHTML = `<tr><td colspan="10" class="text-center py-10 text-slate-400 font-sans"><i class="ph ph-spinner-gap animate-spin text-2xl mb-2 block mx-auto text-amber-500"></i>Menarik dan mengaudit data transaksi FIFO dari Google Sheet...</td></tr>`;
                 try {
-                    const [dKeluar, dFifo] = await Promise.all([
+                    const [dKeluar, dFifo, dMasuk] = await Promise.all([
                         sourceList.length > 0 ? Promise.resolve(sourceList) : fetchJSONData('INPUT_TRANSAKSI_KELUAR'),
-                        (Array.isArray(dataFifoLengkap) && dataFifoLengkap.length > 0) ? Promise.resolve(dataFifoLengkap) : fetchJSONData('CALC_STOK_AKTIF_FIFO')
+                        (Array.isArray(dataFifoLengkap) && dataFifoLengkap.length > 0) ? Promise.resolve(dataFifoLengkap) : fetchJSONData('CALC_STOK_AKTIF_FIFO'),
+                        (Array.isArray(globalDataMasuk) && globalDataMasuk.length > 0) ? Promise.resolve(globalDataMasuk) : fetchJSONData('INPUT_PENERIMAAN_KOPI')
                     ]);
                     if (Array.isArray(dKeluar)) {
                         sourceList = dKeluar.filter(r => findValue(r, 'TANGGAL_KELUAR'));
@@ -9389,12 +9547,15 @@ function testReadData() {
                     if (Array.isArray(dFifo)) {
                         dataFifoLengkap = dFifo;
                     }
-                    auditAllPengeluaranFifo(sourceList, dataFifoLengkap);
+                    if (Array.isArray(dMasuk)) {
+                        globalDataMasuk = dMasuk.filter(r => findValue(r, 'TANGGAL_MASUK'));
+                    }
+                    auditAllPengeluaranFifo(sourceList, dataFifoLengkap, globalDataMasuk);
                 } catch (err) {
                     console.error("Gagal audit FIFO:", err);
                 }
             } else {
-                auditAllPengeluaranFifo(sourceList, dataFifoLengkap);
+                auditAllPengeluaranFifo(sourceList, dataFifoLengkap, globalDataMasuk);
             }
 
             renderPenyimpanganFifoData(sourceList);
@@ -9415,8 +9576,17 @@ function testReadData() {
             const countEl = document.getElementById('modal-fifo-violation-count');
             if (countEl) countEl.innerText = `${formatAngkaId(rawPenyimpanganFifoList.length)} Kejadian`;
 
+            // Calculate total tonase
+            const totalKg = rawPenyimpanganFifoList.reduce((acc, r) => {
+                return acc + (parseNilaiAngka(findValue(r, 'KG_KELUAR') || findValue(r, 'KG KELUAR')) || 0);
+            }, 0);
+            const kgEl = document.getElementById('modal-fifo-summary-kg');
+            if (kgEl) kgEl.innerText = `${formatAngkaId(totalKg)} Kg`;
+
             const searchInp = document.getElementById('flt-violation-search');
             if (searchInp) searchInp.value = '';
+            const catSel = document.getElementById('flt-violation-category');
+            if (catSel) catSel.value = 'all';
 
             modalFifoPage = 1;
             displayPenyimpanganFifoTable(filteredPenyimpanganFifoList);
@@ -9424,19 +9594,32 @@ function testReadData() {
 
         function filterPenyimpanganFifoList(keyword) {
             keyword = String(keyword || '').trim().toLowerCase();
-            if (!keyword) {
-                filteredPenyimpanganFifoList = [...rawPenyimpanganFifoList];
-            } else {
-                filteredPenyimpanganFifoList = rawPenyimpanganFifoList.filter(r => {
-                    const idKel = String(findValue(r, 'ID_KELUAR') || '').toLowerCase();
-                    const idLot = String(findValue(r, 'ID_LOT') || '').toLowerCase();
-                    const idReq = String(findValue(r, 'ID_PERMINTAAN') || '').toLowerCase();
-                    const jk = String(findValue(r, 'JENIS_KOPI') || '').toLowerCase();
-                    const tgl = String(formatSheetDate(findValue(r, 'TANGGAL_KELUAR')) || '').toLowerCase();
-                    const older = String(r._olderFifoLot || '').toLowerCase();
-                    return idKel.includes(keyword) || idLot.includes(keyword) || idReq.includes(keyword) || jk.includes(keyword) || tgl.includes(keyword) || older.includes(keyword);
-                });
-            }
+            const category = document.getElementById('flt-violation-category')?.value || 'all';
+
+            filteredPenyimpanganFifoList = rawPenyimpanganFifoList.filter(r => {
+                // Category filter
+                if (category === 'inversion' && r._deviationType !== 'inversion') return false;
+                if (category === 'bypass' && r._deviationType !== 'bypass') return false;
+
+                // Keyword search
+                if (!keyword) return true;
+                const idKel = String(findValue(r, 'ID_KELUAR') || '').toLowerCase();
+                const idLot = String(findValue(r, 'ID_LOT') || '').toLowerCase();
+                const idReq = String(findValue(r, 'ID_PERMINTAAN') || '').toLowerCase();
+                const jk = String(findValue(r, 'JENIS_KOPI') || '').toLowerCase();
+                const tgl = String(formatSheetDate(findValue(r, 'TANGGAL_KELUAR')) || '').toLowerCase();
+                const older = String(r._olderFifoLot || '').toLowerCase();
+                const reason = String(r._fifoDeviationReason || '').toLowerCase();
+                return idKel.includes(keyword) || idLot.includes(keyword) || idReq.includes(keyword) || jk.includes(keyword) || tgl.includes(keyword) || older.includes(keyword) || reason.includes(keyword);
+            });
+
+            // Update subtotal KG on filter
+            const subtotalKg = filteredPenyimpanganFifoList.reduce((acc, r) => {
+                return acc + (parseNilaiAngka(findValue(r, 'KG_KELUAR') || findValue(r, 'KG KELUAR')) || 0);
+            }, 0);
+            const kgEl = document.getElementById('modal-fifo-summary-kg');
+            if (kgEl) kgEl.innerText = `${formatAngkaId(subtotalKg)} Kg`;
+
             modalFifoPage = 1;
             displayPenyimpanganFifoTable(filteredPenyimpanganFifoList);
         }
@@ -9446,7 +9629,7 @@ function testReadData() {
             if (!tb) return;
 
             if (!list || list.length === 0) {
-                tb.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400 font-sans"><i class="ph ph-check-circle text-4xl mb-2 block mx-auto text-emerald-500"></i>Tidak ada transaksi kejadian penyimpangan FIFO. Semua pengeluaran tertib sesuai urutan FIFO!</td></tr>`;
+                tb.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-slate-400 font-sans"><i class="ph ph-check-circle text-4xl mb-2 block mx-auto text-emerald-500"></i>Tidak ada transaksi kejadian penyimpangan FIFO untuk kriteria ini.</td></tr>`;
                 updateModalFifoPagination(0, 0, 0, 1, 1);
                 return;
             }
@@ -9465,30 +9648,61 @@ function testReadData() {
                 const rowNum = start + idx + 1;
                 const idKeluar = findValue(r, 'ID_KELUAR') || '-';
                 const tgl = formatSheetDate(findValue(r, 'TANGGAL_KELUAR')) || '-';
+                const jam = findValue(r, 'JAM_KELUAR') || '';
                 const idReq = findValue(r, 'ID_PERMINTAAN') || '-';
                 const idLot = findValue(r, 'ID_LOT') || '-';
                 const jk = findValue(r, 'JENIS_KOPI') || '-';
                 const kg = parseNilaiAngka(findValue(r, 'KG_KELUAR') || findValue(r, 'KG KELUAR')) || 0;
-                const prioritasLot = r._olderFifoLot ? `<div class="text-[10px] text-amber-700 font-normal mt-0.5">⚠️ Prioritas: <b class="font-mono">${escapeHtml(r._olderFifoLot)}</b> (${r._olderFifoTgl || ''})</div>` : '';
                 
+                const lotTglBadge = r._lotTglMasuk && r._lotTglMasuk !== '-' 
+                    ? `<span class="text-[10px] text-slate-500 font-normal block mt-0.5">Tgl Masuk: <b class="text-slate-700">${formatIsoToDisplay(r._lotTglMasuk)}</b></span>` 
+                    : '';
+                
+                let detailPenyimpanganHtml = '';
+                if (r._deviationType === 'inversion') {
+                    detailPenyimpanganHtml = `
+                        <div class="text-[11px] text-red-700 bg-red-50/80 p-2 rounded-lg border border-red-100 max-w-sm whitespace-normal leading-relaxed">
+                            <div class="font-bold flex items-center gap-1 text-red-800"><i class="ph ph-warning-diamond"></i> Inversi Urutan Pengeluaran</div>
+                            <div>Lot ini (masuk <b class="font-mono text-slate-900">${formatIsoToDisplay(r._lotTglMasuk)}</b>) dikeluarkan setelah lot lebih baru <b class="font-mono text-red-900">${escapeHtml(r._olderFifoLot)}</b> (masuk <b class="font-mono text-slate-900">${formatIsoToDisplay(r._olderFifoTgl)}</b>) keluar lebih dulu!</div>
+                        </div>
+                    `;
+                } else if (r._deviationType === 'bypass') {
+                    detailPenyimpanganHtml = `
+                        <div class="text-[11px] text-amber-800 bg-amber-50/80 p-2 rounded-lg border border-amber-200/80 max-w-sm whitespace-normal leading-relaxed">
+                            <div class="font-bold flex items-center gap-1 text-amber-900"><i class="ph ph-clock-counter-clockwise"></i> Bypass Stok Aktif Lebih Tua</div>
+                            <div>Terdapat lot lebih tua <b class="font-mono text-amber-900">${escapeHtml(r._olderFifoLot)}</b> (masuk <b class="font-mono text-slate-900">${formatIsoToDisplay(r._olderFifoTgl)}</b>) yang belum habis di gudang saat lot ini dikeluarkan.</div>
+                        </div>
+                    `;
+                } else {
+                    detailPenyimpanganHtml = `
+                        <div class="text-[11px] text-red-700 bg-red-50/80 p-2 rounded-lg border border-red-100 max-w-sm whitespace-normal leading-relaxed">
+                            <div class="font-bold flex items-center gap-1 text-red-800"><i class="ph ph-warning"></i> ${escapeHtml(r._fifoDeviationReason || 'Penyimpangan FIFO')}</div>
+                        </div>
+                    `;
+                }
+
                 html += `
-                    <tr class="hover:bg-red-50/40 transition-colors">
-                        <td class="px-4 py-3 text-center text-slate-400 font-medium">${rowNum}</td>
-                        <td class="px-4 py-3 font-medium text-slate-700">${tgl}</td>
-                        <td class="px-4 py-3 font-bold font-mono text-red-700">${escapeHtml(idKeluar)}</td>
-                        <td class="px-4 py-3 text-slate-700">${escapeHtml(idReq)}</td>
-                        <td class="px-4 py-3">
-                            <span class="font-bold font-mono text-slate-900 bg-red-50/70 px-2 py-0.5 rounded border border-red-100">${escapeHtml(idLot)}</span>
-                            ${prioritasLot}
+                    <tr class="hover:bg-red-50/30 transition-colors">
+                        <td class="px-3.5 py-3 text-center text-slate-400 font-medium">${rowNum}</td>
+                        <td class="px-3.5 py-3 font-medium text-slate-700">
+                            <div>${tgl}</div>
+                            ${jam ? `<div class="text-[10px] text-slate-400 font-mono">${escapeHtml(jam)}</div>` : ''}
                         </td>
-                        <td class="px-4 py-3 font-semibold text-slate-800">${escapeHtml(jk)}</td>
-                        <td class="px-4 py-3 text-right font-black font-mono text-red-600">${formatAngkaId(kg)}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
-                                PENYIMPANGAN
+                        <td class="px-3.5 py-3 font-bold font-mono text-red-700">${escapeHtml(idKeluar)}</td>
+                        <td class="px-3.5 py-3 text-slate-600 font-mono text-[11px]">${escapeHtml(idReq)}</td>
+                        <td class="px-3.5 py-3">
+                            <span class="font-bold font-mono text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 inline-block">${escapeHtml(idLot)}</span>
+                            ${lotTglBadge}
+                        </td>
+                        <td class="px-3.5 py-3 font-semibold text-slate-800">${escapeHtml(jk)}</td>
+                        <td class="px-3.5 py-3 text-right font-black font-mono text-red-600">${formatAngkaId(kg)}</td>
+                        <td class="px-3.5 py-3">${detailPenyimpanganHtml}</td>
+                        <td class="px-3.5 py-3 text-center">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 inline-flex items-center gap-1">
+                                <i class="ph ph-x-circle text-xs"></i> TIDAK FIFO
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <td class="px-3.5 py-3 text-center whitespace-nowrap">
                             <button type="button" onclick="closeModalDetailPenyimpanganFifo(); openEditPengeluaran('${escapeHtml(idKeluar)}');" class="px-2.5 py-1 text-[11px] font-semibold bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg border border-blue-200 transition-colors cursor-pointer flex items-center gap-1 mx-auto" title="Tinjau atau Edit Pengeluaran">
                                 <i class="ph ph-pencil-simple text-xs"></i> Tinjau/Edit
                             </button>
@@ -9527,6 +9741,34 @@ function testReadData() {
                 modalFifoPage++;
                 displayPenyimpanganFifoTable(filteredPenyimpanganFifoList);
             }
+        }
+
+        function exportPenyimpanganFifoCSV() {
+            if (!filteredPenyimpanganFifoList || filteredPenyimpanganFifoList.length === 0) {
+                showToast("Tidak ada data penyimpangan FIFO untuk diekspor", "info");
+                return;
+            }
+            let csv = "No,Tgl Keluar,Jam Keluar,ID Keluar,ID Permintaan,ID Lot Dikeluarkan,Tgl Masuk Lot,Jenis Kopi,KG Keluar,Analisis Temuan Penyimpangan,Status FIFO\n";
+            filteredPenyimpanganFifoList.forEach((r, idx) => {
+                const idKel = (findValue(r, 'ID_KELUAR') || '').replace(/"/g, '""');
+                const tgl = (formatSheetDate(findValue(r, 'TANGGAL_KELUAR')) || '').replace(/"/g, '""');
+                const jam = (findValue(r, 'JAM_KELUAR') || '').replace(/"/g, '""');
+                const idReq = (findValue(r, 'ID_PERMINTAAN') || '').replace(/"/g, '""');
+                const idLot = (findValue(r, 'ID_LOT') || '').replace(/"/g, '""');
+                const tglMasuk = (formatIsoToDisplay(r._lotTglMasuk) || '').replace(/"/g, '""');
+                const jk = (findValue(r, 'JENIS_KOPI') || '').replace(/"/g, '""');
+                const kg = parseNilaiAngka(findValue(r, 'KG_KELUAR') || findValue(r, 'KG KELUAR')) || 0;
+                const ket = (r._fifoDeviationReason || 'Penyimpangan Urutan FIFO').replace(/"/g, '""');
+                csv += `${idx + 1},"${tgl}","${jam}","${idKel}","${idReq}","${idLot}","${tglMasuk}","${jk}",${kg},"${ket}","TIDAK FIFO"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `Rekap_Penyimpangan_FIFO_SIBIKOM_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("File CSV Rekap Kejadian Penyimpangan FIFO berhasil diunduh!", "success");
         }
 
         function buildSummaryData() {
@@ -9811,7 +10053,7 @@ function testReadData() {
                     dataFifoLengkap = dFifo;
                 }
                 if (typeof auditAllPengeluaranFifo === 'function') {
-                    auditAllPengeluaranFifo(globalDataKeluar, dataFifoLengkap);
+                    auditAllPengeluaranFifo(globalDataKeluar, dataFifoLengkap, globalDataMasuk);
                 }
                 populateDashboardFilter();
                 applyDashboardFilter();
@@ -24194,11 +24436,11 @@ function testReadData() {
         function fetchRiwayatPengeluaran() {
             const ic = document.getElementById('icon-sync-riwayat-pengeluaran'); if(ic) ic.classList.add('animate-spin');
             fetchJSONData('INPUT_TRANSAKSI_KELUAR').then(dA => { 
-                allRiwKel = dA.filter(r => findValue(r,'TANGGAL_KELUAR')); 
-                allRiwKel.reverse(); 
+                const rawKel = dA.filter(r => findValue(r,'TANGGAL_KELUAR')); 
                 if (Array.isArray(dataFifoLengkap) && dataFifoLengkap.length > 0 && typeof auditAllPengeluaranFifo === 'function') {
-                    auditAllPengeluaranFifo(allRiwKel, dataFifoLengkap);
+                    auditAllPengeluaranFifo(rawKel, dataFifoLengkap, globalDataMasuk);
                 }
+                allRiwKel = rawKel.slice().reverse(); 
                 applyFilSorKel(); 
             }).catch(e=>document.getElementById('table-body-riwayat-pengeluaran').innerHTML=`<tr><td colspan="7" class="text-center py-10 text-red-500">Gagal memuat.</td></tr>`).finally(() => { if(ic) ic.classList.remove('animate-spin'); });
         }
