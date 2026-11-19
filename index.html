@@ -2092,16 +2092,72 @@
           );
         };
 
+        const INPUT_PENAWARAN_DRAFT_KEY = 'sja_input_penawaran_draft_v1';
+        const EDIT_PENAWARAN_DRAFT_KEY = 'sja_edit_penawaran_draft_v1';
+
+        const readPenawaranDraft = (storageKey) => {
+          try {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return (parsed && typeof parsed === 'object') ? parsed : null;
+          } catch (e) {
+            return null;
+          }
+        };
+
+        const writePenawaranDraft = (storageKey, payload) => {
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+          } catch (e) {}
+        };
+
+        const clearPenawaranDraft = (storageKey) => {
+          try {
+            localStorage.removeItem(storageKey);
+          } catch (e) {}
+        };
+
+        const generateNextReqNumber = (allData) => {
+          const dateObj = new Date();
+          const prefix = `REQ/${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/`;
+          let maxSequence = 0;
+          (allData || []).forEach(item => {
+            if (item && item.reqNumber && String(item.reqNumber).startsWith(prefix)) {
+              const seqNum = parseInt(String(item.reqNumber).replace(prefix, ''), 10);
+              if (!isNaN(seqNum) && seqNum > maxSequence) maxSequence = seqNum;
+            }
+          });
+          return `${prefix}${String(maxSequence + 1).padStart(3, '0')}`;
+        };
+
         const InputDataView = ({ onAddData, isSaving, data, editData, onCancelEdit, userRole }) => {
-          const [reqNumber, setReqNumber] = useState('');
-          const [projectName, setProjectName] = useState('');
-          const [poList, setPoList] = useState([]);
-          const [poInput, setPoInput] = useState('');
-          const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-          const [supplierInput, setSupplierInput] = useState('');
-          const [suppliers, setSuppliers] = useState([]);
-          const [supplierTerms, setSupplierTerms] = useState({});
-          const [items, setItems] = useState([{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+          const isEditMode = Array.isArray(editData) && editData.length > 0;
+          const editSignature = isEditMode ? editData.map(item => String(item?.id ?? '')).join('|') : '';
+          const todayIso = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+          const initialDraft = useMemo(() => {
+            if (isEditMode) {
+              const savedEdit = readPenawaranDraft(EDIT_PENAWARAN_DRAFT_KEY);
+              if (savedEdit && savedEdit.editSignature === editSignature) return savedEdit;
+              return null;
+            }
+            return readPenawaranDraft(INPUT_PENAWARAN_DRAFT_KEY);
+          }, []);
+
+          const [reqNumber, setReqNumber] = useState(() => initialDraft?.reqNumber ?? '');
+          const [projectName, setProjectName] = useState(() => initialDraft?.projectName ?? '');
+          const [poList, setPoList] = useState(() => Array.isArray(initialDraft?.poList) ? initialDraft.poList : []);
+          const [poInput, setPoInput] = useState(() => initialDraft?.poInput ?? '');
+          const [date, setDate] = useState(() => initialDraft?.date || new Date().toISOString().split('T')[0]);
+          const [supplierInput, setSupplierInput] = useState(() => initialDraft?.supplierInput ?? '');
+          const [suppliers, setSuppliers] = useState(() => Array.isArray(initialDraft?.suppliers) ? initialDraft.suppliers : []);
+          const [supplierTerms, setSupplierTerms] = useState(() => (initialDraft?.supplierTerms && typeof initialDraft.supplierTerms === 'object') ? initialDraft.supplierTerms : {});
+          const [items, setItems] = useState(() => (Array.isArray(initialDraft?.items) && initialDraft.items.length > 0) ? initialDraft.items : [{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+
+          const hydratedEditSigRef = useRef(initialDraft && isEditMode ? editSignature : '');
+          const prevIsEditModeRef = useRef(isEditMode);
+          const skipNextDraftSaveRef = useRef(false);
           
           const fileInputRef = useRef(null);
           const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
@@ -2114,6 +2170,31 @@
           const [showArchiveModal, setShowArchiveModal] = useState(false);
           const [archiveYear, setArchiveYear] = useState('');
 
+          const hasUnsavedDraft = useMemo(() => {
+            const hasItemInput = (items || []).some(it =>
+              (it?.description && String(it.description).trim() !== '') ||
+              (it?.qty && String(it.qty).trim() !== '1' && String(it.qty).trim() !== '') ||
+              (it?.unit && it.unit !== 'Unit') ||
+              (it?.customUnit && String(it.customUnit).trim() !== '') ||
+              (it?.prices && Object.values(it.prices).some(p => p && (
+                (p.amount && String(p.amount).trim() !== '') ||
+                (p.rate && String(p.rate).trim() !== '') ||
+                (p.note && String(p.note).trim() !== '') ||
+                (p.currency && p.currency !== 'IDR')
+              )))
+            );
+            return Boolean(
+              (projectName && projectName.trim() !== '') ||
+              (poList && poList.length > 0) ||
+              (poInput && poInput.trim() !== '') ||
+              (supplierInput && supplierInput.trim() !== '') ||
+              (suppliers && suppliers.length > 0) ||
+              (date && date !== todayIso) ||
+              (items && items.length > 1) ||
+              hasItemInput
+            );
+          }, [projectName, poList, poInput, supplierInput, suppliers, date, todayIso, items]);
+
           const archiveAvailableYears = useMemo(() => {
             const years = new Set();
             data.forEach(item => { if (item.date) years.add(item.date.substring(0, 4)); });
@@ -2125,8 +2206,45 @@
             setTimeout(() => setNotification({ show: false, message: '', type: 'info' }), 4000);
           };
 
+          const handleResetDraftForm = () => {
+            skipNextDraftSaveRef.current = true;
+            clearPenawaranDraft(INPUT_PENAWARAN_DRAFT_KEY);
+            setProjectName('');
+            setPoList([]);
+            setPoInput('');
+            setDate(new Date().toISOString().split('T')[0]);
+            setSupplierInput('');
+            setSuppliers([]);
+            setSupplierTerms({});
+            setItems([{ id: Date.now(), description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+            setReqNumber(generateNextReqNumber(data));
+            showNotification("Form berhasil dibersihkan ke kondisi awal.", "success");
+          };
+
           useEffect(() => {
-            if (editData && Array.isArray(editData) && editData.length > 0) {
+            if (isEditMode) {
+              // Jika sudah ter-hydrate dari draft edit yang sama, jangan timpa ulang
+              if (hydratedEditSigRef.current === editSignature) {
+                prevIsEditModeRef.current = true;
+                return;
+              }
+              const savedEditDraft = readPenawaranDraft(EDIT_PENAWARAN_DRAFT_KEY);
+              if (savedEditDraft && savedEditDraft.editSignature === editSignature) {
+                setReqNumber(savedEditDraft.reqNumber ?? '');
+                setProjectName(savedEditDraft.projectName ?? '');
+                setPoList(Array.isArray(savedEditDraft.poList) ? savedEditDraft.poList : []);
+                setPoInput(savedEditDraft.poInput ?? '');
+                setDate(savedEditDraft.date || new Date().toISOString().split('T')[0]);
+                setSupplierInput(savedEditDraft.supplierInput ?? '');
+                setSuppliers(Array.isArray(savedEditDraft.suppliers) ? savedEditDraft.suppliers : []);
+                setSupplierTerms((savedEditDraft.supplierTerms && typeof savedEditDraft.supplierTerms === 'object') ? savedEditDraft.supplierTerms : {});
+                setItems((Array.isArray(savedEditDraft.items) && savedEditDraft.items.length > 0) ? savedEditDraft.items : [{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+                hydratedEditSigRef.current = editSignature;
+                prevIsEditModeRef.current = true;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+              }
+
               const first = editData[0];
               setReqNumber(first.reqNumber || ''); 
               setProjectName(first.projectName || '');
@@ -2205,23 +2323,84 @@
                 };
               });
               setItems(hydratedItems.length > 0 ? hydratedItems : [{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+              hydratedEditSigRef.current = editSignature;
+              prevIsEditModeRef.current = true;
               window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (prevIsEditModeRef.current) {
+              // Berpindah dari mode edit kembali ke mode input baru -> pulihkan draft input baru jika ada
+              hydratedEditSigRef.current = '';
+              prevIsEditModeRef.current = false;
+              const savedCreateDraft = readPenawaranDraft(INPUT_PENAWARAN_DRAFT_KEY);
+              if (savedCreateDraft) {
+                setReqNumber(savedCreateDraft.reqNumber || generateNextReqNumber(data));
+                setProjectName(savedCreateDraft.projectName ?? '');
+                setPoList(Array.isArray(savedCreateDraft.poList) ? savedCreateDraft.poList : []);
+                setPoInput(savedCreateDraft.poInput ?? '');
+                setDate(savedCreateDraft.date || new Date().toISOString().split('T')[0]);
+                setSupplierInput(savedCreateDraft.supplierInput ?? '');
+                setSuppliers(Array.isArray(savedCreateDraft.suppliers) ? savedCreateDraft.suppliers : []);
+                setSupplierTerms((savedCreateDraft.supplierTerms && typeof savedCreateDraft.supplierTerms === 'object') ? savedCreateDraft.supplierTerms : {});
+                setItems((Array.isArray(savedCreateDraft.items) && savedCreateDraft.items.length > 0) ? savedCreateDraft.items : [{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+              } else {
+                setReqNumber(generateNextReqNumber(data));
+                setProjectName('');
+                setPoList([]);
+                setPoInput('');
+                setDate(new Date().toISOString().split('T')[0]);
+                setSupplierInput('');
+                setSuppliers([]);
+                setSupplierTerms({});
+                setItems([{ id: 1, description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+              }
             }
-          }, [editData]);
+          }, [editData, isEditMode, editSignature]);
+
+          // Auto-simpan draft setiap kali user mengetik agar tidak hilang saat klik menu sidebar lain atau refresh browser
+          useEffect(() => {
+            if (skipNextDraftSaveRef.current) {
+              skipNextDraftSaveRef.current = false;
+              return;
+            }
+            if (isEditMode) {
+              if (hydratedEditSigRef.current !== editSignature) return;
+              writePenawaranDraft(EDIT_PENAWARAN_DRAFT_KEY, {
+                editSignature,
+                reqNumber,
+                projectName,
+                poList,
+                poInput,
+                date,
+                supplierInput,
+                suppliers,
+                supplierTerms,
+                items,
+                savedAt: Date.now()
+              });
+            } else {
+              if (hasUnsavedDraft) {
+                writePenawaranDraft(INPUT_PENAWARAN_DRAFT_KEY, {
+                  reqNumber,
+                  projectName,
+                  poList,
+                  poInput,
+                  date,
+                  supplierInput,
+                  suppliers,
+                  supplierTerms,
+                  items,
+                  savedAt: Date.now()
+                });
+              } else {
+                clearPenawaranDraft(INPUT_PENAWARAN_DRAFT_KEY);
+              }
+            }
+          }, [reqNumber, projectName, poList, poInput, date, supplierInput, suppliers, supplierTerms, items, isEditMode, editSignature, hasUnsavedDraft]);
 
           useEffect(() => {
-             if (!editData && !reqNumber) {
-                const dateObj = new Date(); const prefix = `REQ/${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/`;
-                let maxSequence = 0; 
-                (data || []).forEach(item => { 
-                    if (item && item.reqNumber && item.reqNumber.startsWith(prefix)) { 
-                        const seqNum = parseInt(item.reqNumber.replace(prefix, ''), 10); 
-                        if (!isNaN(seqNum) && seqNum > maxSequence) maxSequence = seqNum; 
-                    } 
-                });
-                setReqNumber(`${prefix}${String(maxSequence + 1).padStart(3, '0')}`);
+             if (!isEditMode && !reqNumber) {
+                setReqNumber(generateNextReqNumber(data));
              }
-          }, []);
+          }, [isEditMode, data]);
 
           const handleBackup = () => {
               if (!data || data.length === 0) return showNotification("Tidak ada data untuk dibackup.", "error");
@@ -2383,13 +2562,17 @@
             onAddData(newFormattedData, (editData && editData.length > 0) ? editData.map(item => item.id) : []);
             showNotification(`Berhasil! Data telah ${(editData && editData.length > 0) ? 'diperbarui' : 'ditambahkan'}.`, 'success');
             
+            skipNextDraftSaveRef.current = true;
             if (!editData || editData.length === 0) {
-                setProjectName(''); setPoList([]); setPoInput(''); setDate(new Date().toISOString().split('T')[0]); setSuppliers([]); setSupplierTerms({}); setItems([{ id: Date.now(), description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
+                clearPenawaranDraft(INPUT_PENAWARAN_DRAFT_KEY);
+                setProjectName(''); setPoList([]); setPoInput(''); setDate(new Date().toISOString().split('T')[0]); setSupplierInput(''); setSuppliers([]); setSupplierTerms({}); setItems([{ id: Date.now(), description: '', qty: '1', unit: 'Unit', customUnit: '', prices: {} }]);
                 const parts = finalReqNumber.split('/');
                 if (parts.length === 4) {
                     const nextSeq = parseInt(parts[3], 10) + 1;
                     setReqNumber(`${parts[0]}/${parts[1]}/${parts[2]}/${String(nextSeq).padStart(3, '0')}`);
                 }
+            } else {
+                clearPenawaranDraft(EDIT_PENAWARAN_DRAFT_KEY);
             }
           };
 
@@ -2468,12 +2651,22 @@
             <div className="max-w-6xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-300">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-5 rounded-2xl shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-800 tracking-tight">{editData ? 'Edit Data Penawaran' : 'Input Penawaran'}</h1>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">{editData ? 'Edit Data Penawaran' : 'Input Penawaran'}</h1>
+                    {(!editData && hasUnsavedDraft) && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        Draft tersimpan otomatis
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-slate-500 font-medium mt-0.5">{editData ? 'Perbarui data rincian item, harga, dan supplier.' : 'Tambahkan item dan komparasi supplier secara massal.'}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full md:w-auto">
                   {!editData ? (
                      <>
+                        {hasUnsavedDraft && (
+                          <button onClick={handleResetDraftForm} type="button" className="px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors font-bold text-sm flex items-center cursor-pointer"><RefreshCw className="w-4 h-4 mr-2" /> Reset Form</button>
+                        )}
                         {userRole === 'admin' && (
                           <button onClick={() => setShowArchiveModal(true)} type="button" className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-bold text-sm flex items-center"><Archive className="w-4 h-4 mr-2" /> Tutup Tahun</button>
                         )}
@@ -2481,7 +2674,7 @@
                         <button onClick={() => fileInputRef.current?.click()} type="button" className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm font-bold text-sm flex items-center"><Upload className="w-4 h-4 mr-2" /> Restore</button>
                      </>
                   ) : (
-                      <button onClick={onCancelEdit} type="button" className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-rose-600 transition-colors shadow-sm font-bold text-sm flex items-center"><X className="w-4 h-4 mr-2" /> Batal Edit</button>
+                      <button onClick={() => { clearPenawaranDraft(EDIT_PENAWARAN_DRAFT_KEY); onCancelEdit(); }} type="button" className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-rose-600 transition-colors shadow-sm font-bold text-sm flex items-center cursor-pointer"><X className="w-4 h-4 mr-2" /> Batal Edit</button>
                   )}
                   <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".json" />
                 </div>
