@@ -25576,6 +25576,76 @@ function testReadData() {
             });
         }
 
+        function formatNoPalletRMW(rawNoPallet, idLot) {
+            const lotStr = String(idLot || '').trim();
+            const rawStr = (rawNoPallet !== null && rawNoPallet !== undefined) ? String(rawNoPallet).trim() : '';
+
+            // 1. Ekstrak bagian No Pallet dari No Lot (format: GUDANG-NO_LOT-NO_PALET, misal SJA 3-G0.SBXX.261103-3/0397)
+            let palletFromLot = '';
+            if (lotStr && lotStr.includes('-')) {
+                const parts = lotStr.split('-').map(p => p.trim()).filter(Boolean);
+                if (parts.length >= 2) {
+                    const lastPart = parts[parts.length - 1];
+                    if (lastPart.includes('/')) {
+                        palletFromLot = lastPart;
+                    } else {
+                        let lotCodeIdx = -1;
+                        for (let i = 0; i < parts.length - 1; i++) {
+                            if (parts[i].includes('.')) lotCodeIdx = i;
+                        }
+                        if (lotCodeIdx !== -1 && lotCodeIdx < parts.length - 1) {
+                            palletFromLot = parts.slice(lotCodeIdx + 1).join('-');
+                        } else {
+                            palletFromLot = lastPart;
+                        }
+                    }
+                }
+            }
+
+            // 2. Jika No Pallet pada No Lot memakai format "/" (misal 3/0397, 3/1088, 3/1756) atau "-" yang terkonversi jadi serial angka,
+            //    langsung ambil dari No Lot dan ubah "/" menjadi "-" (misal 3-0397) agar tidak terbaca sebagai serial tanggal (-548898, dll.)
+            if (palletFromLot && (palletFromLot.includes('/') || (palletFromLot.includes('-') && /^\d+$/.test(rawStr)))) {
+                return palletFromLot.replace(/\//g, '-');
+            }
+
+            // 3. Cek jika nilai No Pallet dari Google Sheet korup akibat konversi tanggal otomatis (serial negatif, Date(...), atau ISO date)
+            const isCorruptedSheetDate =
+                !rawStr ||
+                rawStr === '-' ||
+                /^-\d+(\.\d+)?$/.test(rawStr) ||
+                /^Date\s*\(/i.test(rawStr) ||
+                /^\d{4}-\d{2}-\d{2}/.test(rawStr);
+
+            if (isCorruptedSheetDate) {
+                if (palletFromLot) {
+                    return palletFromLot.replace(/\//g, '-');
+                }
+                const gvizMatch = rawStr.match(/^Date\s*\(\s*(-?\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+                if (gvizMatch) {
+                    const yr = String(Math.abs(parseInt(gvizMatch[1], 10))).padStart(4, '0');
+                    const mo = parseInt(gvizMatch[2], 10) + 1;
+                    return `${mo}-${yr}`;
+                }
+                if (/^-\d+$/.test(rawStr)) {
+                    const serial = parseInt(rawStr, 10);
+                    const d = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+                    if (!isNaN(d.getTime())) {
+                        const mo = d.getUTCMonth() + 1;
+                        const yr = String(d.getUTCFullYear()).padStart(4, '0');
+                        return `${mo}-${yr}`;
+                    }
+                }
+                return '-';
+            }
+
+            // 4. Jika nilai No Pallet sendiri mengandung "/", ubah menjadi "-" (3/0397 -> 3-0397)
+            if (rawStr.includes('/')) {
+                return rawStr.replace(/\//g, '-');
+            }
+
+            return rawStr;
+        }
+
         function renderRMWDocument(reqId) {
             const container = document.getElementById('rmw-preview-container');
             const dataPengeluaran = allRiwKel.filter(r => String(findValue(r, 'ID_PERMINTAAN')).toUpperCase() === String(reqId).toUpperCase());
@@ -25601,10 +25671,11 @@ function testReadData() {
                 totalKarung += jmlKrg;
                 totalBerat += beratKgRaw;
 
-                let noPallet = findValue(out, 'NO_PALET') || findValue(penData, 'NO_PALET') || "-";
-                if (noPallet === "-") {
-                    noPallet = idLot.includes('-') ? idLot.split('-').pop() : "-";
+                let rawNoPallet = findValue(out, 'NO_PALET');
+                if (rawNoPallet === '' || rawNoPallet === null || rawNoPallet === undefined) {
+                    rawNoPallet = findValue(penData, 'NO_PALET');
                 }
+                let noPallet = formatNoPalletRMW(rawNoPallet, idLot);
                 
                 let stRaw = getStatusMutu(penData);
                 let statusFinal = stRaw !== "-" && stRaw ? String(stRaw).toUpperCase().trim() : "-";
