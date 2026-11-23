@@ -1624,6 +1624,10 @@
                         <button onclick="switchTab('gudang-fifo'); toggleMobileSidebar()" id="btn-gudang-fifo" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cek Stok FIFO</button>
                         <button onclick="switchTab('gudang-oper'); toggleMobileSidebar()" id="btn-gudang-oper" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Sistem Oper Gudang</button>
                         <button onclick="switchTab('gudang-cetak-rmw'); toggleMobileSidebar()" id="btn-gudang-cetak-rmw" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Cetak Bukti (RMW)</button>
+                        <button onclick="switchTab('gudang-ba-penyusutan'); toggleMobileSidebar()" id="btn-gudang-ba-penyusutan" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-between">
+                            <span>Berita Acara Penyusutan</span>
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">BA Susut</span>
+                        </button>
                         <button onclick="switchTab('gudang-ceklist'); toggleMobileSidebar()" id="btn-gudang-ceklist" class="w-full text-left px-3 py-2 text-xs sm:text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Data Ceklist Warehouse</button>
                     </div>
                 </div>
@@ -6814,6 +6818,237 @@ if (p.action === "cancelOperGudang") {
                 </div>
             </section>
 
+            <!-- Section Berita Acara Penyusutan (BKM) -->
+            <section id="sec-gudang-ba-penyusutan" class="bg-white p-6 sm:p-8 rounded-2xl shadow-card border border-slate-100 hidden opacity-0 transition-opacity duration-300 w-full max-w-[98%] 2xl:max-w-[1800px] mx-auto space-y-6">
+                <!-- Header Title & Action Buttons -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center text-slate-800 border-b border-slate-100 pb-5 gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-100"><i class="ph ph-scales text-2xl text-amber-600"></i></div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xl font-bold tracking-tight">Berita Acara Penyusutan Biji Kopi Mentah</h2>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <i class="ph ph-check-circle text-xs"></i> Khusus ID Lot Stok Habis
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Berita Acara dibuat saat kondisi stok ID Lot sudah habis (0 Sak) berdasarkan data pengeluaran tanggal terakhir transaksinya.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                        <button type="button" id="btn-sync-ba-penyusutan" onclick="loadDataBAPenyusutan(true)" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95" title="Refresh & Sinkronisasi Data dari Google Sheet">
+                            <i id="icon-sync-ba-penyusutan" class="ph ph-arrows-clockwise text-sm"></i>
+                            <span id="text-sync-ba-penyusutan">Sinkron Data</span>
+                        </button>
+                        <button type="button" onclick="openBAPenyusutanModal()" class="flex items-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer">
+                            <i class="ph ph-file-text text-sm"></i>
+                            <span>Cetak Dokumen BA Resmi (Lot Habis)</span>
+                        </button>
+                        <button type="button" onclick="toggleDesktopMobileSidebar()" class="btn-section-toggle-sidebar flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200/90 dark:border-slate-700 shadow-2xs transition-all cursor-pointer shrink-0" title="Slide In / Slide Out Menu Sidebar">
+                            <i class="ph ph-sidebar-simple text-base text-brand-primary"></i>
+                            <span>Toggle Sidebar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Summary Penyusutan -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">ID Lot Stok Habis</span>
+                            <span id="ba-kpi-total-trx" class="text-2xl font-black text-slate-800 mt-1 block">0 Lot</span>
+                            <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1"><i class="ph ph-check-circle"></i> Siap dibuatkan BA Susut</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph ph-check-square"></i>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Netto Penerimaan</span>
+                            <span id="ba-kpi-total-masuk" class="text-2xl font-black text-indigo-700 mt-1 block font-mono">0,00 Kg</span>
+                            <span class="text-[11px] text-slate-400">Berat asal penerimaan lot habis</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph ph-package"></i>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Netto Timbang Keluar</span>
+                            <span id="ba-kpi-total-keluar" class="text-2xl font-black text-emerald-700 mt-1 block font-mono">0,00 Kg</span>
+                            <span class="text-[11px] text-slate-400">Akumulasi pengeluaran lot habis</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph ph-scales"></i>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Selisih Susut Akhir</span>
+                            <div class="flex items-baseline gap-2 mt-1">
+                                <span id="ba-kpi-total-susut" class="text-2xl font-black text-red-600 block font-mono">0,00 Kg</span>
+                                <span id="ba-kpi-persen-susut" class="text-xs font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded">0,00%</span>
+                            </div>
+                            <span id="ba-kpi-status-susut" class="text-[11px] text-slate-500 font-medium">Toleransi standar: maks 0,50%</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-red-100 text-red-700 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph ph-trend-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter & Search Controls -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+                        <!-- Date Filter & Presets (Berdasarkan Tanggal Terakhir Transaksi) -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-2xs">
+                                <i class="ph ph-calendar text-slate-400 text-sm"></i>
+                                <span class="text-xs font-semibold text-slate-600">Tgl Terakhir Transaksi:</span>
+                                <input type="date" id="ba-filter-date" onchange="onBAPenyusutanDateChange()" class="text-xs font-medium text-slate-700 bg-transparent outline-none" title="Filter berdasarkan tanggal pengeluaran terakhir saat ID Lot habis">
+                            </div>
+                            <button type="button" onclick="setBAPenyusutanDatePreset('today')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors">Hari Ini</button>
+                            <button type="button" onclick="setBAPenyusutanDatePreset('week')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors">7 Hari</button>
+                            <button type="button" onclick="setBAPenyusutanDatePreset('month')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors">Bulan Ini</button>
+                            <button type="button" onclick="setBAPenyusutanDatePreset('all')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors">Semua</button>
+                        </div>
+
+                        <!-- Dropdowns & Search -->
+                        <div class="flex flex-wrap items-center gap-2 flex-1 justify-end">
+                            <!-- Filter Kondisi Stok Lot -->
+                            <select id="ba-filter-kondisi-stok" onchange="filterBAPenyusutan()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white outline-none focus:border-amber-500 shadow-2xs text-emerald-700">
+                                <option value="habis" selected>Stok Habis / 0 Sak (Siap Buat BA)</option>
+                                <option value="all">Semua Kondisi Stok</option>
+                                <option value="aktif">Belum Habis (Masih Ada Sisa)</option>
+                            </select>
+
+                            <!-- Filter ID Permintaan (Otomatis menyesuaikan Tanggal Pengeluaran Terakhir) -->
+                            <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-2xs">
+                                <i class="ph ph-receipt text-slate-400 text-sm"></i>
+                                <span class="text-xs font-semibold text-slate-600">ID Permintaan:</span>
+                                <select id="ba-filter-req" onchange="filterBAPenyusutan()" class="text-xs font-semibold text-amber-700 bg-transparent outline-none cursor-pointer max-w-[170px] truncate">
+                                    <option value="all">Semua ID Permintaan</option>
+                                </select>
+                            </div>
+                            <select id="ba-filter-jenis" onchange="filterBAPenyusutan()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white outline-none focus:border-amber-500 shadow-2xs">
+                                <option value="all">Semua Jenis Kopi</option>
+                            </select>
+                            <select id="ba-filter-toleransi" onchange="filterBAPenyusutan()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white outline-none focus:border-amber-500 shadow-2xs">
+                                <option value="all">Semua Toleransi</option>
+                                <option value="normal">Normal (Susut ≤ 0,50%)</option>
+                                <option value="warning">Perhatian (Susut > 0,50%)</option>
+                                <option value="surplus">Surplus / Minus (Susut ≤ 0 kg)</option>
+                            </select>
+                            <div class="relative flex-1 min-w-[160px] max-w-xs">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                                <input type="text" id="ba-filter-search" oninput="filterBAPenyusutan()" placeholder="Cari ID Lot, Keluar, Supplier..." class="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white outline-none focus:border-amber-500 shadow-2xs">
+                            </div>
+                            <button type="button" onclick="resetBAPenyusutanFilter()" class="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors" title="Reset Semua Filter">
+                                <i class="ph ph-arrow-counter-clockwise text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table of Data Penyusutan -->
+                <div class="overflow-hidden rounded-xl border border-slate-200 shadow-2xs">
+                    <div class="table-container-fifo overflow-x-auto max-h-[60vh]">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-slate-100 text-slate-700 font-bold sticky top-0 z-10 border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="px-4 py-3 text-center w-12">No</th>
+                                    <th class="px-4 py-3">Tgl Keluar Terakhir</th>
+                                    <th class="px-4 py-3">ID Keluar Terakhir</th>
+                                    <th class="px-4 py-3">ID Permintaan</th>
+                                    <th class="px-4 py-3">ID Lot BKM</th>
+                                    <th class="px-4 py-3">Jenis Kopi</th>
+                                    <th class="px-4 py-3">Supplier</th>
+                                    <th class="px-4 py-3 text-right">Netto Masuk (Kg)</th>
+                                    <th class="px-4 py-3 text-right">Total Keluar (Kg)</th>
+                                    <th class="px-4 py-3 text-right">Susut Akhir (Kg)</th>
+                                    <th class="px-4 py-3 text-center">% Susut</th>
+                                    <th class="px-4 py-3 text-center">Kondisi Stok</th>
+                                    <th class="px-4 py-3 text-center">Toleransi</th>
+                                    <th class="px-4 py-3 text-center w-32">Aksi Dokumen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-ba-penyusutan" class="divide-y divide-slate-100 font-medium text-slate-700 bg-white">
+                                <tr>
+                                    <td colspan="14" class="text-center py-12 text-slate-400">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <i class="ph ph-spinner animate-spin text-3xl text-amber-500"></i>
+                                            <span>Memuat data pengeluaran, penerimaan & status stok...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+                        <div class="flex items-center gap-2">
+                            <span>Menampilkan</span>
+                            <span id="ba-page-info" class="font-bold text-slate-700">0 - 0</span>
+                            <span>dari</span>
+                            <span id="ba-total-info" class="font-bold text-slate-700">0</span>
+                            <span>data</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button type="button" id="btn-ba-prev" onclick="prevPageBAPenyusutan()" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-slate-600 transition-colors">
+                                <i class="ph ph-caret-left mr-1"></i> Prev
+                            </button>
+                            <button type="button" id="btn-ba-next" onclick="nextPageBAPenyusutan()" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-slate-600 transition-colors">
+                                Next <i class="ph ph-caret-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modal Dokumen Berita Acara Penyusutan Resmi (Capture JPG / PDF) -->
+            <div id="modal-ba-penyusutan" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-slate-200">
+                    <!-- Modal Header -->
+                    <div class="px-6 py-4 bg-slate-800 text-white flex items-center justify-between border-b border-slate-700 shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg border border-amber-500/30">
+                                <i class="ph ph-file-pdf text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-base text-white">Pratinjau Berita Acara Penyusutan Timbang BKM</h3>
+                                <p class="text-xs text-slate-300">Format standar PT Santos Jaya Abadi Plant 3 - Warehouse BKM & UPBM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="downloadBAPenyusutanJPG()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer" title="Download Gambar JPG">
+                                <i class="ph ph-image text-sm text-sky-400"></i>
+                                <span>Unduh JPG</span>
+                            </button>
+                            <button type="button" onclick="downloadBAPenyusutanPDF()" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer" title="Download Dokumen PDF (A4 Portrait)">
+                                <i class="ph ph-file-pdf text-sm"></i>
+                                <span>Unduh PDF</span>
+                            </button>
+                            <button type="button" onclick="printBAPenyusutan()" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer" title="Cetak Dokumen">
+                                <i class="ph ph-printer text-sm"></i>
+                                <span>Cetak</span>
+                            </button>
+                            <button type="button" onclick="closeBAPenyusutanModal()" class="p-1.5 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer ml-1">
+                                <i class="ph ph-x text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body / Document Preview Area -->
+                    <div class="p-4 sm:p-6 overflow-y-auto bg-slate-100 flex justify-center flex-1">
+                        <!-- Formal Document Sheet (Target Capture for JPG & PDF) -->
+                        <div id="ba-penyusutan-document-content" class="bg-white text-black p-6 sm:p-8 rounded-lg shadow-lg border border-slate-300 max-w-[850px] w-full text-xs font-sans">
+                            <!-- Injected by renderBAPenyusutanDocContent() -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Section Data Ceklist Warehouse -->
             <section id="sec-gudang-ceklist" class="bg-white p-6 sm:p-8 rounded-2xl shadow-card border border-slate-100 hidden opacity-0 transition-opacity duration-300 w-full max-w-[98%] 2xl:max-w-[1800px] mx-auto space-y-6">
                 <!-- Header Title & Action Buttons -->
@@ -9143,11 +9378,11 @@ function testReadData() {
 
         // Tab Switching Logic
         function switchTab(tabId) {
-            const tabs = ['main-dashboard', 'dashboard', 'gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-oper', 'gudang-opname', 'gudang-history-opname', 'gudang-opname-pallet', 'gudang-mapping', 'gudang-cetak-rmw', 'gudang-ceklist', 'produksi'];
-            const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-oper': 'Sistem Oper Gudang (Mutasi BKM)', 'gudang-opname': 'Data Stock Opname Gudang', 'gudang-history-opname': 'History Data Stock Opname', 'gudang-opname-pallet': 'Data Stock Opname Pallet GBB', 'gudang-mapping': 'Mapping Gudang Bahan Baku (SJA3)', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'gudang-ceklist': 'Data Ceklist Warehouse', 'produksi': 'Form Permintaan UPBM Roasting' };
+            const tabs = ['main-dashboard', 'dashboard', 'gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-oper', 'gudang-opname', 'gudang-history-opname', 'gudang-opname-pallet', 'gudang-mapping', 'gudang-cetak-rmw', 'gudang-ba-penyusutan', 'gudang-ceklist', 'produksi'];
+            const titles = { 'main-dashboard': 'Dashboard Utama', 'dashboard': 'Rekap Permintaan & Realisasi', 'gudang-po': 'Pencatatan Purchase Order (PO)', 'gudang-penerimaan': 'Penerimaan Kopi (BKM)', 'gudang-pengeluaran': 'Pengeluaran Kopi (BKM)', 'gudang-fifo': 'Cek Stok Aktif (FIFO)', 'gudang-oper': 'Sistem Oper Gudang (Mutasi BKM)', 'gudang-opname': 'Data Stock Opname Gudang', 'gudang-history-opname': 'History Data Stock Opname', 'gudang-opname-pallet': 'Data Stock Opname Pallet GBB', 'gudang-mapping': 'Mapping Gudang Bahan Baku (SJA3)', 'gudang-cetak-rmw': 'Cetak Bukti Serah Terima', 'gudang-ba-penyusutan': 'Berita Acara Penyusutan Biji Kopi Mentah', 'gudang-ceklist': 'Data Ceklist Warehouse', 'produksi': 'Form Permintaan UPBM Roasting' };
             
             // Auto-expand parent dropdown if switching to child item
-            if (['gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-oper', 'gudang-cetak-rmw', 'gudang-ceklist'].includes(tabId)) {
+            if (['gudang-po', 'gudang-penerimaan', 'gudang-pengeluaran', 'gudang-fifo', 'gudang-oper', 'gudang-cetak-rmw', 'gudang-ba-penyusutan', 'gudang-ceklist'].includes(tabId)) {
                 const dd = document.getElementById('dropdown-gudang');
                 const arr = document.getElementById('arrow-gudang');
                 if (dd && dd.classList.contains('hidden')) {
@@ -9205,6 +9440,7 @@ function testReadData() {
             else if (tabId === 'gudang-opname-pallet') { loadDataOpnamePalletGBB(); startOpnamePalletAutoRefresh(); }
             else if (tabId === 'gudang-mapping') { initWarehouseMapping(); }
             else if (tabId === 'gudang-cetak-rmw') { loadDataDropdownRMW(); }
+            else if (tabId === 'gudang-ba-penyusutan') { loadDataBAPenyusutan(); }
             else if (tabId === 'gudang-ceklist') { loadDataCeklistWarehouse(); }
             else if (tabId === 'produksi') { fetchRiwayatPermintaan(); }
             else if (tabId === 'dashboard') { syncData(); }
@@ -25524,6 +25760,1132 @@ function testReadData() {
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
             };
             html2pdf().set(opt).from(element).save();
+        }
+
+        /* =========================================================================
+           MODUL BERITA ACARA PENYUSUTAN BIJI KOPI MENTAH (BKM)
+           Perbandingan Netto Penerimaan vs Netto Timbang Keluar & Ekspor JPG / PDF
+           ========================================================================= */
+        let baPenyusutanAllData = [];
+        let baPenyusutanFiltered = [];
+        let baPenyusutanPage = 1;
+        const baPenyusutanPageSize = 10;
+        let baCurrentDocItems = [];
+
+        function parseFlexibleDate(dateVal) {
+            if (!dateVal) return { raw: "", dateObj: null, formattedYMD: "", displayStr: "-" };
+            let str = String(dateVal).trim();
+            if (!str || str === "-") return { raw: "", dateObj: null, formattedYMD: "", displayStr: "-" };
+
+            // 1. Google Sheets Date format: "Date(2026,10,5)"
+            if (str.includes("Date(")) {
+                const nums = str.match(/\d+/g);
+                if (nums && nums.length >= 3) {
+                    const y = parseInt(nums[0], 10);
+                    const m = parseInt(nums[1], 10) + 1;
+                    const d = parseInt(nums[2], 10);
+                    const ymd = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+                    const dt = new Date(y, m - 1, d);
+                    return { raw: str, dateObj: dt, formattedYMD: ymd, displayStr: `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}` };
+                }
+            }
+
+            // 2. ISO or YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+                const ymd = str.slice(0, 10);
+                const [y, m, d] = ymd.split("-").map(Number);
+                const dt = new Date(y, m - 1, d);
+                return { raw: str, dateObj: dt, formattedYMD: ymd, displayStr: `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}` };
+            }
+
+            // 3. DD-MM-YY, D-M-YY, DD/MM/YYYY, e.g. "5-11-26" or "05/11/2026"
+            const sepMatch = str.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+            if (sepMatch) {
+                let d = parseInt(sepMatch[1], 10);
+                let m = parseInt(sepMatch[2], 10);
+                let y = parseInt(sepMatch[3], 10);
+                if (y < 100) y += 2000;
+                const ymd = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+                const dt = new Date(y, m - 1, d);
+                return { raw: str, dateObj: dt, formattedYMD: ymd, displayStr: `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}` };
+            }
+
+            const dt = new Date(str);
+            if (!isNaN(dt.getTime())) {
+                const y = dt.getFullYear();
+                const m = dt.getMonth() + 1;
+                const d = dt.getDate();
+                const ymd = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+                return { raw: str, dateObj: dt, formattedYMD: ymd, displayStr: `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}` };
+            }
+
+            return { raw: str, dateObj: null, formattedYMD: str, displayStr: str };
+        }
+
+        async function loadDataBAPenyusutan(forceRefresh = false) {
+            const btn = document.getElementById('btn-sync-ba-penyusutan');
+            const icon = document.getElementById('icon-sync-ba-penyusutan');
+            const textSpan = document.getElementById('text-sync-ba-penyusutan');
+
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('opacity-70', 'cursor-wait');
+            }
+            if (icon) {
+                icon.classList.add('animate-spin', 'text-amber-600');
+            }
+            if (textSpan && forceRefresh) {
+                textSpan.textContent = 'Menyinkronkan...';
+            }
+
+            if (forceRefresh) {
+                showToast('Menyinkronkan data Berita Acara dari Google Sheet...', 'info');
+            }
+
+            const tbody = document.getElementById('table-body-ba-penyusutan');
+            if (tbody && (forceRefresh || !baPenyusutanAllData || baPenyusutanAllData.length === 0)) {
+                tbody.innerHTML = `<tr><td colspan="14" class="text-center py-12 text-slate-400">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <i class="ph ph-spinner animate-spin text-3xl text-amber-500"></i>
+                        <span class="font-medium text-slate-600 dark:text-slate-300">Memuat & menyinkronkan data dari Google Sheet...</span>
+                        <span class="text-xs text-slate-400">Mengambil lembar kerja CALC_STOK_AKTIF_FIFO (Kolom H & U), Penerimaan, dan Pengeluaran</span>
+                    </div>
+                </td></tr>`;
+            }
+
+            try {
+                // Fetch data lembar kerja CALC_STOK_AKTIF_FIFO, INPUT_PENERIMAAN_KOPI, dan INPUT_TRANSAKSI_KELUAR
+                const [dataFifo, dataMasuk, dataKeluar] = await Promise.all([
+                    (forceRefresh || !Array.isArray(dataFifoLengkap) || dataFifoLengkap.length === 0) ? fetchJSONData('CALC_STOK_AKTIF_FIFO') : Promise.resolve(dataFifoLengkap),
+                    (forceRefresh || !allRiwPen || allRiwPen.length === 0) ? fetchJSONData('INPUT_PENERIMAAN_KOPI') : Promise.resolve(allRiwPen),
+                    (forceRefresh || !allRiwKel || allRiwKel.length === 0) ? fetchJSONData('INPUT_TRANSAKSI_KELUAR') : Promise.resolve(allRiwKel)
+                ]);
+
+                if (Array.isArray(dataFifo) && dataFifo.length > 0) {
+                    dataFifoLengkap = dataFifo;
+                }
+                if (Array.isArray(dataMasuk) && dataMasuk.length > 0) {
+                    allRiwPen = dataMasuk.filter(r => findValue(r, 'TANGGAL_MASUK') || findValue(r, 'ID_LOT'));
+                }
+                if (Array.isArray(dataKeluar) && dataKeluar.length > 0) {
+                    allRiwKel = dataKeluar.filter(r => findValue(r, 'TANGGAL_KELUAR') || findValue(r, 'ID_KELUAR'));
+                }
+
+                // Lookup map Penerimaan (untuk melengkapi Supplier, Surat Jalan, dll)
+                const lotPenerimaanMap = new Map();
+                if (Array.isArray(allRiwPen)) {
+                    allRiwPen.forEach(r => {
+                        const idLot = String(findValue(r, 'ID_LOT') || '').trim();
+                        if (!idLot) return;
+                        const nettoKg = parseNilaiAngka(findValue(r, 'BERAT NETTO (Kg)') || findValue(r, 'BERAT_NETTO') || findValue(r, 'NETTO') || (r._raw && r._raw.length >= 14 ? r._raw[13] : 0));
+                        const karungMasuk = parseInt(findValue(r, 'KARUNG_MASUK') || findValue(r, 'KARUNG') || (r._raw && r._raw.length >= 13 ? r._raw[12] : 0)) || 0;
+                        const supplier = findValue(r, 'SUPPLIER') || '-';
+                        const tglMasuk = formatSheetDate(findValue(r, 'TANGGAL_MASUK')) || '-';
+                        const jenis = findValue(r, 'JENIS_KOPI') || '-';
+                        const suratJalan = findValue(r, 'SURAT_JALAN') || '-';
+
+                        lotPenerimaanMap.set(idLot.toUpperCase(), {
+                            idLot: idLot,
+                            nettoKg: nettoKg,
+                            karungMasuk: karungMasuk,
+                            supplier: supplier,
+                            tglMasuk: tglMasuk,
+                            jenis: jenis,
+                            suratJalan: suratJalan
+                        });
+                    });
+                }
+
+                // Lookup map Pengeluaran (untuk melengkapi nomor ID_PERMINTAAN, ID_KELUAR, Tujuan)
+                const lotKeluarMap = new Map();
+                if (Array.isArray(allRiwKel)) {
+                    allRiwKel.forEach(r => {
+                        const idLot = String(findValue(r, 'ID_LOT') || '').trim();
+                        if (!idLot) return;
+                        const key = idLot.toUpperCase();
+                        if (!lotKeluarMap.has(key)) {
+                            lotKeluarMap.set(key, []);
+                        }
+                        lotKeluarMap.get(key).push({
+                            idKeluar: findValue(r, 'ID_KELUAR') || '-',
+                            tglKeluar: formatSheetDate(findValue(r, 'TANGGAL_KELUAR')),
+                            tglKeluarRaw: findValue(r, 'TANGGAL_KELUAR'),
+                            jamKeluar: formatSheetTime(findValue(r, 'JAM_KELUAR')) || '-',
+                            idReq: findValue(r, 'ID_PERMINTAAN') || '-',
+                            tujuan: findValue(r, 'TUJUAN') || '-',
+                            karungKeluar: parseInt(findValue(r, 'KARUNG_KELUAR')) || 0,
+                            kgKeluar: parseNilaiAngka(findValue(r, 'KG_KELUAR') || findValue(r, 'KG KELUAR'))
+                        });
+                    });
+                }
+
+                // -------------------------------------------------------------
+                // PROSES UTAMA: DARI LEMBAR KERJA CALC_STOK_AKTIF_FIFO
+                // ID LOT diambil dari Kolom H (index 7)
+                // Tanggal Pengeluaran Terakhir diambil dari Kolom U (index 20)
+                // Qty Netto Masuk diambil dari Kolom K (index 10)
+                // Qty Keluar diambil dari Kolom M (index 12)
+                // Sisa Karung & Kg diambil dari Kolom N & O (index 13 & 14)
+                // -------------------------------------------------------------
+                const lotGroupMap = new Map();
+                const jenisSet = new Set();
+
+                if (Array.isArray(dataFifo)) {
+                    dataFifo.forEach(r => {
+                        // Kolom H (index 7): ID_LOT
+                        const rawIdLot = String(
+                            (r._raw && r._raw.length >= 8 && r._raw[7] !== "" && r._raw[7] !== undefined && r._raw[7] !== null)
+                                ? r._raw[7]
+                                : (findValue(r, 'NO_LOT') || findValue(r, 'ID_LOT') || '')
+                        ).trim();
+
+                        if (!rawIdLot || rawIdLot === '-' || rawIdLot.toLowerCase() === 'no lot' || rawIdLot.toLowerCase() === 'id lot') {
+                            return;
+                        }
+
+                        // Kolom J (index 9) & Kolom K (index 10): KARUNG_MASUK & KG_MASUK
+                        const rawSakIn = (r._raw && r._raw.length >= 10 && r._raw[9] !== "") ? r._raw[9] : findValue(r, 'KARUNG_MASUK');
+                        const sakIn = parseNilaiAngka(rawSakIn || '0');
+
+                        const rawKgIn = (r._raw && r._raw.length >= 11 && r._raw[10] !== "") ? r._raw[10] : (findValue(r, 'KG_MASUK') || findValue(r, 'BERAT_NETTO') || findValue(r, 'NETTO'));
+                        const kgIn = parseNilaiAngka(rawKgIn || '0');
+
+                        // Kolom L (index 11) & Kolom M (index 12): KARUNG_KELUAR & KG_KELUAR
+                        const rawSakOut = (r._raw && r._raw.length >= 12 && r._raw[11] !== "") ? r._raw[11] : findValue(r, 'KARUNG_KELUAR');
+                        const sakOut = parseNilaiAngka(rawSakOut || '0');
+
+                        const rawKgOut = (r._raw && r._raw.length >= 13 && r._raw[12] !== "") ? r._raw[12] : findValue(r, 'KG_KELUAR');
+                        const kgOut = parseNilaiAngka(rawKgOut || '0');
+
+                        // Kolom N (index 13) & Kolom O (index 14): SISA_KARUNG & SISA_KG
+                        const rawSakSisa = (r._raw && r._raw.length >= 14 && r._raw[13] !== "") ? r._raw[13] : (findValue(r, 'SISA_KARUNG') || findValue(r, 'SISA_SAK'));
+                        const sakSisa = parseNilaiAngka(rawSakSisa || '0');
+
+                        const rawKgSisa = (r._raw && r._raw.length >= 15 && r._raw[14] !== "") ? r._raw[14] : (findValue(r, 'SISA_KG') || findValue(r, 'SISA_STOK'));
+                        const kgSisa = parseNilaiAngka(rawKgSisa || '0');
+
+                        // Kolom R (index 17): STATUS_STOK
+                        const rawStatus = String((r._raw && r._raw.length >= 18 && r._raw[17] !== "") ? r._raw[17] : (findValue(r, 'STATUS_STOK') || findValue(r, 'STATUS') || '')).trim().toUpperCase();
+
+                        // Kolom U (index 20): TANGGAL_PENGELUARAN_TERAKHIR
+                        const rawTglKeluarU = String(
+                            (r._raw && r._raw.length >= 21 && r._raw[20] !== "" && r._raw[20] !== undefined && r._raw[20] !== null)
+                                ? r._raw[20]
+                                : (findValue(r, 'TANGGAL_PENGELUARAN_TERAKHIR') || findValue(r, 'TGL_PENGELUARAN_TERAKHIR') || findValue(r, 'TGL_KELUAR_TERAKHIR') || findValue(r, 'TANGGAL_KELUAR') || '')
+                        ).trim();
+
+                        // Kolom G (index 6): JENIS_KOPI
+                        const rawJenis = String((r._raw && r._raw.length >= 7 && r._raw[6] !== "") ? r._raw[6] : (findValue(r, 'JENIS_KOPI') || '')).trim();
+
+                        // Kolom C (index 2): GUDANG
+                        const rawGudang = String((r._raw && r._raw.length >= 3 && r._raw[2] !== "") ? r._raw[2] : (findValue(r, 'GUDANG') || '')).trim();
+
+                        const lotKey = rawIdLot.toUpperCase();
+                        if (!lotGroupMap.has(lotKey)) {
+                            lotGroupMap.set(lotKey, {
+                                idLot: rawIdLot,
+                                lotKey: lotKey,
+                                jenisKopi: rawJenis,
+                                gudang: rawGudang,
+                                rows: [],
+                                totalKgMasuk: 0,
+                                totalSakMasuk: 0,
+                                totalKgKeluar: 0,
+                                totalSakKeluar: 0,
+                                totalSakSisa: 0,
+                                totalKgSisa: 0,
+                                allStatus: [],
+                                datesU: []
+                            });
+                        }
+
+                        const grp = lotGroupMap.get(lotKey);
+                        grp.rows.push(r);
+                        grp.totalKgMasuk += kgIn;
+                        grp.totalSakMasuk += sakIn;
+                        grp.totalKgKeluar += kgOut;
+                        grp.totalSakKeluar += sakOut;
+                        grp.totalSakSisa += sakSisa;
+                        grp.totalKgSisa += kgSisa;
+                        if (rawStatus) grp.allStatus.push(rawStatus);
+                        if (rawTglKeluarU && rawTglKeluarU !== '-') grp.datesU.push(rawTglKeluarU);
+                        if (!grp.jenisKopi && rawJenis) grp.jenisKopi = rawJenis;
+                        if (!grp.gudang && rawGudang) grp.gudang = rawGudang;
+                    });
+                }
+
+                // Bangun array data final yang siap ditampilkan
+                const processed = [];
+
+                lotGroupMap.forEach((grp, lotKey) => {
+                    // Cari informasi tambahan dari INPUT_PENERIMAAN_KOPI
+                    const penInfo = lotPenerimaanMap.get(lotKey) || (grp.idLot.includes('-') ? lotPenerimaanMap.get(grp.idLot.split('-').slice(1).join('-').toUpperCase()) : null);
+                    const jenisKopi = grp.jenisKopi || (penInfo ? penInfo.jenis : '-');
+                    if (jenisKopi && jenisKopi !== '-') jenisSet.add(jenisKopi);
+
+                    const supplier = penInfo ? penInfo.supplier : '-';
+                    const tglMasuk = penInfo ? penInfo.tglMasuk : '-';
+
+                    // Cari riwayat dari INPUT_TRANSAKSI_KELUAR
+                    const kelList = lotKeluarMap.get(lotKey) || (grp.idLot.includes('-') ? lotKeluarMap.get(grp.idLot.split('-').slice(1).join('-').toUpperCase()) : null) || [];
+                    if (kelList.length > 0) {
+                        kelList.sort((a, b) => {
+                            const dateA = new Date((a.tglKeluarRaw || a.tglKeluar) + ' ' + (a.jamKeluar !== '-' ? a.jamKeluar : '00:00')).getTime() || 0;
+                            const dateB = new Date((b.tglKeluarRaw || b.tglKeluar) + ' ' + (b.jamKeluar !== '-' ? b.jamKeluar : '00:00')).getTime() || 0;
+                            return dateA - dateB;
+                        });
+                    }
+
+                    // Tentukan Tanggal Pengeluaran Terakhir dari Kolom U lembar kerja CALC_STOK_AKTIF_FIFO
+                    let latestDateObj = null;
+                    let latestDateYMD = '';
+                    let latestDisplayDate = '-';
+                    let latestDateRaw = '';
+
+                    if (grp.datesU && grp.datesU.length > 0) {
+                        // Urutkan seluruh tanggal di Kolom U untuk mencari yang paling mutakhir
+                        const parsedDates = grp.datesU.map(dStr => parseFlexibleDate(dStr)).filter(p => p.dateObj !== null);
+                        if (parsedDates.length > 0) {
+                            parsedDates.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
+                            const top = parsedDates[0];
+                            latestDateObj = top.dateObj;
+                            latestDateYMD = top.formattedYMD;
+                            latestDisplayDate = top.displayStr;
+                            latestDateRaw = top.raw;
+                        } else {
+                            latestDateRaw = grp.datesU[grp.datesU.length - 1];
+                            latestDisplayDate = latestDateRaw;
+                            latestDateYMD = latestDateRaw;
+                        }
+                    }
+
+                    // Fallback jika Kolom U belum terisi di CALC_STOK_AKTIF_FIFO: gunakan transaksi terakhir dari INPUT_TRANSAKSI_KELUAR
+                    if (!latestDateYMD && kelList.length > 0) {
+                        const topKel = kelList[kelList.length - 1];
+                        const parsed = parseFlexibleDate(topKel.tglKeluarRaw || topKel.tglKeluar);
+                        latestDateObj = parsed.dateObj;
+                        latestDateYMD = parsed.formattedYMD;
+                        latestDisplayDate = parsed.displayStr;
+                        latestDateRaw = topKel.tglKeluar;
+                    }
+
+                    // ID Permintaan, ID Keluar, dan Tujuan Terakhir
+                    const allReqsSet = new Set();
+                    let latestIdReq = '-';
+                    let latestIdKeluar = '-';
+                    let latestTujuan = 'UPBM Roasting';
+                    let latestJam = '-';
+
+                    if (kelList.length > 0) {
+                        kelList.forEach(k => {
+                            if (k.idReq && k.idReq !== '-') allReqsSet.add(k.idReq);
+                        });
+                        const lastK = kelList[kelList.length - 1];
+                        latestIdReq = lastK.idReq || '-';
+                        latestIdKeluar = lastK.idKeluar || '-';
+                        latestTujuan = lastK.tujuan || 'UPBM Roasting';
+                        latestJam = lastK.jamKeluar || '-';
+                    }
+
+                    // Evaluasi Netto Masuk dan Netto Total Keluar
+                    // Diambil dari jumlah semua ID LOT Qty Netto Kg (Kolom K) dan QTY keluar Kg (Kolom M)
+                    let totalKgMasuk = grp.totalKgMasuk;
+                    if (totalKgMasuk === 0 && penInfo && penInfo.nettoKg > 0) {
+                        totalKgMasuk = penInfo.nettoKg;
+                    }
+
+                    let totalKgKeluar = grp.totalKgKeluar;
+                    if (totalKgKeluar === 0 && kelList.length > 0) {
+                        totalKgKeluar = kelList.reduce((acc, k) => acc + (k.kgKeluar || 0), 0);
+                    }
+
+                    // Evaluasi Kondisi Stok Habis:
+                    // ID LOT masuk kategori BA penyusutan apabila data stok ID LOT tersebut sudah habis semua (0 Sak / 0 Kg)
+                    const sisaSak = grp.totalSakSisa;
+                    const sisaKg = grp.totalKgSisa;
+                    const allStatusHabis = grp.allStatus.length > 0 && grp.allStatus.every(s => s === 'HABIS');
+                    const qtyHabis = (totalKgMasuk > 0 && totalKgKeluar >= totalKgMasuk * 0.95 && sisaSak <= 0);
+                    const sakHabis = (grp.totalSakMasuk > 0 && grp.totalSakKeluar >= grp.totalSakMasuk);
+
+                    const isStokHabis = (sisaSak <= 0 && sisaKg <= 0) || allStatusHabis || qtyHabis || sakHabis;
+
+                    // Hitung Selisih Susut Akhir (Kg) dan % Susut:
+                    // Susut = Netto Masuk - Total Keluar
+                    const susutKg = totalKgMasuk > 0 ? (totalKgMasuk - totalKgKeluar) : 0;
+                    const persenSusut = totalKgMasuk > 0 ? ((susutKg / totalKgMasuk) * 100) : 0;
+
+                    // Evaluasi Batas Toleransi Standar (Maksimal toleransi susut = 0,50%)
+                    let statusToleransi = 'normal';
+                    let labelToleransi = 'Normal (≤0.50%)';
+                    let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+                    if (totalKgMasuk === 0) {
+                        statusToleransi = 'unknown';
+                        labelToleransi = 'Netto Asal -';
+                        badgeClass = 'bg-slate-50 text-slate-500 border-slate-200';
+                    } else if (susutKg <= 0) {
+                        statusToleransi = 'surplus';
+                        labelToleransi = 'Surplus / Pas';
+                        badgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
+                    } else if (persenSusut > 0.50) {
+                        statusToleransi = 'warning';
+                        labelToleransi = 'Perhatian (>0.50%)';
+                        badgeClass = 'bg-red-50 text-red-700 border-red-200 font-bold';
+                    }
+
+                    processed.push({
+                        idLot: grp.idLot,
+                        lotKey: lotKey,
+                        gudang: grp.gudang,
+                        jenisKopi: jenisKopi,
+                        supplier: supplier,
+                        tglMasuk: tglMasuk,
+                        tglKeluarTerakhir: latestDisplayDate,
+                        tglKeluarYMD: latestDateYMD,
+                        tglKeluarRaw: latestDateRaw,
+                        tglKeluarDateObj: latestDateObj,
+                        jamKeluarTerakhir: latestJam,
+                        idKeluarTerakhir: latestIdKeluar,
+                        idReqTerakhir: latestIdReq,
+                        allReqs: Array.from(allReqsSet),
+                        tujuanTerakhir: latestTujuan,
+                        totalKgMasuk: totalKgMasuk,
+                        totalKgKeluar: totalKgKeluar,
+                        totalSakMasuk: grp.totalSakMasuk,
+                        totalSakKeluar: grp.totalSakKeluar,
+                        sisaKarung: sisaSak,
+                        sisaKg: sisaKg,
+                        isStokHabis: isStokHabis,
+                        susutKg: susutKg,
+                        persenSusut: persenSusut,
+                        statusToleransi: statusToleransi,
+                        labelToleransi: labelToleransi,
+                        badgeClass: badgeClass,
+                        txCount: grp.rows.length
+                    });
+                });
+
+                // Urutkan data berdasarkan tanggal pengeluaran terakhir (descending: terbaru di atas)
+                processed.sort((a, b) => {
+                    const timeA = a.tglKeluarDateObj ? a.tglKeluarDateObj.getTime() : 0;
+                    const timeB = b.tglKeluarDateObj ? b.tglKeluarDateObj.getTime() : 0;
+                    return timeB - timeA;
+                });
+
+                baPenyusutanAllData = processed;
+
+                // Isi dropdown pilihan Jenis Kopi jika belum ada isinya
+                const selJenis = document.getElementById('ba-filter-jenis');
+                if (selJenis && selJenis.options.length <= 1) {
+                    const sortedJenis = Array.from(jenisSet).sort();
+                    sortedJenis.forEach(j => {
+                        const opt = document.createElement('option');
+                        opt.value = j;
+                        opt.textContent = j;
+                        selJenis.appendChild(opt);
+                    });
+                }
+
+                // Set default tanggal filter
+                const dateFilterElem = document.getElementById('ba-filter-date');
+                if (dateFilterElem && !dateFilterElem.value && processed.length > 0) {
+                    const firstHabis = processed.find(it => it.isStokHabis && it.tglKeluarYMD);
+                    if (firstHabis) {
+                        dateFilterElem.value = firstHabis.tglKeluarYMD;
+                    }
+                }
+
+                updateBAPenyusutanReqDropdown();
+                filterBAPenyusutan();
+
+                if (forceRefresh) {
+                    showToast('Data Berita Acara Penyusutan berhasil disinkronkan!', 'success');
+                }
+            } catch (err) {
+                console.error("Error loadDataBAPenyusutan:", err);
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="14" class="text-center py-10 text-red-500 font-medium">Gagal memuat data penyusutan: ${(err.message || err)}</td></tr>`;
+                }
+                if (forceRefresh) {
+                    showToast('Gagal menyinkronkan data: ' + (err.message || err), 'error');
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-70', 'cursor-wait');
+                }
+                if (icon) {
+                    icon.classList.remove('animate-spin', 'text-amber-600');
+                }
+                if (textSpan) {
+                    textSpan.textContent = 'Sinkron Data';
+                }
+            }
+        }
+
+        window._baActiveDatePreset = null;
+
+        function updateBAPenyusutanReqDropdown(activePreset) {
+            const dateVal = document.getElementById('ba-filter-date') ? document.getElementById('ba-filter-date').value : '';
+            const kondisiStokVal = document.getElementById('ba-filter-kondisi-stok') ? document.getElementById('ba-filter-kondisi-stok').value : 'habis';
+            const selReq = document.getElementById('ba-filter-req');
+            if (!selReq) return;
+
+            const prevSelected = selReq.value;
+            const preset = activePreset !== undefined ? activePreset : window._baActiveDatePreset;
+
+            let matchingItems = baPenyusutanAllData;
+
+            // Sesuaikan dengan kondisi stok yang dipilih
+            if (kondisiStokVal === 'habis') {
+                matchingItems = matchingItems.filter(item => item.isStokHabis);
+            } else if (kondisiStokVal === 'aktif') {
+                matchingItems = matchingItems.filter(item => !item.isStokHabis);
+            }
+
+            if (preset === 'week') {
+                const now = new Date();
+                const weekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+                matchingItems = matchingItems.filter(item => {
+                    if (!item.tglKeluarDateObj) return false;
+                    const itemTime = item.tglKeluarDateObj.getTime();
+                    return itemTime >= weekAgo.getTime() && itemTime <= now.getTime();
+                });
+            } else if (preset === 'month') {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                matchingItems = matchingItems.filter(item => {
+                    if (!item.tglKeluarDateObj) return false;
+                    const itemTime = item.tglKeluarDateObj.getTime();
+                    return itemTime >= monthStart.getTime();
+                });
+            } else if (dateVal) {
+                matchingItems = matchingItems.filter(item => {
+                    return item.tglKeluarYMD === dateVal || item.tglKeluarTerakhir === dateVal || item.tglKeluarRaw === dateVal;
+                });
+            }
+
+            // Kumpulkan ID Permintaan unik (dari transaksi pengeluaran penutup / transaksi terkait)
+            const reqMap = new Map();
+            matchingItems.forEach(item => {
+                const req = (item.idReqTerakhir || '').trim();
+                if (req && req !== '-') {
+                    reqMap.set(req, (reqMap.get(req) || 0) + 1);
+                }
+            });
+
+            const sortedReqs = Array.from(reqMap.keys()).sort();
+
+            let html = `<option value="all">Semua ID Permintaan ${sortedReqs.length > 0 ? '(' + sortedReqs.length + ' REQ)' : ''}</option>`;
+            sortedReqs.forEach(req => {
+                const count = reqMap.get(req);
+                html += `<option value="${req}">${req} (${count} Lot)</option>`;
+            });
+
+            selReq.innerHTML = html;
+
+            if (prevSelected && prevSelected !== 'all' && sortedReqs.includes(prevSelected)) {
+                selReq.value = prevSelected;
+            } else {
+                selReq.value = 'all';
+            }
+        }
+
+        function onBAPenyusutanDateChange() {
+            window._baActiveDatePreset = null;
+            updateBAPenyusutanReqDropdown();
+            filterBAPenyusutan();
+        }
+
+        function filterBAPenyusutan() {
+            const dateVal = document.getElementById('ba-filter-date') ? document.getElementById('ba-filter-date').value : '';
+            const kondisiStokVal = document.getElementById('ba-filter-kondisi-stok') ? document.getElementById('ba-filter-kondisi-stok').value : 'habis';
+            const reqVal = document.getElementById('ba-filter-req') ? document.getElementById('ba-filter-req').value : 'all';
+            const jenisVal = document.getElementById('ba-filter-jenis') ? document.getElementById('ba-filter-jenis').value : 'all';
+            const tolVal = document.getElementById('ba-filter-toleransi') ? document.getElementById('ba-filter-toleransi').value : 'all';
+            const searchVal = document.getElementById('ba-filter-search') ? document.getElementById('ba-filter-search').value.toLowerCase().trim() : '';
+
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            baPenyusutanFiltered = baPenyusutanAllData.filter(item => {
+                // 1. Filter Kondisi Stok: default adalah 'habis' (Stok Habis / 0 Sak)
+                if (kondisiStokVal === 'habis' && !item.isStokHabis) return false;
+                if (kondisiStokVal === 'aktif' && item.isStokHabis) return false;
+
+                // 2. Filter tanggal pengeluaran terakhir (preset atau tanggal spesifik dari Kolom U)
+                if (window._baActiveDatePreset === 'week') {
+                    if (!item.tglKeluarDateObj) return false;
+                    const itemTime = item.tglKeluarDateObj.getTime();
+                    if (itemTime < weekAgo.getTime() || itemTime > now.getTime()) return false;
+                } else if (window._baActiveDatePreset === 'month') {
+                    if (!item.tglKeluarDateObj) return false;
+                    const itemTime = item.tglKeluarDateObj.getTime();
+                    if (itemTime < monthStart.getTime()) return false;
+                } else if (dateVal) {
+                    const matchYMD = item.tglKeluarYMD === dateVal;
+                    const matchDisplay = item.tglKeluarTerakhir === dateVal;
+                    const matchRaw = item.tglKeluarRaw === dateVal;
+                    if (!matchYMD && !matchDisplay && !matchRaw) {
+                        return false;
+                    }
+                }
+
+                // 3. Filter ID Permintaan (REQ)
+                if (reqVal !== 'all') {
+                    const matchLatest = item.idReqTerakhir === reqVal;
+                    const matchAny = Array.isArray(item.allReqs) && item.allReqs.includes(reqVal);
+                    if (!matchLatest && !matchAny) return false;
+                }
+
+                // 4. Filter jenis kopi
+                if (jenisVal !== 'all' && item.jenisKopi !== jenisVal) {
+                    return false;
+                }
+
+                // 5. Filter toleransi susut
+                if (tolVal === 'normal' && item.statusToleransi !== 'normal') return false;
+                if (tolVal === 'warning' && item.statusToleransi !== 'warning') return false;
+                if (tolVal === 'surplus' && item.statusToleransi !== 'surplus') return false;
+
+                // 6. Filter search keyword
+                if (searchVal) {
+                    const combined = `${item.idLot} ${item.idKeluarTerakhir} ${item.idReqTerakhir} ${item.jenisKopi} ${item.supplier} ${item.tujuanTerakhir} ${item.gudang}`.toLowerCase();
+                    if (!combined.includes(searchVal)) return false;
+                }
+
+                return true;
+            });
+
+            baPenyusutanPage = 1;
+            updateBAPenyusutanKPI();
+            renderBAPenyusutanTable();
+        }
+
+        function setBAPenyusutanDatePreset(preset) {
+            const dateElem = document.getElementById('ba-filter-date');
+            if (!dateElem) return;
+
+            window._baActiveDatePreset = preset;
+
+            const now = new Date();
+            const formatDateStr = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            if (preset === 'today') {
+                dateElem.value = formatDateStr(now);
+                window._baActiveDatePreset = null;
+            } else if (preset === 'week' || preset === 'month' || preset === 'all') {
+                dateElem.value = '';
+                if (preset === 'all') window._baActiveDatePreset = null;
+            }
+
+            updateBAPenyusutanReqDropdown(preset === 'all' ? null : preset);
+            filterBAPenyusutan();
+        }
+
+        function resetBAPenyusutanFilter() {
+            window._baActiveDatePreset = null;
+            const dateElem = document.getElementById('ba-filter-date');
+            if (dateElem) dateElem.value = '';
+            const kondElem = document.getElementById('ba-filter-kondisi-stok');
+            if (kondElem) kondElem.value = 'habis';
+            const reqElem = document.getElementById('ba-filter-req');
+            if (reqElem) reqElem.value = 'all';
+            const jenisElem = document.getElementById('ba-filter-jenis');
+            if (jenisElem) jenisElem.value = 'all';
+            const tolElem = document.getElementById('ba-filter-toleransi');
+            if (tolElem) tolElem.value = 'all';
+            const searchElem = document.getElementById('ba-filter-search');
+            if (searchElem) searchElem.value = '';
+
+            updateBAPenyusutanReqDropdown(null);
+            filterBAPenyusutan();
+        }
+
+        function updateBAPenyusutanKPI() {
+            const totalTrx = baPenyusutanFiltered.length;
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+            let totalSusut = 0;
+
+            baPenyusutanFiltered.forEach(item => {
+                totalMasuk += (item.totalKgMasuk || 0);
+                totalKeluar += (item.totalKgKeluar || 0);
+                totalSusut += (item.susutKg || 0);
+            });
+
+            const persenSusut = totalMasuk > 0 ? ((totalSusut / totalMasuk) * 100) : 0;
+
+            const elTrx = document.getElementById('ba-kpi-total-trx');
+            const elMasuk = document.getElementById('ba-kpi-total-masuk');
+            const elKeluar = document.getElementById('ba-kpi-total-keluar');
+            const elSusut = document.getElementById('ba-kpi-total-susut');
+            const elPersen = document.getElementById('ba-kpi-persen-susut');
+            const elStatus = document.getElementById('ba-kpi-status-susut');
+
+            if (elTrx) elTrx.innerText = `${totalTrx} Lot`;
+            if (elMasuk) elMasuk.innerText = `${formatAngkaId(totalMasuk)} Kg`;
+            if (elKeluar) elKeluar.innerText = `${formatAngkaId(totalKeluar)} Kg`;
+            if (elSusut) elSusut.innerText = `${formatAngkaId(totalSusut)} Kg`;
+            if (elPersen) elPersen.innerText = `${formatAngkaId(persenSusut)}%`;
+
+            if (elStatus) {
+                if (persenSusut > 0.50) {
+                    elStatus.innerHTML = `<span class="text-red-600 font-bold flex items-center gap-1"><i class="ph ph-warning-circle"></i> Melebihi batas toleransi 0,50%</span>`;
+                } else if (persenSusut > 0) {
+                    elStatus.innerHTML = `<span class="text-emerald-600 font-semibold flex items-center gap-1"><i class="ph ph-check-circle"></i> Dalam toleransi wajar (≤ 0,50%)</span>`;
+                } else {
+                    elStatus.innerHTML = `<span class="text-blue-600 font-semibold flex items-center gap-1"><i class="ph ph-info"></i> Berat keluar sama / surplus</span>`;
+                }
+            }
+        }
+
+        function renderBAPenyusutanTable() {
+            const tbody = document.getElementById('table-body-ba-penyusutan');
+            if (!tbody) return;
+
+            if (!baPenyusutanFiltered || baPenyusutanFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" class="text-center py-10 text-slate-400">
+                    <div class="flex flex-col items-center justify-center gap-1">
+                        <i class="ph ph-file-magnifying-glass text-3xl text-slate-300 mb-1"></i>
+                        <span class="font-medium text-slate-600">Tidak ada data ID LOT yang sesuai filter.</span>
+                        <span class="text-xs text-slate-400">Pastikan filter tanggal transaksi terakhir (Kolom U) atau kondisi stok sudah sesuai.</span>
+                    </div>
+                </td></tr>`;
+                document.getElementById('ba-page-info').innerText = "0 - 0";
+                document.getElementById('ba-total-info').innerText = "0";
+                document.getElementById('btn-ba-prev').disabled = true;
+                document.getElementById('btn-ba-next').disabled = true;
+                return;
+            }
+
+            const totalItems = baPenyusutanFiltered.length;
+            const startIdx = (baPenyusutanPage - 1) * baPenyusutanPageSize;
+            const endIdx = Math.min(startIdx + baPenyusutanPageSize, totalItems);
+            const pageData = baPenyusutanFiltered.slice(startIdx, endIdx);
+
+            let html = '';
+            pageData.forEach((item, idx) => {
+                const rowNo = startIdx + idx + 1;
+                const susutDisplay = item.totalKgMasuk > 0 ? formatAngkaId(item.susutKg) : '-';
+                const persenDisplay = item.totalKgMasuk > 0 ? `${formatAngkaId(item.persenSusut)}%` : '-';
+                const masukDisplay = item.totalKgMasuk > 0 ? formatAngkaId(item.totalKgMasuk) : '<span class="text-slate-400 text-[10px] italic">Blm Terekam</span>';
+
+                // Badge status kondisi stok
+                const kondisiStokBadge = item.isStokHabis
+                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+                         <i class="ph ph-check-circle"></i> Stok Habis (0 Sak)
+                       </span>`
+                    : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs" title="Sisa ${item.sisaKarung} Sak (${formatAngkaId(item.sisaKg)} Kg)">
+                         <i class="ph ph-clock"></i> Sisa ${item.sisaKarung} Sak
+                       </span>`;
+
+                // Tombol aksi: hanya aktif jika stok sudah habis semua
+                const aksiButton = item.isStokHabis
+                    ? `<button type="button" onclick="openBAPenyusutanModal('${item.idLot}')" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold rounded-lg shadow-2xs transition-colors cursor-pointer flex items-center gap-1 mx-auto" title="Cetak Berita Acara Penyusutan Lot Habis Ini">
+                         <i class="ph ph-printer text-xs"></i>
+                         <span>Cetak BA</span>
+                       </button>`
+                    : `<button type="button" disabled class="px-2.5 py-1 bg-slate-100 text-slate-400 text-[11px] font-semibold rounded-lg border border-slate-200 cursor-not-allowed flex items-center gap-1 mx-auto" title="Berita Acara hanya dapat dibuat saat kondisi stok ID Lot sudah habis semua (0 Sak).">
+                         <i class="ph ph-lock text-xs"></i>
+                         <span>Belum Habis</span>
+                       </button>`;
+
+                const countBadge = item.txCount > 1 
+                    ? `<span class="text-[10px] bg-slate-100 text-slate-600 px-1 py-0.5 rounded font-normal" title="${item.txCount} palet / baris di sheet">(${item.txCount} palet)</span>`
+                    : '';
+
+                html += `
+                <tr class="hover:bg-amber-50/40 transition-colors">
+                    <td class="px-4 py-3 text-center text-slate-500 font-mono text-xs">${rowNo}</td>
+                    <td class="px-4 py-3">
+                        <div class="font-semibold text-slate-800 font-mono">${item.tglKeluarTerakhir}</div>
+                        <div class="text-[10px] text-slate-400 font-mono">Kolom U Sheet</div>
+                    </td>
+                    <td class="px-4 py-3 font-mono font-bold text-amber-700">
+                        <div class="flex items-center gap-1">
+                            <span>${item.idKeluarTerakhir !== '-' ? item.idKeluarTerakhir : item.gudang}</span>
+                            ${countBadge}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 font-mono text-slate-600">${item.idReqTerakhir}</td>
+                    <td class="px-4 py-3 font-mono font-bold text-indigo-700 tracking-wide">${item.idLot}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${item.jenisKopi}</td>
+                    <td class="px-4 py-3 text-slate-600 max-w-[150px] truncate" title="${item.supplier}">${item.supplier}</td>
+                    <td class="px-4 py-3 text-right font-mono font-bold text-indigo-700">${masukDisplay}</td>
+                    <td class="px-4 py-3 text-right font-mono font-bold text-emerald-700">${formatAngkaId(item.totalKgKeluar)}</td>
+                    <td class="px-4 py-3 text-right font-mono font-black ${item.susutKg > 0 ? 'text-red-600' : (item.susutKg < 0 ? 'text-blue-600' : 'text-slate-700')}">${susutDisplay}</td>
+                    <td class="px-4 py-3 text-center font-mono font-bold text-xs ${item.persenSusut > 0.50 ? 'text-red-600' : 'text-slate-700'}">${persenDisplay}</td>
+                    <td class="px-4 py-3 text-center">${kondisiStokBadge}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] border ${item.badgeClass}">
+                            ${item.labelToleransi}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                        ${aksiButton}
+                    </td>
+                </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+            document.getElementById('ba-page-info').innerText = `${startIdx + 1} - ${endIdx}`;
+            document.getElementById('ba-total-info').innerText = totalItems;
+            document.getElementById('btn-ba-prev').disabled = baPenyusutanPage === 1;
+            document.getElementById('btn-ba-next').disabled = endIdx >= totalItems;
+        }
+
+        function prevPageBAPenyusutan() {
+            if (baPenyusutanPage > 1) {
+                baPenyusutanPage--;
+                renderBAPenyusutanTable();
+            }
+        }
+
+        function nextPageBAPenyusutan() {
+            if ((baPenyusutanPage * baPenyusutanPageSize) < baPenyusutanFiltered.length) {
+                baPenyusutanPage++;
+                renderBAPenyusutanTable();
+            }
+        }
+
+        /* -------------------------------------------------------------------------
+           MODAL PRATINJAU & GENERATOR DOKUMEN BERITA ACARA PENYUSUTAN
+           ------------------------------------------------------------------------- */
+        function openBAPenyusutanModal(targetLotId) {
+            let itemsToInclude = [];
+
+            if (targetLotId) {
+                // Dokumen untuk 1 lot spesifik
+                const found = baPenyusutanAllData.find(item => item.idLot === targetLotId || item.lotKey === String(targetLotId).toUpperCase());
+                if (!found) {
+                    showToast("Data ID LOT tidak ditemukan.", "error");
+                    return;
+                }
+                if (!found.isStokHabis) {
+                    showToast("ID LOT ini belum habis (masih ada sisa " + found.sisaKarung + " Sak). Berita Acara Penyusutan hanya dapat dibuat saat kondisi stok ID LOT sudah habis semua (0 Sak).", "warning", 5000);
+                    return;
+                }
+                itemsToInclude = [found];
+            } else {
+                // Dokumen untuk seluruh item berstatus STOK HABIS yang sedang difilter di layar
+                const validHabis = baPenyusutanFiltered.filter(item => item.isStokHabis);
+                if (validHabis.length > 0) {
+                    itemsToInclude = validHabis;
+                } else {
+                    const allHabis = baPenyusutanAllData.filter(item => item.isStokHabis);
+                    if (allHabis.length === 0) {
+                        showToast("Tidak ada ID LOT dengan kondisi stok habis (0 Sak) yang siap dibuatkan Berita Acara.", "warning", 4000);
+                        return;
+                    }
+                    itemsToInclude = allHabis.slice(0, 20);
+                }
+            }
+
+            if (itemsToInclude.length === 0) {
+                showToast("Tidak ada data lot stok habis untuk dicetak.", "error");
+                return;
+            }
+
+            baCurrentDocItems = itemsToInclude;
+
+            // Render isi dokumen resmi
+            renderBAPenyusutanDocContent(itemsToInclude, targetLotId);
+
+            const modal = document.getElementById('modal-ba-penyusutan');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeBAPenyusutanModal() {
+            const modal = document.getElementById('modal-ba-penyusutan');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function renderBAPenyusutanDocContent(items, singleLotId) {
+            const container = document.getElementById('ba-penyusutan-document-content');
+            if (!container) return;
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            const docSeq = String(now.getDate()).padStart(2, '0') + String(now.getMonth() + 1).padStart(2, '0');
+            const docNo = `BA-SUSUT/SJA3-GBB/${now.getFullYear()}/${docSeq}`;
+
+            // Ambil tanggal pengeluaran terakhir (Kolom U) yang dominan atau rentang
+            const uniqueDates = Array.from(new Set(items.map(it => it.tglKeluarTerakhir))).filter(Boolean);
+            const displayTglKeluar = uniqueDates.length === 1 ? uniqueDates[0] : (uniqueDates.length > 1 ? `${uniqueDates[uniqueDates.length - 1]} s/d ${uniqueDates[0]}` : dateStr);
+            const displayTujuan = Array.from(new Set(items.map(it => it.tujuanTerakhir))).filter(t => t && t !== '-').join(', ') || 'UPBM Roasting Plant 3';
+            const uniqueReqs = Array.from(new Set(items.map(it => it.idReqTerakhir))).filter(r => r && r !== '-');
+            const displayReq = uniqueReqs.length === 1 ? uniqueReqs[0] : (uniqueReqs.length > 1 ? (uniqueReqs.length <= 3 ? uniqueReqs.join(', ') : `${uniqueReqs.slice(0, 3).join(', ')} (+${uniqueReqs.length - 3})`) : '-');
+
+            // Hitung akumulasi total
+            let sumMasuk = 0;
+            let sumKeluar = 0;
+            let sumSusut = 0;
+
+            items.forEach(it => {
+                sumMasuk += (it.totalKgMasuk || 0);
+                sumKeluar += (it.totalKgKeluar || 0);
+                sumSusut += (it.susutKg || 0);
+            });
+
+            const avgPersen = sumMasuk > 0 ? ((sumSusut / sumMasuk) * 100) : 0;
+
+            // Buat baris tabel dokumen
+            let tableRowsHtml = '';
+            items.forEach((item, idx) => {
+                const no = idx + 1;
+                const susutVal = item.totalKgMasuk > 0 ? formatAngkaId(item.susutKg) : '-';
+                const persenVal = item.totalKgMasuk > 0 ? `${formatAngkaId(item.persenSusut)}%` : '-';
+                const tolBadge = item.persenSusut > 0.50 ? '<span class="text-red-600 font-bold">Susut >0.5%</span>' : (item.susutKg <= 0 ? '<span class="text-blue-700">Surplus</span>' : '<span class="text-emerald-700 font-semibold">Normal</span>');
+
+                tableRowsHtml += `
+                <tr class="border-b border-slate-300 text-[11px]">
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-center">${no}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-center font-mono">${item.tglKeluarTerakhir}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 font-mono text-center font-bold text-slate-800">${item.idKeluarTerakhir !== '-' ? item.idKeluarTerakhir : item.gudang}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 font-mono font-bold text-slate-900">${item.idLot}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-center">${item.jenisKopi}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-left truncate max-w-[120px]">${item.supplier}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-right font-mono font-semibold">${formatAngkaId(item.totalKgMasuk)}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-right font-mono font-semibold text-emerald-800">${formatAngkaId(item.totalKgKeluar)}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-right font-mono font-bold ${item.susutKg > 0 ? 'text-red-700' : (item.susutKg < 0 ? 'text-blue-700' : 'text-slate-800')}">${susutVal}</td>
+                    <td class="border-r border-slate-300 px-2 py-1.5 text-center font-mono font-bold">${persenVal}</td>
+                    <td class="px-2 py-1.5 text-center text-[10px]">${tolBadge}</td>
+                </tr>
+                `;
+            });
+
+            // Isi lengkap layout dokumen A4
+            container.innerHTML = `
+                <!-- Kop Surat Resmi Santos Jaya Abadi Plant 3 -->
+                <div class="border-b-2 border-black pb-3 mb-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-amber-700 rounded-lg flex items-center justify-center text-white font-black text-xl tracking-wider shadow-xs">
+                                SJA
+                            </div>
+                            <div>
+                                <h1 class="text-sm sm:text-base font-black tracking-wide uppercase text-slate-900 leading-tight">PT SANTOS JAYA ABADI - PLANT 3</h1>
+                                <p class="text-[11px] font-bold text-slate-700">WAREHOUSE BIJI KOPI MENTAH (GBB) & DEPARTEMEN SCM</p>
+                                <p class="text-[10px] text-slate-500">Sistem Informasi Pengelolaan Biji Kopi Mentah (SIBIKOM)</p>
+                            </div>
+                        </div>
+                        <div class="text-right text-[10px] text-slate-600 font-mono">
+                            <div class="font-bold text-slate-900">FORM: SJA3-GBB-BA-04</div>
+                            <div>Revisi: 01 / 2026</div>
+                            <div>Tgl Terbit: ${dateStr}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Judul Dokumen & Nomor -->
+                <div class="text-center my-4">
+                    <h2 class="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 underline decoration-slate-400 underline-offset-4">
+                        BERITA ACARA PENYUSUTAN TIMBANG BIJI KOPI MENTAH
+                    </h2>
+                    <p class="text-xs font-mono font-bold text-slate-700 mt-1">Nomor Dokumen: ${docNo}</p>
+                </div>
+
+                <!-- Informasi Transaksi & Meta Data -->
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-300 rounded-lg p-3 my-3 text-[11px]">
+                    <div>
+                        <div class="flex py-0.5"><span class="w-44 font-semibold text-slate-600">Tanggal Pengeluaran Terakhir</span><span class="mr-2">:</span><span class="font-bold font-mono text-slate-800">${displayTglKeluar}</span></div>
+                        <div class="flex py-0.5"><span class="w-44 font-semibold text-slate-600">ID Permintaan (Penutup)</span><span class="mr-2">:</span><span class="font-bold font-mono text-amber-800">${displayReq}</span></div>
+                        <div class="flex py-0.5"><span class="w-44 font-semibold text-slate-600">Tujuan Pengeluaran</span><span class="mr-2">:</span><span class="font-bold text-slate-800">${displayTujuan}</span></div>
+                        <div class="flex py-0.5"><span class="w-44 font-semibold text-slate-600">Status Stok Fisik</span><span class="mr-2">:</span><span class="font-bold text-emerald-700">0 Sak (Stok Habis / Closing Lot)</span></div>
+                    </div>
+                    <div>
+                        <div class="flex py-0.5"><span class="w-40 font-semibold text-slate-600">Lokasi Penimbangan</span><span class="mr-2">:</span><span class="font-bold text-slate-800">Timbangan GBB Plant 3</span></div>
+                        <div class="flex py-0.5"><span class="w-40 font-semibold text-slate-600">Standar Toleransi Susut</span><span class="mr-2">:</span><span class="font-bold text-slate-800">Maks. 0,50% dari Netto Masuk</span></div>
+                        <div class="flex py-0.5"><span class="w-40 font-semibold text-slate-600">Jumlah ID LOT Selesai</span><span class="mr-2">:</span><span class="font-bold text-slate-800">${items.length} Lot Habis</span></div>
+                        <div class="flex py-0.5"><span class="w-40 font-semibold text-slate-600">Status Keseluruhan</span><span class="mr-2">:</span><span class="font-bold ${avgPersen > 0.50 ? 'text-red-600' : 'text-emerald-700'}">${avgPersen > 0.50 ? 'Evaluasi Khusus (>0.50%)' : 'Sesuai Toleransi Wajar'}</span></div>
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-slate-700 my-2 leading-relaxed">
+                    Pada hari ini, telah dilakukan verifikasi dan penimbangan fisik pengeluaran Biji Kopi Mentah (BKM) dari Gudang Bahan Baku menuju area produksi dengan kondisi <b>stok ID LOT telah habis seluruhnya (0 Sak)</b> berdasarkan data lembar kerja <b>CALC_STOK_AKTIF_FIFO</b>. Rincian perbandingan antara <b>Qty Netto Masuk Asal (Kg)</b> dan <b>Total Qty Keluar (Kg)</b> sampai transaksi tanggal pengeluaran terakhir (Kolom U) adalah sebagai berikut:
+                </p>
+
+                <!-- Tabel Detail Timbang Dokumen -->
+                <div class="border border-slate-300 rounded-md overflow-hidden my-3">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-200 border-b border-slate-300 text-[10px] font-bold uppercase text-slate-800 tracking-wider">
+                                <th class="border-r border-slate-300 px-2 py-2 text-center w-8">No</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-center">Tgl Keluar Terakhir</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-center">No Keluar / Area</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-center">ID LOT BKM</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-center">Jenis</th>
+                                <th class="border-r border-slate-300 px-2 py-2">Supplier</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-right">Netto Masuk (Kg)</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-right">Total Keluar (Kg)</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-right">Susut Akhir (Kg)</th>
+                                <th class="border-r border-slate-300 px-2 py-2 text-center">% Susut</th>
+                                <th class="px-2 py-2 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-slate-100 font-bold border-t-2 border-slate-400 text-[11px] text-slate-900">
+                                <td colspan="6" class="border-r border-slate-300 px-3 py-2 text-right uppercase">TOTAL REKAPITULASI:</td>
+                                <td class="border-r border-slate-300 px-2 py-2 text-right font-mono text-indigo-900">${formatAngkaId(sumMasuk)}</td>
+                                <td class="border-r border-slate-300 px-2 py-2 text-right font-mono text-emerald-900">${formatAngkaId(sumKeluar)}</td>
+                                <td class="border-r border-slate-300 px-2 py-2 text-right font-mono ${sumSusut > 0 ? 'text-red-700' : (sumSusut < 0 ? 'text-blue-700' : 'text-slate-800')}">${formatAngkaId(sumSusut)}</td>
+                                <td class="border-r border-slate-300 px-2 py-2 text-center font-mono">${formatAngkaId(avgPersen)}%</td>
+                                <td class="px-2 py-2 text-center text-[10px]">${avgPersen > 0.50 ? 'EVALUASI' : 'OK'}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Catatan Ketentuan Teknis & SOP -->
+                <div class="border border-slate-200 bg-amber-50/50 rounded-lg p-2.5 my-3 text-[10px] text-slate-700 leading-normal">
+                    <p class="font-bold text-slate-800 mb-1">Catatan & Ketentuan Standar Penanganan:</p>
+                    <ul class="list-disc pl-4 space-y-0.5">
+                        <li>Berita Acara ini diterbitkan secara sah setelah seluruh stok fisik ID LOT bersangkutan <b>telah habis (0 Sak)</b> di lembar kerja CALC_STOK_AKTIF_FIFO.</li>
+                        <li>Batas toleransi wajar susut penanganan & kadar air penyimpanan adalah maksimal <b>0,50%</b> dari berat netto penerimaan awal.</li>
+                        <li>Apabila selisih susut melebihi batas 0,50%, timbangan wajib dicek kalibrasi dan dibuatkan laporan investigasi bersama QC.</li>
+                        <li>Berita acara ini diterbitkan secara sah dari sistem SIBIKOM sebagai dasar penyesuaian kartu stok bahan baku PT Santos Jaya Abadi Plant 3.</li>
+                    </ul>
+                </div>
+
+                <!-- Tanda Tangan 3 Pihak Resmi -->
+                <div class="mt-6 pt-2 border-t border-slate-300">
+                    <div class="text-[10px] font-semibold text-slate-500 mb-3 text-center uppercase tracking-wider">Pengesahan Dokumen Berita Acara Penyusutan Timbang</div>
+                    <div class="grid grid-cols-3 gap-4 text-center text-[11px]">
+                        <div class="flex flex-col items-center justify-between min-h-[110px] p-2 bg-slate-50/60 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-slate-700">Dibuat Oleh:</span>
+                            <div class="h-12 flex items-center justify-center text-slate-400 text-xs italic">[ Tanda Tangan ]</div>
+                            <div class="w-full border-t border-slate-400 pt-1">
+                                <p class="font-bold text-slate-900">Admin Timbang Gudang BKM</p>
+                                <p class="text-[9px] text-slate-500">Warehouse Operator</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-between min-h-[110px] p-2 bg-slate-50/60 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-slate-700">Diperiksa Oleh:</span>
+                            <div class="h-12 flex items-center justify-center text-slate-400 text-xs italic">[ Tanda Tangan ]</div>
+                            <div class="w-full border-t border-slate-400 pt-1">
+                                <p class="font-bold text-slate-900">Supervisor Warehouse</p>
+                                <p class="text-[9px] text-slate-500">Departemen SCM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-between min-h-[110px] p-2 bg-slate-50/60 rounded-lg border border-slate-200">
+                            <span class="font-semibold text-slate-700">Diketahui & Diterima:</span>
+                            <div class="h-12 flex items-center justify-center text-slate-400 text-xs italic">[ Tanda Tangan ]</div>
+                            <div class="w-full border-t border-slate-400 pt-1">
+                                <p class="font-bold text-slate-900">Supervisor UPBM Roasting</p>
+                                <p class="text-[9px] text-slate-500">Departemen Produksi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Watermark / Track Code -->
+                <div class="flex items-center justify-between text-[9px] text-slate-400 mt-4 pt-2 border-t border-slate-200">
+                    <span>Generated by SIBIKOM - Sistem Informasi Biji Kopi Mentah</span>
+                    <span>Waktu Cetak: ${now.toLocaleString('id-ID')}</span>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------------------
+           EKSPOR DOKUMEN: DOWNLOAD JPG & PDF & PRINT
+           ------------------------------------------------------------------------- */
+        function downloadBAPenyusutanJPG() {
+            const element = document.getElementById('ba-penyusutan-document-content');
+            if (!element) return;
+
+            showToast("Memproses ekspor Berita Acara ke format JPG...", "info");
+
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+            const fileName = `Berita_Acara_Penyusutan_BKM_${dateStr}.jpg`;
+
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+                showToast("Berita Acara berhasil diunduh sebagai JPG!", "success");
+            }).catch(err => {
+                console.error("Gagal ekspor JPG:", err);
+                showToast("Gagal mengunduh gambar JPG: " + err.message, "error");
+            });
+        }
+
+        function downloadBAPenyusutanPDF() {
+            const element = document.getElementById('ba-penyusutan-document-content');
+            if (!element) return;
+
+            showToast("Memproses pembuatan dokumen PDF...", "info");
+
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+            const fileName = `Berita_Acara_Penyusutan_BKM_${dateStr}.pdf`;
+
+            const opt = {
+                margin:       [0.2, 0.2, 0.2, 0.2],
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast("Dokumen PDF Berita Acara berhasil diunduh!", "success");
+            }).catch(err => {
+                console.error("Gagal buat PDF:", err);
+                showToast("Gagal membuat dokumen PDF: " + err.message, "error");
+            });
+        }
+
+        function printBAPenyusutan() {
+            const element = document.getElementById('ba-penyusutan-document-content');
+            if (!element) return;
+
+            const printWin = window.open('', '_blank', 'width=900,height=700');
+            if (!printWin) {
+                // Fallback standard print jika pop-up diblokir
+                window.print();
+                return;
+            }
+
+            printWin.document.write(
+                '<!DOCTYPE html>' +
+                '<html><head><title>Cetak Berita Acara Penyusutan BKM</title>' +
+                '<script src="https://cdn.tailwindcss.com"><' + '/script>' +
+                '<style>' +
+                'body { font-family: Inter, sans-serif; background-color: #ffffff; padding: 20px; }' +
+                '@media print { body { padding: 0; } @page { size: A4 portrait; margin: 10mm; } }' +
+                '</style></head><body>' +
+                '<div style="max-width: 800px; margin: 0 auto;">' +
+                element.innerHTML +
+                '</div>' +
+                '<' + 'script>' +
+                'window.onload = function() { setTimeout(function() { window.print(); window.close(); }, 500); };' +
+                '<' + '/script>' +
+                '</body></html>'
+            );
+            printWin.document.close();
         }
 
         let deleteConfig = { id: null, sheetName: '', columnName: '' };
